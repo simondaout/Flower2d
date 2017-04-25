@@ -25,6 +25,7 @@ This project needs the following external components:
  H |       1   <--
    |  +------------------------
      (x,y)      --> 
+
 ```
 
     -  `mainflower()` (flower as main/first structure):
@@ -100,7 +101,7 @@ The code saves all plaussible posterior models in the output directory and provi
  References
 ============
 
-  * Along-strike variations of the partitioning of convergence across the Haiyuan fault system detected by InSAR, S. Daout; R. Jolivet; C. Lasserre; M.-P. Doin; S. Barbot; P. Tapponnier; G. Peltzer; A. Socquet; J. Sun; GJI 2016 205 (1): 536-547 doi: 10.1093/gji/ggw028
+  * [Along-strike variations of the partitioning of convergence across the Haiyuan fault system detected by InSAR, S. Daout; R. Jolivet; C. Lasserre; M.-P. Doin; S. Barbot; P. Tapponnier; G. Peltzer; A. Socquet; J. Sun; GJI 2016 205 (1): 536-547 doi: 10.1093/gji/ggw028](https://academic.oup.com/gji/article-abstract/205/1/536/2594860/Along-strike-variations-of-the-partitioning-of)
 
-  * Constraining the Kinematics of Metropolitan Los Angeles Faults with a Slip-Partitioning Model., S. Daout; S. Barbot, G. Peltzer, M.-P Doin, Z. Liu, R. Jolivet; GRL 2016.
+  * [Constraining the Kinematics of Metropolitan Los Angeles Faults with a Slip-Partitioning Model., S. Daout; S. Barbot, G. Peltzer, M.-P Doin, Z. Liu, R. Jolivet; GRL 2016](http://onlinelibrary.wiley.com/doi/10.1002/2016GL071061/full)
 
