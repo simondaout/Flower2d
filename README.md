@@ -16,9 +16,9 @@ This project needs the following external components:
 
   * src/flower: python tools based on pymc to invert for fault geometries and slip rates. The inversion code aims to explore several typical fault structures defined as follow in `modelopti.py` : 
 
-    - `maindecol()` (decollement as main/first structure):
-
 ```
+    - maindecol() (decollement as main/first structure):
+
 
     - - - - - surface  - - - - - - - - - - - - - - - -
    |  
@@ -27,11 +27,8 @@ This project needs the following external components:
      (x,y)      --> 
 
 
-```
+    - mainflower() (flower as main/first structure):
 
-    - `mainflower()` (flower as main/first structure):
-
-```
 
    - - - - - surface- - - - - - - - - - - - - - - -
  H |
@@ -48,11 +45,7 @@ This project needs the following external components:
       2: the ramp
       3: the back-thrust
 
-```
-
-    - `ramp()` (secondary structure):
-
-```
+    - ramp() (secondary structure):
 
   - - - - - surface- - - - - - - - - - - - - - - -
 H |
@@ -62,10 +55,9 @@ H |
      \   
       \  
 	   +	
-```
-    -  `flower()` (secodary structure):
+    
+    -  flower() (secodary structure):
 
-```
 
  -+ - - - - +- - - - surface- - - - - - - - - - - -
    \ºalpha / ºbeta
@@ -73,6 +65,7 @@ H |
      \   /
       \ /           
        +
+
 ```
 
 Each segment is defined by a name, a strike-slip and dip-slip values, a dip angle, and a depth. The main segment (usually the decollement) needs to be position by its East, North coordinates, while the secondary segments are positioned by their horizontal distances to the main segment (parameter D). 
@@ -83,7 +76,7 @@ The code supports GPS and InSAR data (class defined in `networkopti.py`).
 
 The code can compute the full covariance matrix of the data vector following [Sudhaus and Jonsson, 2009] method (defined in `networkopti.py`).
 
-The code saves all plaussible posterior models in the output directory and provide several plots of the results (defined in `plot2d.pyi`). 
+The code saves all plaussible posterior models in the output directory and provide several plots of the results (defined in `plot2d.py`). 
 
   * src/profiles: python tool package to plot profiles across InSAR and GPS data. The code is made of these main classes:
 
