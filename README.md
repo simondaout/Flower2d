@@ -18,23 +18,23 @@ This project needs the following external components:
 
 - maindecol (decollement as main/first structure):
 
-    - - - - - surface  - - - - - - - - - - - - - - - -
-   |  
- H |       1   <--
-   |  +------------------------
-     (x,y)      --> 
+#    - - - - - surface  - - - - - - - - - - - - - - - -
+#   |  
+# H |       1   <--
+#   |  +------------------------
+#     (x,y)      --> 
 
 -  mainflower (flower as main/first structure):
 
-  - - - - - surface- - - - - - - - - - - - - - - -
-H |
-  +         + 
-   \ºalpha / ºbeta
-    \ 2   / 3
-     \   /
-      \ /           1   <--
-       +------------------------
-	  (x,y)             -->        
+#   - - - - - surface- - - - - - - - - - - - - - - -
+# H |
+#   +         + 
+#    \ºalpha / ºbeta
+#     \ 2   / 3
+#      \   /
+#       \ /           1   <--
+#        +------------------------
+#  	  (x,y)             -->        
                                        
 with:
 1: the décollement
@@ -44,23 +44,23 @@ with:
 
 - ramp (secondary structure):
 
-  - - - - - surface- - - - - - - - - - - - - - - -
-H |
-  +   
-   \ºalpha  
-    \ 1    
-     \   
-      \  
-	   +	
+#  - - - - - surface- - - - - - - - - - - - - - - -
+#H |
+#  +   
+#   \ºalpha  
+#    \ 1    
+#     \   
+#      \  
+#	   +	
 
 -  flower structure (secodary structure):
 
- -+ - - - - +- - - - surface- - - - - - - - - - - -
-   \ºalpha / ºbeta
-    \ 1   / 2
-     \   /
-      \ /           
-       +
+# -+ - - - - +- - - - surface- - - - - - - - - - - -
+#   \ºalpha / ºbeta
+#    \ 1   / 2
+#     \   /
+#      \ /           
+#       +
 
 Each segment is defined by a name, a strike-slip and dip-slip values, a dip angle, and a depth. The main segment (usually the decollement) needs to be position by its East, North coordinates, while the secondary segments are positioned by their horizontal distances to the main segment (parameter D). 
 
