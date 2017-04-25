@@ -19,6 +19,7 @@ This project needs the following external components:
     - `maindecol()` (decollement as main/first structure):
 
 ```
+
 #    - - - - - surface  - - - - - - - - - - - - - - - -
 #   |  
 # H |       1   <--
@@ -29,6 +30,7 @@ This project needs the following external components:
     -  `mainflower()` (flower as main/first structure):
 
 ```
+
 #   - - - - - surface- - - - - - - - - - - - - - - -
 # H |
 #   +         + 
@@ -49,6 +51,7 @@ This project needs the following external components:
     - `ramp()` (secondary structure):
 
 ```
+
 #  - - - - - surface- - - - - - - - - - - - - - - -
 #H |
 #  +   
@@ -61,6 +64,7 @@ This project needs the following external components:
     -  `flower()` (secodary structure):
 
 ```
+
 # -+ - - - - +- - - - surface- - - - - - - - - - - -
 #   \ºalpha / ºbeta
 #    \ 1   / 2
@@ -91,7 +95,7 @@ The code saves all plaussible posterior models in the output directory and provi
   * example/socal: inversion example with a more complex fault geometries with several imbricated structures
   * example/atf: profile examples
 
-Note: all data need to be projected in local UTM coordinates. Read readme.txt files in each directories for insar data, gps data or gmt files projection examples.
+:memo: Note: all data need to be projected in local UTM coordinates. Read readme.txt files in each directories for insar data, gps data or gmt files projection examples.
  
  References
 ============
