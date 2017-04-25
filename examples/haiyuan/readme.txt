@@ -1,1 +1,0 @@
-For more information please referred to Along-strike variations of the partitioning of convergence across the Haiyuan fault system detected by InSAR, S. Daout; R. Jolivet; C. Lasserre; M.-P. Doin; S. Barbot; P. Tapponnier; G. Peltzer; A. Socquet; J. Sun; GJI 2016 205 (1): 536-547 doi: 10.1093/gji/ggw028
