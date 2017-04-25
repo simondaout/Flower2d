@@ -26,9 +26,10 @@ This project needs the following external components:
    |  +------------------------
      (x,y)      --> 
 
+
 ```
 
-    -  `mainflower()` (flower as main/first structure):
+    - `mainflower()` (flower as main/first structure):
 
 ```
 
@@ -41,13 +42,13 @@ This project needs the following external components:
        \ /           1   <--
         +------------------------
   	  (x,y)             -->        
-```
                                        
       with:
       1: the décollement
       2: the ramp
       3: the back-thrust
 
+```
 
     - `ramp()` (secondary structure):
 
