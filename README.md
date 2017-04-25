@@ -18,11 +18,11 @@ This project needs the following external components:
 
 - maindecol (decollement as main/first structure):
 
-%    - - - - - surface  - - - - - - - - - - - - - - - -
-%   |  
-% H |       1   <--
-%   |  +------------------------
-%     (x,y)      --> 
+$    - - - - - surface  - - - - - - - - - - - - - - - -
+$   |  
+$ H |       1   <--
+$   |  +------------------------
+$     (x,y)      --> 
 
 -  mainflower (flower as main/first structure):
 
