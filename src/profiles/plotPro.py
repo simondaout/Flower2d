@@ -52,13 +52,9 @@ Mfault=len(fmodel)
 fperp=np.zeros(Mfault)
 
 # Load data
-for i in xrange(len(plotdata)):
-    plot=plotdata[i]
+for i in xrange(len(topodata)):
+    plot=topodata[i]
     plot.load()
-    
-    # perp and par composante ref to the first fault 
-    #plot.yp=(plot.x-fmodel[0].x)*n[0]+(plot.y-fmodel[0].y)*n[1]
-    #plot.xp=(plot.x-fmodel[0].x)*s[0]+(plot.y-fmodel[0].y)*s[1]
 
 for i in xrange(len(insardata)):
     insar = insardata[i]
@@ -68,70 +64,76 @@ for i in xrange(len(insardata)):
 		insar.losm = np.mean(insar.los)
 		insar.ulos = insar.ulos * \
       (np.sin(np.deg2rad(insar.losm))/np.sin(np.deg2rad(insar.los)))
-    # perp and par composante ref to the first fault 
-    #insar.xp=(insar.x-fmodel[0].x)*s[0]+(insar.y-fmodel[0].y)*s[1]
-    #insar.yp=(insar.x-fmodel[0].x)*n[0]+(insar.y-fmodel[0].y)*n[1]
+
 
 # MAP
-fig=plt.figure(0,figsize = (9,7))
+fig=plt.figure(0,figsize = (9,8))
 ax = fig.add_subplot(1,1,1)
 ax.axis('equal')
 
 for i in xrange(len(insardata)):
-	insar=insardata[i]
-	samp = 60
-	xmin,xmax=-350,250
-	ymin,ymax=-450,150
-	ax.set_xlim(xmin,xmax)
-	ax.set_ylim(ymin,ymax)
+  insar=insardata[i]
+  samp = 60
+  if 'xmin' in locals(): 
+    xmin,xmax=xmin,xmax
+    ymin,ymax=ymin,ymax
+    ax.set_xlim(xmin,xmax)
+    ax.set_ylim(ymin,ymax)
+  # cannot be different for each tracks       
+  # vmax = np.mean((insar.ulos)) + np.percentile(abs(insar.ulos),95)
+  # vmin = np.mean((insar.ulos)) - np.percentile(abs(insar.ulos),95)
 
-	# cannot be different for each tracks       
-	# vmax = np.mean((insar.ulos)) + np.percentile(abs(insar.ulos),95)
-	# vmin = np.mean((insar.ulos)) - np.percentile(abs(insar.ulos),95)
+  norm = matplotlib.colors.Normalize(vmin = vmin, vmax = vmax)
+  m = cm.ScalarMappable(norm = norm, cmap = 'rainbow')
+  m.set_array(insar.ulos[::samp])
+  facelos = m.to_rgba(insar.ulos[::samp])
+  #facelos = m.to_rgba(insarulos)
+  ax.scatter(insar.x[::samp],insar.y[::samp],s = 2,marker = 'o',color = facelos,label = 'LOS Velocity %s'%(insar.reduction))
+  #ax.scatter(insar.xx,insar.yy,s = 2,marker = 'o',color = facelos,alpha=0.5,label = 'LOS Velocity %s'%(insar.reduction))
 
-	norm = matplotlib.colors.Normalize(vmin = vmin, vmax = vmax)
-	m = cm.ScalarMappable(norm = norm, cmap = 'rainbow')
-	m.set_array(insar.ulos[::samp])
-	facelos = m.to_rgba(insar.ulos[::samp])
-	#facelos = m.to_rgba(insarulos)
-	ax.scatter(insar.x[::samp],insar.y[::samp],s = 2,marker = 'o',color = facelos,label = 'LOS Velocity %s'%(insar.reduction))
-	#ax.scatter(insar.xx,insar.yy,s = 2,marker = 'o',color = facelos,alpha=0.5,label = 'LOS Velocity %s'%(insar.reduction))
+  # save flatten map
+  # np.savetxt('{}_flat'.format(insardata[i].network), np.vstack([insar.x,insar.y,insar.ulos]).T, fmt='%.6f')
 
-	# save flatten map
-	# np.savetxt('{}_flat'.format(insardata[i].network), np.vstack([insar.x,insar.y,insar.ulos]).T, fmt='%.6f')
+  # plot faults
+  for kk in xrange(Mfault):
+  	xf,yf = np.zeros((2)),np.zeros((2))
+  	strike=fmodel[kk].strike
+  	str=(strike*math.pi)/180
+  	s=[math.sin(str),math.cos(str),0]
+  	n=[math.cos(str),-math.sin(str),0]
+  	xf[0] = fmodel[kk].x+2*-150*s[0]
+  	xf[1] = fmodel[kk].x+2*150*s[0]
+  	yf[0] = fmodel[kk].y+2*-150*s[1]
+  	yf[1] = fmodel[kk].y+2*150*s[1]
+  	# plot fault
+  	ax.plot(xf[:],yf[:],'--',color = 'black',lw = 1.)
 
-	# plot faults
-	for kk in xrange(Mfault):
-		xf,yf = np.zeros((2)),np.zeros((2))
-		strike=fmodel[kk].strike
-		str=(strike*math.pi)/180
-		s=[math.sin(str),math.cos(str),0]
-		n=[math.cos(str),-math.sin(str),0]
-		xf[0] = fmodel[kk].x+2*-150*s[0]
-		xf[1] = fmodel[kk].x+2*150*s[0]
-		yf[0] = fmodel[kk].y+2*-150*s[1]
-		yf[1] = fmodel[kk].y+2*150*s[1]
-		# plot fault
-		ax.plot(xf[:],yf[:],'--',color = 'black',lw = 1.)
+  for ii in xrange(len(gmtfiles)):
+  	name = gmtfiles[ii].name
+  	wdir = gmtfiles[ii].wdir
+  	filename = gmtfiles[ii].filename
+  	color = gmtfiles[ii].color
+  	width = gmtfiles[ii].width
+  	fx,fy = gmtfiles[ii].load()
+  	for i in xrange(len(fx)):
+  	  ax.plot(fx[i],fy[i],color = color,lw = width)
 
-	for ii in xrange(len(gmtfiles)):
-		name = gmtfiles[ii].name
-		wdir = gmtfiles[ii].wdir
-		filename = gmtfiles[ii].filename
-		color = gmtfiles[ii].color
-		width = gmtfiles[ii].width
-		fx,fy = gmtfiles[ii].load()
-		for i in xrange(len(fx)):
-		  ax.plot(fx[i],fy[i],color = color,lw = width)
-
-# add colorbar los
+  # add colorbar los
 fig.colorbar(m,shrink = 0.5, aspect = 5)
 
 # fig pro topo
-fig1=plt.figure(1,figsize=(12,3))
+if len(profiles) > 2:
+  fig1=plt.figure(1,figsize=(7,8))
+else:
+  fig1=plt.figure(1,figsize=(12,4))
+fig1.subplots_adjust(hspace=0.0001)
 
 # fig pro insar
-fig2=plt.figure(4,figsize=(12,3))
+if len(profiles) > 2:
+  fig2=plt.figure(4,figsize=(7,8))
+else:
+  fig2=plt.figure(4,figsize=(12,4))
+fig2.subplots_adjust(hspace=0.0001)
     
 # Plot profile
 for k in xrange(len(profiles)): 
@@ -141,6 +143,8 @@ for k in xrange(len(profiles)):
   x0=profiles[k].x
   y0=profiles[k].y
   name=profiles[k].name
+  typ=profiles[k].typ
+
   # lim profile
   ypmax,ypmin=l/2,-l/2
   xpmax,xpmin=w/2,-w/2
@@ -155,8 +159,8 @@ for k in xrange(len(profiles)):
 
   ax1=fig1.add_subplot(len(profiles),1,k+1)
   ax1.set_xlim([-l/2,l/2])
-  for i in xrange(len(plotdata)):
-        plot=plotdata[i]
+  for i in xrange(len(topodata)):
+        plot=topodata[i]
 
         # perp and par composante ref to the profile 
         plot.ypp=(plot.x-profiles[k].x)*profiles[k].n[0]+(plot.y-profiles[k].y)*profiles[k].n[1]
@@ -247,7 +251,7 @@ for k in xrange(len(profiles)):
             uu = np.flatnonzero(inds == j)
             # at leat 500 insar points
             # print len(uu)
-            if len(uu)>500:
+            if len(uu)>150:
                 insar.distance.append(bins[j] + (bins[j+1] - bins[j])/2.)
 
                 indice = np.flatnonzero(np.logical_and(insar.uu[uu]>np.percentile(\
@@ -270,25 +274,34 @@ for k in xrange(len(profiles)):
         insar.uulos =  np.concatenate(np.array(insar.uulos))
 
         # PLOT
-        # colorscale fct of the parrallel distance to the profile
-        norm = matplotlib.colors.Normalize(vmin=xpmin, vmax=xpmax)
-        m1 = cm.ScalarMappable(norm=norm,cmap='cubehelix')
-        m1.set_array(insar.xperp)
-        facelos=m1.to_rgba(insar.xperp)
-        ax2.scatter(insar.yperp,insar.uulos,s = .1, marker='o',alpha=0.4,\
-        	 label=insardata[i].reduction,color=facelos, rasterized=True)
+        if typ is 'distscale':
+          # colorscale fct of the parrallel distance to the profile
+          norm = matplotlib.colors.Normalize(vmin=xpmin, vmax=xpmax)
+          m1 = cm.ScalarMappable(norm=norm,cmap='cubehelix')
+          m1.set_array(insar.xperp)
+          facelos=m1.to_rgba(insar.xperp)
+          ax2.scatter(insar.yperp,insar.uulos,s = .1, marker='o',alpha=0.4,\
+          	 label=insardata[i].reduction,color=facelos, rasterized=True)
+          fig2.colorbar(m1,shrink=0.5, aspect=5)
         
-        # ax2.scatter(insar.yperp,insar.uulos,s = .1, marker='o',alpha=0.4,\
-        #    label=insardata[i].reduction,color=colors[i])
-        # ax2.plot(insar.distance,insar.moy_los,color=colors[i],lw=1.,label=insardata[i].reduction)
-        # ax2.plot(insar.distance,insar.moy_los-insar.std_los,color=colors[i],lw=0.5)
-        # ax2.plot(insar.distance,insar.moy_los+insar.std_los,color=colors[i],lw=0.5)
+        elif typ is 'std':
+          # plot mean and standard deviation
+          # ax2.scatter(insar.yperp,insar.uulos,s = .1, marker='o',alpha=0.4,\
+          #    label=insardata[i].reduction,color=colors[i])
+          ax2.plot(insar.distance,insar.moy_los,color=insar.color,lw=1.,label=insardata[i].reduction)
+          ax2.plot(insar.distance,insar.moy_los-insar.std_los,color=insar.color,lw=0.5)
+          ax2.plot(insar.distance,insar.moy_los+insar.std_los,color=insar.color,lw=0.5)
+
+        else:
+          # plot scattering plot
+          ax2.scatter(insar.yperp,insar.uulos,s = .1, marker='o',alpha=0.4,\
+           label=insardata[i].reduction,color=colors[i],rasterized=True)
 
         cst+=1.
         
         # set born profile equal to map
-        ax2.set_ylim([-3.5,5.5])
-        # ax2.set_ylim([vmin,vmax])
+        if 'vmin' in locals():
+          ax2.set_ylim([vmin,vmax])
 
         # for j in xrange(Mfault):
           # ax2.plot([fperp[j],fperp[j]],[vmax,vmin],color='red')
@@ -296,12 +309,15 @@ for k in xrange(len(profiles)):
           # ax2.plot([fperp[j],fperp[j]],[6,-4],color='red')
   		  # ax2.legend(loc='best')
 
+  if k is not len(profiles)-1:
+    plt.setp(ax2.get_xticklabels(), visible=False)
+    plt.setp(ax1.get_xticklabels(), visible=False)
+
 ax1.set_xlabel('Distance (km)')
 ax1.set_ylabel('Elevation (km)')
 
 ax2.set_xlabel('Distance (km)')
 ax2.set_ylabel('LOS velocity (mm/yr)')
-fig2.colorbar(m1,shrink=0.5, aspect=5)
 
 fig1.savefig(outdir+profiles[0].name+'protopo.eps', format='EPS', dpi=150)
 fig2.savefig(outdir+profiles[0].name+'prolos.pdf', format='PDF',dpi=150)

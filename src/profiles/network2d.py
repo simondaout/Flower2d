@@ -4,7 +4,7 @@ import numpy as np
 import math
 
 class network:
-    def __init__(self,network,reduction,wdir,dim,color,weight=1.,scale=1.,theta=False,samp=1):
+    def __init__(self,network,reduction,wdir,dim,color='black',weight=1.,scale=1.,theta=False,samp=1):
         self.network=network
         self.reduction=reduction
         self.wdir=wdir

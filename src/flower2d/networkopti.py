@@ -4,7 +4,7 @@ import copy
 import scipy.optimize as sp
 import matplotlib.pyplot as plt
 
-from flatten import *
+# from flatten import *
 from modelopti import *
 import time
 
@@ -15,7 +15,7 @@ def expCov(t, sil, lam, sig):
     return sil - (sig**2)*np.exp(-t/lam)
 
 class network(object):
-    def __init__(self,network,reduction,wdir,dim,weight = 1.,scale = 1.,errorfile=None,los=None,heading=None):
+    def __init__(self,network,reduction,wdir,dim,weight=1.,scale=1.,errorfile=None,los=None,heading=None,color='black'):
         # network name
         self.network = network
         self.reduction = reduction
@@ -45,6 +45,7 @@ class network(object):
         # optional los file
         self.los=los
         self.heading=heading
+        self.color=color
 
     def load(self,flt):
         f = file(self.wdir+self.network,'r')

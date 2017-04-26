@@ -11,13 +11,14 @@ class fault2d:
         self.strike=strike
 
 class prof:
-    def __init__(self,name,x,y,l,w,strike):
+    def __init__(self,name,x,y,l,w,strike,type=None):
         self.name=name
         self.x=x
         self.y=y
         self.l=l
         self.w=w
         self.strike=strike
+        self.typ=type
 
 class topo:
     def __init__(self,name,wdir,filename,color,width):
