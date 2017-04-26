@@ -79,11 +79,11 @@ The code computes the surface displacements due to these edge dislocations or ha
 	- the deep-seated strike-slip rate (i.e far-field strike-slip motion imposed by the slip 
   on the decollement) is superior or equal to the sum of the strike-slip rates on all segments:
 					
-				      ---	
-				      \
-				      /
-	SS_farfielf  > 	  ---  SSi
-				 = 	 i=1:Mseg
+				   ---	
+				  \
+				  /
+ SS_farfield >	  ---  SSi
+             =	 i=1:Mseg
 		
 
 	- the dip slip rate on each structures is imposed by the geometry of the fault system:
