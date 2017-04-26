@@ -98,22 +98,26 @@ The code computes the surface displacements due to these edge dislocations or ha
 
 ```   
 
+Each prior distributions are defined in the input file by their sigma value and their distributions (refered to `modelopti.py`). Several prior distributions are available (default :'Unif' for Uniform distribution, 'Gaus': Gaussian distribution, 'Logn': Log Normal distribution).
+
+The code saves all plaussible posterior models in the output directory and provide several plots of the results (defined in `plot2d.py`). 
+
+
 The code supports GPS and InSAR data (class defined in `networkopti.py`).
 
 The code can compute the full covariance matrix of the data vector following [Sudhaus and Jonsson, 2009] method (defined in `networkopti.py`).
 
-The code saves all plaussible posterior models in the output directory and provide several plots of the results (defined in `plot2d.py`). 
 
   * src/profiles: python tool package to plot profiles across InSAR and GPS data. The code is made of these main classes:
 
-    - class network defined in `network2d.py`: reads InSAR or/and GPS data
-    - class prof defined in `model2d.py`: define position, azimuth and size of the profile to be plot. It also defined the type offigure you desire:
+    - class `network()` defined in `network2d.py`: reads InSAR or/and GPS data
+    - class `prof()` defined in `model2d.py`: define position, azimuth and size of the profile to be plot. It also defined the type offigure you desire:
 		- default: scatter plot 
 		- type = 'std': plot mean and standard deviation insar
 		- type = 'distscale': scatter plot with color scale fonction of the profile-parallel distance		
 
-    - class topo, seismi, moho defined in `model2d.py`: read data in x,y,z format for plots
-    - class gmtfiles defined in `readgmt.py`: read files in gmt format for plots
+    - class `topo()`, `seismi()`, `moho()` defined in `model2d.py`: read data in x,y,z format for plots
+    - class `gmtfiles()` defined in `readgmt.py`: read files in gmt format for plots
 
   * examples/haiyuam: inversion example  with a simple ramp-decollement structure or a flower structure geometry. All input parameters are difined in `tianzhuwestopti.py`.
   
