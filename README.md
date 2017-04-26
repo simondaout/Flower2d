@@ -76,7 +76,8 @@ Each segment is defined by a name, a strike-slip and dip-slip values, a dip angl
 The code computes the surface displacements due to these edge dislocations or half-infinite strike-slip dislocations from [Segall 1996] equations in `modelopti.py`. Note that the surface displacements due to an half-infite strike-slip source is independant of its dip angle. The code imposes the conservation of the strike-slip and dip-slip motion along the various segments of the fault system such as:
 
 ```
-	- the deep-seated strike-slip rate (i.e far-field strike-slip motion imposed by the slip on the decollement) is superior or equal to the sum of the strike-slip rates on all segments:
+	- the deep-seated strike-slip rate (i.e far-field strike-slip motion imposed by the slip 
+  on the decollement) is superior or equal to the sum of the strike-slip rates on all segments:
 					
 				      ---	
 				      \
