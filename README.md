@@ -74,12 +74,22 @@ H |
 Each segment is defined by a name, a strike-slip and dip-slip values, a dip angle, and a depth. The main segment (usually the decollement) needs to be position by its East and North coordinates, while the secondary segments are positioned by their horizontal distances to the main segment (parameter D). 
 
 The code computes the surface displacements due to these edge dislocations or half-infinite strike-slip dislocations from [Segall 1996] equations in `modelopti.py`. Note that the surface displacements due to an half-infite strike-slip source is independant of its dip angle. The code imposes the conservation of the strike-slip and dip-slip motion along the various segments of the fault system such as:
-	- the strike-slip rate on the main segment (the decollement) is equal to the sum of strike-slip rate on all segments
-	- the dip slip rate on each structures is imposed by the geometry of the fault system:
 
 ```
+	- the deep-seated strike-slip rate (i.e far-field strike-slip motion imposed by the slip on the decollement) is superior or equal to the sum of the strike-slip rates on all segments:
+					
+				      ---	
+				      \
+				      /
+	SS_farfielf  > 	  ---  SSi
+				 = 	 i=1:Mseg
+		
+
+	- the dip slip rate on each structures is imposed by the geometry of the fault system:
+
+
     V
-     2        sin(beta -  gamma + alpha)
+     2        sin(beta - gamma + alpha)
    --- =       ----------------------
     V             sin(beta - gamma)
      1
@@ -90,7 +100,6 @@ The code computes the surface displacements due to these edge dislocations or ha
    --- =       ----------------------
     V             sin(beta - gamma)
      1
-
 
 ```   
 

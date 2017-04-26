@@ -63,7 +63,7 @@ gpsdata=[
 
 # InSAR data (defined in networkopti.py)
 insardata=[
-        network(network='t170_cmyr_s100_km.xy-los',reduction='T170',wdir=maindir+'insar/',dim=1,weight=0.4,scale=10.)
+        # network(network='t170_cmyr_s100_km.xy-los',reduction='T170',wdir=maindir+'insar/',dim=1,weight=0.4,scale=10.)
         ]
 
 # optional volumic deformation (defined in modelopti.py)
