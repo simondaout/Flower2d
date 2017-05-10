@@ -4,7 +4,7 @@ import numpy as np
 import math
 
 class network:
-    def __init__(self,network,reduction,wdir,dim,color='black',weight=1.,scale=1.,theta=False,samp=1):
+    def __init__(self,network,reduction,wdir,dim,color='black',weight=1.,scale=1.,theta=False,samp=1,perc=95):
         self.network=network
         self.reduction=reduction
         self.wdir=wdir
@@ -24,6 +24,7 @@ class network:
         #self.sigmad=[]
         self.theta=theta
         self.samp=samp
+        self.perc=perc
 
         # Model
         self.mx,self.my=[],[]
@@ -32,9 +33,7 @@ class network:
 
     def loadgps(self):
         gpsf=file(self.wdir+self.network)
-        name,x,y=np.loadtxt(gpsf,comments='#',unpack=True,dtype='S4,f,f')
-        index=np.nonzero((x<xlim[0])|(x>xlim[1])|(y<ylim[0])|(y>ylim[1]))
-        self.name,self.x,self.y=np.delete(name,index),np.delete(x,index),np.delete(y,index)
+        self.name,self.x,self.y=np.loadtxt(gpsf,comments='#',unpack=True,dtype='S4,f,f')
         self.Npoint=len(self.name)
         self.ux,self.uy=np.zeros(self.Npoint),np.zeros(self.Npoint)
         self.sigmax,self.sigmay=np.zeros(self.Npoint),np.zeros(self.Npoint)
@@ -44,8 +43,6 @@ class network:
             dated,east,north,esigma,nsigma=np.loadtxt(station,comments='#',usecols=(0,1,2,3,4),unpack=True,dtype='f,f,f,f,f')
             self.ux[j],self.uy[j]=east*self.scale,north*self.scale
             self.sigmax[j],self.sigmay[j]=esigma*self.scale,nsigma*self.scale
-            #self.d[self.dim*j]=east
-            #self.d[self.dim*j+1]=north
 
     def loadinsar(self):
         insarf=file(self.wdir+self.network)

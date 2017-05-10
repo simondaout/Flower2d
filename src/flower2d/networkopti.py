@@ -15,7 +15,8 @@ def expCov(t, sil, lam, sig):
     return sil - (sig**2)*np.exp(-t/lam)
 
 class network(object):
-    def __init__(self,network,reduction,wdir,dim,weight=1.,scale=1.,errorfile=None,los=None,heading=None,color='black'):
+    def __init__(self,network,reduction,wdir,dim,weight=1.,scale=1.,errorfile=None,\
+        los=None,heading=None,color='black'):
         # network name
         self.network = network
         self.reduction = reduction
@@ -91,7 +92,7 @@ class network(object):
           self.y = self.y[uu]
           self.ulos = self.ulos[uu]
 
-          if self.los is True:
+          if self.los is not None:
             self.proj[0],self.proj[1],self.proj[2] = \
             self.proj[0][uu],self.proj[1][uu],self.proj[2][uu]
 

@@ -182,6 +182,7 @@ def plotLOS(flt,nfigure):
     
     # 3) InSAR data and model
     colors = ['blue','red','aqua','orange']
+    ymin,ymax = -1,1
     for i in xrange(len(insardata)):
         insar = insardata[i]
 
@@ -189,15 +190,17 @@ def plotLOS(flt,nfigure):
         binsarlos = insar.a+insar.b*insar.yp
         ilos = insar.ulos-binsarlos
 
-        ax3.scatter(insar.yp,insar.ulos-binsarlos,s = 3.,marker = 'o',label = insardata[i].reduction,color = 'blue')
+        ax3.scatter(insar.yp,insar.ulos-binsarlos,s = 3.,marker = 'o',label = insardata[i].reduction,color = insardata[i].color)
         # problem if several insar with differents weight...
         sigmalos *=  insar.sigmad[0]
 
         ymean = np.mean(ilos)
-        ymax = ymean + 3.5*np.std(ilos)
-        ymin = ymean - 3.5*np.std(ilos)
+        tempmax = ymean + 2.5*np.std(ilos)
+        tempmin = ymean - 2.5*np.std(ilos)
+        ymax = np.max([ymax,tempmax])
+        ymin = np.min([ymin,tempmin])
 
-        ax3.set_ylim([ymin,ymax])
+    ax3.set_ylim([ymin,ymax])
     
     ax3.plot(ysp,uslos,'-',color = 'red',label = 'model',lw = 2.)
     ax3.plot(ysp,uslos-sigmalos,'-',color = 'red',label = 'uncertainty',lw = .5)
@@ -206,7 +209,7 @@ def plotLOS(flt,nfigure):
     # 4) GPS data and model
     for i in xrange(len(gpsdata)):
         gps = gpsdata[i]
-        markers = ['+','x','d','v']
+        markers = ['+','d','x','v']
 
         bpar = gps.a
         #print bpar

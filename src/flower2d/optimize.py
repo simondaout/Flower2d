@@ -687,7 +687,7 @@ for i in xrange(len(manifolds)):
         ax.plot(manifolds[i].d[1::manifolds[i].dim]-manifolds[i].b,manifolds[i].dp[1::manifolds[i].dim]-manifolds[i].b,'x',color='green',label='GPS profile-parallel')
         ax.errorbar(manifolds[i].d[1::manifolds[i].dim]-manifolds[i].b,manifolds[i].dp[1::manifolds[i].dim]-manifolds[i].b,xerr=2*manifolds[i].sigmad[1::manifolds[i].dim],ecolor='green',barsabove='True',fmt=None)
     else:
-        ax.plot(manifolds[i].d-(manifolds[i].a+manifolds[i].b*manifolds[i].yp),manifolds[i].dp[::manifolds[i].dim]-(manifolds[i].a+manifolds[i].b*manifolds[i].yp),'.',color='red',label=manifolds[i].reduction)
+        ax.plot(manifolds[i].d-(manifolds[i].a+manifolds[i].b*manifolds[i].yp),manifolds[i].dp[::manifolds[i].dim]-(manifolds[i].a+manifolds[i].b*manifolds[i].yp),'.',color=manifolds[i].color,label=manifolds[i].reduction)
         #ax.errorbar(manifolds[i].d-(manifolds[i].a+manifolds[i].b*manifolds[i].yp),manifolds[i].dp[::manifolds[i].dim]-(manifolds[i].a+manifolds[i].b*manifolds[i].yp),xerr=manifolds[i].sigmad,ecolor='red',barsabove='True',fmt=None)
 
 plt.xlabel=('d')
