@@ -77,7 +77,7 @@ ax.axis('equal')
 
 for i in xrange(len(insardata)):
   insar=insardata[i]
-  samp = 60
+  samp = 1
 
   norm = matplotlib.colors.Normalize(vmin = losmin, vmax = losmax)
   m = cm.ScalarMappable(norm = norm, cmap = 'rainbow')
@@ -308,7 +308,7 @@ for k in xrange(len(profiles)):
             uu = np.flatnonzero(inds == j)
             # at leat 500 insar points
             # print len(uu)
-            if len(uu)>150:
+            if len(uu)>50:
                 insar.distance.append(bins[j] + (bins[j+1] - bins[j])/2.)
 
                 # indice = np.flatnonzero(np.logical_and(insar.uu[uu]>np.percentile(\
