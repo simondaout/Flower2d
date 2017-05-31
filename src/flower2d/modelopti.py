@@ -108,7 +108,9 @@ class maindecol:
         self.Mseg = 1
         self.segments[0].sst = self.segments[0].ss
         self.Mker = sum(map((lambda x: getattr(x,'Mker')),self.segments))
-        
+        self.segments[0].w = self.segments[0].H
+        self.segments[0].sigmaw = self.segments[0].sigmaH
+
     def conservation(self):
         self.segments[0].w = self.segments[0].H
         # print  self.segments[0].H, self.segments[0].w
@@ -127,9 +129,11 @@ class mainflower:
                 second(name = name3,ss = ss3,sigmass = sigmass3,D = D3,sigmaD = sigmaD3,H = H3,sigmaH = sigmaH3, distss=distss, distH=distH, distD=distD), # kink
                 second(name = name2,ss = ss2,sigmass = sigmass2,D = D2,sigmaD = sigmaD2,H = H2,sigmaH = sigmaH2, distss=distss, distH=distH, distD=distD), # ramp
                 ]
+
         self.Mseg = len(self.segments)
         self.segments[0].sst = self.segments[0].ss
         self.segments[0].w,self.segments[1].w,self.segments[2].w = self.segments[0].H, self.segments[0].H - self.segments[1].w, self.segments[0].H - self.segments[2].w
+        self.segments[0].sigmaw = self.segments[0].sigmaH
         self.segments[1].fperp,self.segments[2].fperp =  self.segments[1].D, self.segments[2].D  
         self.Mker = sum(map((lambda x: getattr(x,'Mker')),self.segments))
 
@@ -510,12 +514,13 @@ class topo:
         self.x,self.y,self.z = np.delete(x,index),np.delete(y,index),np.delete(z,index)*self.scale
 
 class seismi:
-    def __init__(self,name,wdir,filename,color,width):
+    def __init__(self,name,wdir,filename,color,width,scale=1):
         self.name = name
         self.wdir = wdir
         self.filename = filename
         self.color = color
         self.width = width
+        self.scale=scale
 
     def load(self,flt):
         fmodel = flt.fmodel
@@ -525,15 +530,16 @@ class seismi:
         xp = (x-fmodel[0].x)*profile.s[0]+(y-fmodel[0].y)*profile.s[1]
         yp = (x-fmodel[0].x)*profile.n[0]+(y-fmodel[0].y)*profile.n[1]
         index = np.nonzero((xp>profile.xpmax)|(xp<profile.xpmin)|(yp>profile.ypmax)|(yp<profile.ypmin))
-        self.x,self.y,self.z,self.mw = np.delete(x,index),np.delete(y,index),np.delete(z,index),np.delete(mw,index)
+        self.x,self.y,self.z,self.mw = np.delete(x,index),np.delete(y,index),np.delete(z,index)*self.scale,np.delete(mw,index)
 
 class moho:
-    def __init__(self,name,wdir,filename,color,width):
+    def __init__(self,name,wdir,filename,color,width,scale):
         self.name = name
         self.wdir = wdir
         self.filename = filename
         self.color = color
         self.width = width
+        self.scale=scale
         
     def load(self,flt):
         fmodel = flt.fmodel
@@ -543,4 +549,4 @@ class moho:
         xp = (x-fmodel[0].x)*profile.s[0]+(y-fmodel[0].y)*profile.s[1]
         yp = (x-fmodel[0].x)*profile.n[0]+(y-fmodel[0].y)*profile.n[1]
         index = np.nonzero((xp>profile.xpmax)|(xp<profile.xpmin)|(yp>profile.ypmax)|(yp<profile.ypmin))
-        self.x,self.y,self.z = np.delete(x,index),np.delete(y,index),np.delete(z,index)
+        self.x,self.y,self.z = np.delete(x,index),np.delete(y,index),np.delete(z,index)*self.scale
