@@ -4,7 +4,7 @@ import sys
 # from angles import normalize 
 
 class profile:
-    def __init__(self,name,x,y,l,w,proj):
+    def __init__(self,name,x,y,l,w,proj=None):
         # profile parameters
         self.name = name
         self.x = x
@@ -99,18 +99,17 @@ class segment:
 
 # one decollement as first structure 
 class maindecol:
-    def __init__(self,name,x,y,sstot,sigmasstot,short,sigmashort,w,sigmaw,dip,\
+    def __init__(self,name,x,y,ss,sigmass,short,sigmashort,w,sigmaw,dip,\
         distss='Unif',distshort='Unif',distH='Unif'):
        
         self.segments = [
-                main(name = name,x = x,y = y,ss = sstot,sigmass = sigmasstot,ds = short,sigmads = sigmashort, H = w,sigmaH = sigmaw,dip = dip,distss=distss,distshort=distshort,distH=distH),
+                main(name = name,x = x,y = y,ss = ss,sigmass = sigmass,ds = short,sigmads = sigmashort, H = w,sigmaH = sigmaw,dip = dip,distss=distss,distshort=distshort,distH=distH),
                 ]
         self.Mseg = 1
-        self.segments[0].sst = self.segments[0].ss
         self.Mker = sum(map((lambda x: getattr(x,'Mker')),self.segments))
-        self.segments[0].w = self.segments[0].H
-        self.segments[0].sigmaw = self.segments[0].sigmaH
-
+        self.segments[0].w = w
+        self.segments[0].sigmaw = sigmaw
+        
     def conservation(self):
         self.segments[0].w = self.segments[0].H
         # print  self.segments[0].H, self.segments[0].w
@@ -119,21 +118,19 @@ class maindecol:
 
 # flower structure as first structure
 class mainflower:
-    def __init__(self,name,x,y,sstot,sigmasstot,short,sigmashort,w,sigmaw,dip,\
+    def __init__(self,name,x,y,ss,sigmass,short,sigmashort,w,sigmaw,dip,\
         name2,H2,sigmaH2,ss2,sigmass2,D2,sigmaD2,\
         name3,H3,sigmaH3,ss3,sigmass3,D3,sigmaD3,\
         distss='Unif',distshort='Unif',distH='Unif',distD='Unif'):
        
         self.segments = [
-                main(name = name,x = x,y = y,ss = sstot,sigmass = sigmasstot,ds = short,sigmads = sigmashort,H = w,sigmaH = sigmaw,dip = dip, distss=distss, distshort=distshort, distH=distH),
+                main(name = name,x = x,y = y,ss = ss,sigmass = sigmass,ds = short,sigmads = sigmashort,H = w,sigmaH = sigmaw,dip = dip, distss=distss, distshort=distshort, distH=distH),
                 second(name = name3,ss = ss3,sigmass = sigmass3,D = D3,sigmaD = sigmaD3,H = H3,sigmaH = sigmaH3, distss=distss, distH=distH, distD=distD), # kink
                 second(name = name2,ss = ss2,sigmass = sigmass2,D = D2,sigmaD = sigmaD2,H = H2,sigmaH = sigmaH2, distss=distss, distH=distH, distD=distD), # ramp
                 ]
-
         self.Mseg = len(self.segments)
-        self.segments[0].sst = self.segments[0].ss
         self.segments[0].w,self.segments[1].w,self.segments[2].w = self.segments[0].H, self.segments[0].H - self.segments[1].w, self.segments[0].H - self.segments[2].w
-        self.segments[0].sigmaw = self.segments[0].sigmaH
+        self.segments[0].sigmaw = sigmaw
         self.segments[1].fperp,self.segments[2].fperp =  self.segments[1].D, self.segments[2].D  
         self.Mker = sum(map((lambda x: getattr(x,'Mker')),self.segments))
 
@@ -446,6 +443,8 @@ class main(segment):
             self.quadrant = 1
         else:
             self.quadrant = -1
+        # initializt sst
+        self.sst=0
     
     def info(self):
         print self.name
@@ -500,8 +499,8 @@ class topo:
         self.filename = filename
         self.color = color
         self.width = width
-        self.scale = scale
-        
+        self.scale=scale
+
     def load(self,flt):
         fmodel = flt.fmodel
         profile = flt.profiles
@@ -533,7 +532,7 @@ class seismi:
         self.x,self.y,self.z,self.mw = np.delete(x,index),np.delete(y,index),np.delete(z,index)*self.scale,np.delete(mw,index)
 
 class moho:
-    def __init__(self,name,wdir,filename,color,width,scale):
+    def __init__(self,name,wdir,filename,color,width,scale=1):
         self.name = name
         self.wdir = wdir
         self.filename = filename

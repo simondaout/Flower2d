@@ -81,7 +81,7 @@ class network(object):
             self.projm=[np.cos(thetam)*np.cos(phim),
             np.cos(thetam)*np.sin(phim),
             np.sin(thetam)]
-            print self.projm
+            flt.profiles.proj = self.projm
             # sys.exit()
           else:
             x,y,los=np.loadtxt(f,comments='#',unpack=True,dtype='f,f,f')
@@ -89,7 +89,11 @@ class network(object):
             yp=(x-self.fmodel[0].x)*self.profile.n[0]+(y-self.fmodel[0].y)*self.profile.n[1]
             index=np.nonzero((xp>self.profile.xpmax)|(xp<self.profile.xpmin)|(yp>self.profile.ypmax)|(yp<self.profile.ypmin))
             self.ulos,self.x,self.y,self.xp,self.yp=np.delete(los,index),np.delete(x,index),np.delete(y,index),np.delete(xp,index),np.delete(yp,index)
-            self.proj= self.profile.proj
+            if self.profile.proj is not None:
+                self.proj= self.profile.proj
+            else:
+                print 'No average projection look angle set in the profile class'
+                sys.exit(2)
 
           # optional scaling 
           self.ulos = self.ulos*self.scale
@@ -495,15 +499,12 @@ class network(object):
         # initialize g matrix
         g = np.zeros((self.N))
 
+        self.fmodel[0].ss = m[0]
         # Compute SS on the Shear zone 
         tot_ss = 0
         for l in range(1,self.Mseg):
-            #if abs(m[l*3+1] > 10): # check if not creeping seg
                 tot_ss += m[l*3]
-        # ss on the main structure must be suprior than the total on the others
-        if (abs(m[0]) - abs(tot_ss) < 0) or (np.sign(m[0] - tot_ss) != np.sign(m[0])) :
-            return np.ones((self.N,))*1e14
-        self.fmodel[0].ss = m[0] - tot_ss
+        self.fmodel[0].sst = m[0] + tot_ss
 
         # Get model parameters for the main fault
         self.fmodel[0].ds, self.fmodel[0].H = m[1:3]

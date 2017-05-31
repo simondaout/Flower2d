@@ -450,7 +450,7 @@ inv.labels = []
 if '{} Strike Slip'.format(inv.fmodel[0].name) in inv.Sampled:
     m = model.trace('{} Strike Slip'.format(inv.fmodel[0].name))[:]
     mf.append(np.mean(m))
-    inv.fmodel[0].sst = np.mean(m)
+    inv.fmodel[0].ss = np.mean(m)
     inv.fmodel[0].sigmass = 2*np.std(m) 
     inv.traces.append(m)
     inv.labels.append('{} Strike Slip'.format(inv.fmodel[0].name))
@@ -459,7 +459,7 @@ if '{} Strike Slip'.format(inv.fmodel[0].name) in inv.Sampled:
     np.savetxt(fid, m)
     fid.close()
 else:
-    inv.fmodel[0].sst = m_init[0]
+    inv.fmodel[0].ss = m_init[0]
    
 if '{} Shortening'.format(inv.fmodel[0].name) in inv.Sampled:
     m = model.trace('{} Shortening'.format(inv.fmodel[0].name))[:]
@@ -530,9 +530,8 @@ for j in xrange(1,inv.Mseg):
 #tot_ss = sum([inv.fmodel[j].ss for j in xrange(1,inv.Mseg)])
 tot_ss = 0
 for j in xrange(1,inv.Mseg):
-    #if abs(inv.fmodel[j].D) > 10:
         tot_ss += inv.fmodel[j].ss
-inv.fmodel[0].ss = inv.fmodel[0].sst - tot_ss 
+inv.fmodel[0].sst = inv.fmodel[0].ss + tot_ss 
 
 # save all plaussible models for plot0
 inv.fmodel[0].traceF = inv.fmodel[0].D*np.ones((inv.nsample))
