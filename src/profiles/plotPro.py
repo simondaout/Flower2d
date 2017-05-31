@@ -64,10 +64,10 @@ for i in xrange(len(insardata)):
     insar = insardata[i]
     insar.loadinsar()
     if insar.theta is True:
-		# sys.exit()
-		insar.losm = np.mean(insar.los)
-		insar.ulos = insar.ulos * \
-      (np.sin(np.deg2rad(insar.losm))/np.sin(np.deg2rad(insar.los)))
+		  sys.exit()
+		  insar.losm = np.mean(insar.los)
+		  insar.ulos = insar.ulos * \
+        (np.sin(np.deg2rad(insar.losm))/np.sin(np.deg2rad(insar.los)))
 
 
 # MAP
@@ -120,8 +120,6 @@ for ii in xrange(len(gmtfiles)):
 	  ax.plot(fx[i],fy[i],color = color,lw = width)
 
 if 'xmin' in locals(): 
-  xmin,xmax=xmin,xmax
-  ymin,ymax=ymin,ymax
   ax.set_xlim(xmin,xmax)
   ax.set_ylim(ymin,ymax)
 
@@ -354,8 +352,7 @@ for k in xrange(len(profiles)):
 
         else:
           # plot scattering plot
-          ax2.scatter(insar.yperp,insar.uulos,s = .1, marker='o',alpha=0.4,\
-           label=insardata[i].reduction,color=insar.color,rasterized=True)
+          ax2.scatter(insar.yperp,insar.uulos,s = .1, marker='o',alpha=0.4,color=insar.color,rasterized=True)
 
         cst+=1.
         
@@ -372,10 +369,11 @@ for k in xrange(len(profiles)):
     plt.setp(ax2.get_xticklabels(), visible=False)
     plt.setp(ax1.get_xticklabels(), visible=False)
 
-  if typ is 'distscale':
-    fig2.colorbar(m1,shrink=0.5, aspect=5)
-  else:
-    ax2.legend(loc='best')
+  if len(insardata) > 0:  
+    if typ is 'distscale':
+      fig2.colorbar(m1,shrink=0.5, aspect=5)
+    else:
+      ax2.legend(loc='best')
 
 ax1.set_xlabel('Distance (km)')
 ax1.set_ylabel('Elevation (km)')

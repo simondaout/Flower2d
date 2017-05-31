@@ -80,7 +80,7 @@ def plotLOS(flt,nfigure):
 
         tmin, tmax = np.min(np.append(min_topo,tmin)), np.max(np.append(max_topo,tmax))
     
-    plt.ylim([np.min(min_topo)-0.5,np.max(max_topo)+0.5])
+    plt.ylim([np.min(tmin)-0.5,np.max(tmax)+0.5])
     #plt.ylim([-1,6])
     #ax1.set_xlabel('Distance (km)')
     plt.setp( ax1.get_xticklabels(), visible = False)
@@ -128,7 +128,8 @@ def plotLOS(flt,nfigure):
         ax2.scatter(plot.yp,-plot.z,s = plot.width,marker = 'o',color = plot.color,label = plot.name)
     
     plt.setp( ax2.get_xticklabels(), visible = False)
-    ax2.set_ylim([-35,6])
+    wmax = fmodel[0].w+10
+    ax2.set_ylim([-wmax,6])
     ax2.set_ylabel('Elevation (km)')
     ax2.yaxis.set_major_locator(tic.MaxNLocator(5))
     ax2.legend(loc = 'best',fontsize='x-small')
@@ -153,6 +154,7 @@ def plotLOS(flt,nfigure):
     usy = u[:,0]*s[1]+u[:,1]*n[1]
     usz = u[:,2]
     uslos = usx*proj[0]+usy*proj[1]+usz*proj[2]
+    print proj[0],proj[1],proj[2]
     # default value if no insar
     sigmalos = np.ones(uslos.shape[0]) 
 
@@ -160,7 +162,7 @@ def plotLOS(flt,nfigure):
         ax2.plot([fmodel[j].fperp,fmodel[j].fperp],[5,-fmodel[j].w],'--',lw=1.,color = 'black')
 
     # 2) Plot 
-    markers = ['^','v','/^']
+    markers = ['+','d','x','v']
     colors = ['orange','m','yellow','red','blue']
     
     # los component
@@ -182,7 +184,7 @@ def plotLOS(flt,nfigure):
     
     # 3) InSAR data and model
     colors = ['blue','red','aqua','orange']
-    ymin,ymax = -1,1
+    ymin,ymax = ax3.get_ylim()
     for i in xrange(len(insardata)):
         insar = insardata[i]
 
@@ -209,7 +211,7 @@ def plotLOS(flt,nfigure):
     # 4) GPS data and model
     for i in xrange(len(gpsdata)):
         gps = gpsdata[i]
-        markers = ['+','d','x','v']
+        markers = ['^','v','+','x']
 
         bpar = gps.a
         #print bpar
@@ -228,7 +230,7 @@ def plotLOS(flt,nfigure):
         ax4.errorbar(gps.yp,gps.uperp-bperp,yerr = gps.sigmaperp,ecolor = 'green',fmt = None)
         #ymax,ymin = np.max(np.hstack([gps.upar-bpar+gps.sigmapar,gps.uperp-bperp+gps.sigmaperp]))+5,np.min(np.hstack([gps.upar-bpar-gps.sigmapar,gps.uperp-bperp-gps.sigmaperp]))-5
         ymax,ymin = np.max(np.hstack([gps.upar-bpar,gps.uperp-bperp]))+4,np.min(np.hstack([gps.upar-bpar,gps.uperp-bperp]))-4
-        ax4.set_ylim([ymin,ymax])
+        # ax4.set_ylim([ymin,ymax])
         
         if 3 == gps.dim:
             #gps.sigmav = (gps.sigmav/wd)*2
@@ -236,13 +238,13 @@ def plotLOS(flt,nfigure):
             by = bpar*s[1]+bperp*n[1]
             blos = bx*proj[0]+by*proj[1]+bv*proj[2]
             # add gps in los if dim is 3
-            ax3.plot(gps.yp,gps.ulos-blos,'+',color='black',mew=5.,label='%s GPS LOS'%gpsdata[i].reduction)
+            ax3.plot(gps.yp,gps.ulos-blos,'+',color='black',mew=1.,label='%s GPS LOS'%gpsdata[i].reduction)
             ax4.plot(gps.yp,gps.uv-bv,markers[i],color = 'red',mew = 1.,label = '%s vertical velocities'%gpsdata[i].reduction)
             ax4.errorbar(gps.yp,gps.uv-bv,yerr = gps.sigmav,ecolor = 'red',fmt = None)
             
             #ymax,ymin = np.max(np.hstack([gps.upar-bpar+gps.sigmapar,gps.uperp-bperp+gps.sigmaperp,gps.uv-bv+gps.sigmav]))+5,np.min(np.hstack([gps.upar-bpar-gps.sigmapar,gps.uperp-bperp-gps.sigmaperp,gps.uv-bv-gps.sigmav]))-5
             ymax,ymin = np.max(np.hstack([gps.upar-bpar,gps.uperp-bperp,gps.uv-bv]))+2,np.min(np.hstack([gps.upar-bpar,gps.uperp-bperp,gps.uv-bv]))-2
-            ax4.set_ylim([ymin,ymax])
+            # ax4.set_ylim([ymin,ymax])
 
     # Plot fault and legend    
     ax3.legend(bbox_to_anchor = (0.,1.02,1.,0.102),loc = 3,ncol = 2,mode = 'expand',borderaxespad = 0.,fontsize = 'x-small')
@@ -278,8 +280,6 @@ def plotMap(flt,x1,y1,nfigure):
     markers = ['^','v','/^']
     colors = ['orange','m','yellow','red','blue']
     xmin,xmax = profiles.x-100,profiles.x+100
-    #ymin,ymax = profiles.y-100,profiles.y+100
-    #ax1.set_xlim(xmin,xmax)
     # bundary profile
     xp,yp = np.zeros((7)),np.zeros((7))
     x0 = profiles.x
@@ -359,7 +359,7 @@ def plotMap(flt,x1,y1,nfigure):
         # InSAR model 
         facelos = m.to_rgba(los)
         facemodel = m.to_rgba(model)
-        faceres = m.to_rgba(los-model)
+        faceres = m.to_rgba(los-model) 
 
         ax1.scatter(insarx,insary,s = 30,marker = 'o',color = facelos,label = 'LOS Velocity %s'%(insar.reduction))
         ax2.scatter(insarx,insary,s = 30,marker = 'o',color = facemodel,label = 'LOS Velocity %s'%(insar.reduction))
@@ -457,7 +457,7 @@ def plotMap(flt,x1,y1,nfigure):
                 #ax1.text(gpsx[kk]-4*kk,gpsy[kk]-10,gpsname[kk],color = 'black')
         ax1.quiverkey(data,0.1,1.015,20.,'GPS velocities',coordinates = 'axes',color = 'black')
         ax2.quiverkey(model,0.1,1.015,20.,'Model',coordinates = 'axes',color = 'red')
-        ax3.quiverkey(model,1.3,1.015,20,'Residus',coordinates = 'axes',color = 'red')
+        ax3.quiverkey(model,1.3,1.015,20,'Residuals',coordinates = 'axes',color = 'red')
 
     ####DATA
     # plot gtm files

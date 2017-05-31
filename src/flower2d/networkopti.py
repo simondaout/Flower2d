@@ -17,6 +17,7 @@ def expCov(t, sil, lam, sig):
 class network(object):
     def __init__(self,network,reduction,wdir,dim,weight=1.,scale=1.,errorfile=None,\
         los=None,heading=None,color='black'):
+        
         # network name
         self.network = network
         self.reduction = reduction
@@ -71,10 +72,17 @@ class network(object):
             self.ulos,self.x,self.y,self.xp,self.yp,self.theta=np.delete(los,index),np.delete(x,index),np.delete(y,index),np.delete(xp,index),np.delete(yp,index),np.delete(theta,index)
             self.phi = np.deg2rad(-90-self.heading)
             self.theta = np.deg2rad(90.-self.theta)
+            phim,thetam=np.mean(self.phi),np.mean(self.theta)
+            print np.rad2deg(phim),np.rad2deg(thetam)
             self.proj=[np.cos(self.theta)*np.cos(self.phi),
             np.cos(self.theta)*np.sin(self.phi),
             np.sin(self.theta)
             ]
+            self.projm=[np.cos(thetam)*np.cos(phim),
+            np.cos(thetam)*np.sin(phim),
+            np.sin(thetam)]
+            print self.projm
+            # sys.exit()
           else:
             x,y,los=np.loadtxt(f,comments='#',unpack=True,dtype='f,f,f')
             xp=(x-self.fmodel[0].x)*self.profile.s[0]+(y-self.fmodel[0].y)*self.profile.s[1]

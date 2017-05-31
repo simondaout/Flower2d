@@ -490,12 +490,13 @@ class second(segment):
         np.savetxt(fid,np.vstack([self.sigmass,self.sigmads, self.sigmaD, self.sigmaD,self.sigmadip,self.sigmaL,self.sigmaH,self.sigmaH]).T,fmt = '%.6f',delimiter = '\t', newline = '\n')
 
 class topo:
-    def __init__(self,name,wdir,filename,color,width):
+    def __init__(self,name,wdir,filename,color,width,scale=1):
         self.name = name
         self.wdir = wdir
         self.filename = filename
         self.color = color
         self.width = width
+        self.scale
         
     def load(self,flt):
         fmodel = flt.fmodel
@@ -506,8 +507,7 @@ class topo:
         yp = (x-fmodel[0].x)*profile.n[0]+(y-fmodel[0].y)*profile.n[1]
         index = np.nonzero((xp>profile.xpmax)|(xp<profile.xpmin)|(yp>profile.ypmax)|(yp<profile.ypmin))
         
-        self.x,self.y,self.z = np.delete(x,index),np.delete(y,index),np.delete(z,index)
-        self.x,self.y,self.z = np.delete(x,index),np.delete(y,index),np.delete(z,index)
+        self.x,self.y,self.z = np.delete(x,index),np.delete(y,index),np.delete(z,index)*self.scale
 
 class seismi:
     def __init__(self,name,wdir,filename,color,width):
