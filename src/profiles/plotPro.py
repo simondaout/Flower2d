@@ -350,6 +350,16 @@ for k in xrange(len(profiles)):
           ax2.plot(insar.distance,insar.moy_los-insar.std_los,color=insar.color,lw=0.5)
           ax2.plot(insar.distance,insar.moy_los+insar.std_los,color=insar.color,lw=0.5)
 
+        elif typ is 'stdscat':
+          # plot mean and standard deviation
+          # ax2.scatter(insar.yperp,insar.uulos,s = .1, marker='o',alpha=0.4,\
+          #    label=insardata[i].reduction,color=colors[i])
+          ax2.plot(insar.distance,insar.moy_los,color=insar.color,lw=1.,label=insardata[i].reduction)
+          ax2.plot(insar.distance,insar.moy_los-insar.std_los,color=insar.color,lw=0.5)
+          ax2.plot(insar.distance,insar.moy_los+insar.std_los,color=insar.color,lw=0.5)
+          ax2.scatter(insar.yperp,insar.uulos,s = .1, marker='o',alpha=0.4,color=insar.color,rasterized=True)
+
+
         else:
           # plot scattering plot
           ax2.scatter(insar.yperp,insar.uulos,s = .1, marker='o',alpha=0.4,color=insar.color,rasterized=True)
