@@ -496,7 +496,7 @@ class topo:
         self.filename = filename
         self.color = color
         self.width = width
-        self.scale
+        self.scale = scale
         
     def load(self,flt):
         fmodel = flt.fmodel
