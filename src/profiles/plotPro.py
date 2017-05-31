@@ -199,7 +199,7 @@ for k in xrange(len(profiles)):
         std_topo = np.array(std_topo)
         moy_topo = np.array(moy_topo)
 
-        ax1.scatter(plotyp,-plotz,s=plot.width, marker='o',label=plot.name,color=plot.color)
+        ax1.scatter(plotypp,-plotz,s=plot.width, marker='o',label=plot.name,color=plot.color)
         ax1.plot(distance,-moy_topo,label=plot.name,color='black',lw=1)
         #ax1.plot(distance,-moy_topo-std_topo,color='black',lw=1)
         #ax1.plot(distance,-moy_topo+std_topo,color='black',lw=1)
