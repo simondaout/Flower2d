@@ -194,8 +194,8 @@ def buildm():
         m_init[inv.Mdis+j+1], sigmam[inv.Mdis+j+1], pdist[inv.Mdis+j+1] =inv.volum[j].D, inv.volum[j].sigmaD, inv.fmodel[j].distD
         m_name[inv.Mdis+j+1] = '{} D'.format(inv.volum[j].name)
     
-    #print m_init
-    #sys.exit()
+    # print m_init
+    # sys.exit()
 
     # !!! hardcoding for baseline uncertainties !!!
     M = 0 
@@ -390,11 +390,11 @@ print
 Parameters = pymc.Model( inv.Priors + [d] )
 # Create a sampler
 map_ = pymc.MAP(Parameters)
-map_.fit() # best-fit solution
-print 'Akaike information criterion for the model: ', map_.AIC
-print 'The Bayesian information criterion for the model: ', map_.BIC
-for variable in map_.variables:
-    print {str(variable): variable.value}
+# map_.fit() # best-fit solution
+# print 'Akaike information criterion for the model: ', map_.AIC
+# print 'The Bayesian information criterion for the model: ', map_.BIC
+# for variable in map_.variables:
+#     print {str(variable): variable.value}
 
 #map_.coef_
 model = pymc.MCMC(Parameters)
@@ -515,7 +515,7 @@ for j in xrange(1,inv.Mseg):
     if '{} H'.format(inv.fmodel[j].name) in inv.Sampled:
         m = model.trace('{} H'.format(inv.fmodel[j].name))[:]
         mf.append(np.mean(m))
-        inv.fmodel[j].w= np.mean(m)
+        inv.fmodel[j].H=np.mean(m)
         inv.fmodel[j].sigmaw,inv.fmodel[j].sigmaH = 2*np.std(m),2*np.std(m) 
         inv.fmodel[j].traceH = np.asarray(m)
         inv.traces.append(m)
@@ -532,8 +532,10 @@ tot_ss = 0
 for j in xrange(1,inv.Mseg):
         tot_ss += inv.fmodel[j].ss
 inv.fmodel[0].sst = inv.fmodel[0].ss + tot_ss 
+# print inv.fmodel[0].sst, tot_ss, inv.fmodel[0].ss
+# sys.exit()
 
-# save all plaussible models for plot0
+# save all plaussible models for plot
 inv.fmodel[0].traceF = inv.fmodel[0].D*np.ones((inv.nsample))
 if inv.structures[0].Mseg >1:
     inv.fmodel[1].tracew,inv.fmodel[2].tracew = inv.fmodel[0].tracew - inv.fmodel[1].traceH, inv.fmodel[0].tracew - inv.fmodel[2].traceH
@@ -624,6 +626,7 @@ for name, initial in zip(m_name, m_init):
     uu += 1
   elif name in inv.Fixed:
     m.append(initial)
+print m
 
 start = 0
 if fullcov is 'yes':

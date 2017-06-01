@@ -82,19 +82,20 @@ class segment:
         #######################################################
 
         # half-infinite dislocation
-        #upar =  (1./(2*math.pi)) * (np.arctan2(math.sin(dipr)*(yp+shift)+math.cos(dipr)*(self.w+z),math.sin(dipr)*(self.w+z)-math.cos(dipr)*(yp+shift)) + np.arctan2(math.sin(dipr)*(yp+shift)-math.cos(dipr)*(z-self.w),-math.cos(dipr)*(yp+shift)-math.sin(dipr)*(z-self.w))) 
+        upar =  (1./(2*math.pi)) * (np.arctan2(math.sin(dipr)*(yp+shift)+math.cos(dipr)*(self.w+z),math.sin(dipr)*(self.w+z)-math.cos(dipr)*(yp+shift)) + np.arctan2(math.sin(dipr)*(yp+shift)-math.cos(dipr)*(z-self.w),-math.cos(dipr)*(yp+shift)-math.sin(dipr)*(z-self.w))) 
         
         # if not creeping segment, half-infinite dislocation for strike-slip
         #if abs(self.D) > 10:
             #L = 660
             #print self.name,self.L,self.fperp
 
-        L = 660
-        upar =  (1./(2*math.pi)) * (np.arctan2(math.sin(dipr)*(yp+shift)+math.cos(dipr)*(self.w+z),math.sin(dipr)*(self.w+z)-math.cos(dipr)*(yp+shift)) + np.arctan2(math.sin(dipr)*(yp+shift)-math.cos(dipr)*(z-self.w),-math.cos(dipr)*(yp+shift)-math.sin(dipr)*(z-self.w))) - \
-            ( (1./(2*math.pi)) * (np.arctan2(math.sin(dipr)*(yp+shift+L*math.cos(dipr))+math.cos(dipr)*(self.w+z+L*math.sin(dipr)),math.sin(dipr)*(self.w+z+L*math.sin(dipr))-math.cos(dipr)*(yp+shift+L*math.cos(dipr))) +
-            np.arctan2(math.sin(dipr)*(yp+shift+L*math.cos(dipr))-math.cos(dipr)*(z-(self.w+L*math.sin(dipr))),-math.cos(dipr)*(yp+shift+L*math.cos(dipr))-math.sin(dipr)*(z-(self.w+L*math.sin(dipr))))) )
+        # Linf = 2200
+        # upar =  (1./(2*math.pi)) * (np.arctan2(math.sin(dipr)*(yp+shift)+math.cos(dipr)*(self.w+z),math.sin(dipr)*(self.w+z)-math.cos(dipr)*(yp+shift)) + np.arctan2(math.sin(dipr)*(yp+shift)-math.cos(dipr)*(z-self.w),-math.cos(dipr)*(yp+shift)-math.sin(dipr)*(z-self.w))) - \
+        #     ( (1./(2*math.pi)) * (np.arctan2(math.sin(dipr)*(yp+shift+Linf*math.cos(dipr))+math.cos(dipr)*(self.w+z+Linf*math.sin(dipr)),math.sin(dipr)*(self.w+z+Linf*math.sin(dipr))-math.cos(dipr)*(yp+shift+Linf*math.cos(dipr))) +
+        #     np.arctan2(math.sin(dipr)*(yp+shift+Linf*math.cos(dipr))-math.cos(dipr)*(z-(self.w+Linf*math.sin(dipr))),-math.cos(dipr)*(yp+shift+Linf*math.cos(dipr))-math.sin(dipr)*(z-(self.w+Linf*math.sin(dipr))))) )
 
         u[:,0],u[:,1],u[:,2] = self.ss*upar,self.ds*uperp,self.ds*uv
+
         return u
 
 # one decollement as first structure 
