@@ -16,7 +16,7 @@ def expCov(t, sil, lam, sig):
 
 class network(object):
     def __init__(self,network,reduction,wdir,dim,weight=1.,scale=1.,errorfile=None,\
-        los=None,heading=None,color='black'):
+        los=None,heading=None,color='black',mask=None):
         
         # network name
         self.network = network
@@ -48,6 +48,7 @@ class network(object):
         self.los=los
         self.heading=heading
         self.color=color
+        self.mask=mask
 
     def load(self,flt):
         f = file(self.wdir+self.network,'r')
@@ -81,6 +82,7 @@ class network(object):
             self.projm=[np.cos(thetam)*np.cos(phim),
             np.cos(thetam)*np.sin(phim),
             np.sin(thetam)]
+            print self.projm
             flt.profiles.proj = self.projm
             # sys.exit()
           else:
@@ -94,6 +96,14 @@ class network(object):
             else:
                 print 'No average projection look angle set in the profile class'
                 sys.exit(2)
+
+          if self.mask is not None:
+            uu = np.flatnonzero(np.logical_or(self.yp<=self.mask[0], self.yp>=self.mask[1]))
+            self.yp = self.yp[uu]
+            self.xp = self.xp[uu]
+            self.x = self.x[uu]
+            self.y = self.y[uu]
+            self.ulos = self.ulos[uu]
 
           # optional scaling 
           self.ulos = self.ulos*self.scale
