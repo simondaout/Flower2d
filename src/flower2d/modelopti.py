@@ -82,15 +82,17 @@ class segment:
         #######################################################
 
         # half-infinite dislocation
-        upar =  (1./(2*math.pi)) * (np.arctan2(math.sin(dipr)*(yp+shift)+math.cos(dipr)*(self.w+z),math.sin(dipr)*(self.w+z)-math.cos(dipr)*(yp+shift)) + np.arctan2(math.sin(dipr)*(yp+shift)-math.cos(dipr)*(z-self.w),-math.cos(dipr)*(yp+shift)-math.sin(dipr)*(z-self.w))) 
+        upar =  (1./(2*math.pi)) * (np.arctan2(math.sin(dipr)*(yp+shift)+math.cos(dipr)*(self.w+z),math.sin(dipr)*(self.w+z)-math.cos(dipr)*(yp+shift)) + \
+            np.arctan2(math.sin(dipr)*(yp+shift)-math.cos(dipr)*(z-self.w),-math.cos(dipr)*(yp+shift)-math.sin(dipr)*(z-self.w))) 
         
         # if not creeping segment, half-infinite dislocation for strike-slip
         #if abs(self.D) > 10:
             #L = 660
             #print self.name,self.L,self.fperp
 
-        # Linf = 2200
-        # upar =  (1./(2*math.pi)) * (np.arctan2(math.sin(dipr)*(yp+shift)+math.cos(dipr)*(self.w+z),math.sin(dipr)*(self.w+z)-math.cos(dipr)*(yp+shift)) + np.arctan2(math.sin(dipr)*(yp+shift)-math.cos(dipr)*(z-self.w),-math.cos(dipr)*(yp+shift)-math.sin(dipr)*(z-self.w))) - \
+        # Linf = 660
+        # upar = upar -  (1./(2*math.pi)) * (np.arctan2(math.sin(dipr)*(yp+shift)+math.cos(dipr)*(self.w+z),math.sin(dipr)*(self.w+z)-math.cos(dipr)*(yp+shift)) + \
+        #     np.arctan2(math.sin(dipr)*(yp+shift)-math.cos(dipr)*(z-self.w),-math.cos(dipr)*(yp+shift)-math.sin(dipr)*(z-self.w))) - \
         #     ( (1./(2*math.pi)) * (np.arctan2(math.sin(dipr)*(yp+shift+Linf*math.cos(dipr))+math.cos(dipr)*(self.w+z+Linf*math.sin(dipr)),math.sin(dipr)*(self.w+z+Linf*math.sin(dipr))-math.cos(dipr)*(yp+shift+Linf*math.cos(dipr))) +
         #     np.arctan2(math.sin(dipr)*(yp+shift+Linf*math.cos(dipr))-math.cos(dipr)*(z-(self.w+Linf*math.sin(dipr))),-math.cos(dipr)*(yp+shift+Linf*math.cos(dipr))-math.sin(dipr)*(z-(self.w+Linf*math.sin(dipr))))) )
 
@@ -367,28 +369,28 @@ class popup:
         #sys.exit()
 
 # creeping segment: problem bc half-infinite segment
-# class creeping:
-#     def __init__(self,name,ss,sigmass,H,sigmaH,D,sigmaD,\
-#         distss='Unif',distH='Unif',distD='Unif'):
+class creeping:
+    def __init__(self,name,ss,sigmass,H,sigmaH,D,sigmaD,\
+        distss='Unif',distH='Unif',distD='Unif'):
 
-#         self.segments = [
-#                     second(name = name,ss = ss,sigmass = sigmass,D = D,sigmaD = sigmaD,H = H,sigmaH = sigmaH, distss=distss,distH=distH, distD=distD)
-#                     ]
-#         self.Mseg = len(self.segments)
-#         self.segments[0].fperp = self.segments[0].D 
-#         self.Mker = sum(map((lambda x: getattr(x,'Mker')),self.segments))
+        self.segments = [
+                    second(name = name,ss = ss,sigmass = sigmass,D = D,sigmaD = sigmaD,H = H,sigmaH = sigmaH, distss=distss,distH=distH, distD=distD)
+                    ]
+        self.Mseg = len(self.segments)
+        self.segments[0].fperp = self.segments[0].D 
+        self.Mker = sum(map((lambda x: getattr(x,'Mker')),self.segments))
     
-#     def conservation(self,seg,decol):
-#         w0 = decol.w
+    def conservation(self,seg,decol):
+        w0 = decol.w
 
-#         self.segments[0].fperp = self.segments[0].D 
-#         self.segments[0].w = w0 - self.segments[0].H
-#         self.segments[0].L = self.segments[0].H
-#         self.segments[0].dipr = math.pi/2
-#         self.segments[0].dip = 90
-#         # fix the ds on the creeping seg to be zero  
-#         self.segments[0].ds = decol.ds/10e14
-#         self.segments[0].vh = decol.ds/10e14
+        self.segments[0].fperp = self.segments[0].D 
+        self.segments[0].w = w0 - self.segments[0].H
+        self.segments[0].L = self.segments[0].H
+        self.segments[0].dipr = math.pi/2
+        self.segments[0].dip = 90
+        # fix the ds on the creeping seg to be zero  
+        self.segments[0].ds = decol.ds/10e14
+        self.segments[0].vh = decol.ds/10e14
 
 class bookshelf:
     def __init__(self,name,ds,sigmads,D,sigmaD,distshort='Unif',distD='Unif'):
