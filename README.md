@@ -115,6 +115,7 @@ The code can compute the full covariance matrix of the data vector following [Su
 		- default: scatter plot 
 		- type = 'std': plot mean and standard deviation insar
 		- type = 'distscale': scatter plot with color scale fonction of the profile-parallel distance		
+		- type = 'stdscat': plot mean and standard deviation	
 
     - class `topo()`, `seismi()`, `moho()` defined in `model2d.py`: read data in x,y,z format for plots
     - class `gmtfiles()` defined in `readgmt.py`: read files in gmt format for plots

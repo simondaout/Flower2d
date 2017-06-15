@@ -340,8 +340,7 @@ if fullcov is 'yes':
                                                     every = 1.,
                                                     outdir = inv.outdir,
                                                     ramp=rampcov,
-                                                    maskcov=maskcov,
-                                                    param=param
+                                                    maskcov=maskcov
                                                     )
                 # weight insar data
                 Cd *= manifolds[i].wd**2

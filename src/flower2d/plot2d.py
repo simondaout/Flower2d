@@ -129,7 +129,7 @@ def plotLOS(flt,nfigure):
     
     plt.setp( ax2.get_xticklabels(), visible = False)
     wmax = fmodel[0].w+10
-    ax2.set_ylim([-wmax,6])
+    ax2.set_ylim([-wmax,15])
     ax2.set_ylabel('Elevation (km)')
     ax2.yaxis.set_major_locator(tic.MaxNLocator(5))
     ax2.legend(loc = 'best',fontsize='x-small')
@@ -333,8 +333,10 @@ def plotMap(flt,x1,y1,nfigure):
         vmax = np.mean((insar.ulos-orb)) + np.percentile(abs(insar.ulos-orb),98)
         vmin = np.mean((insar.ulos-orb)) - np.percentile(abs(insar.ulos-orb),98)
 
-        norm = matplotlib.colors.Normalize(vmin = vmin, vmax = vmax)
-        m = cm.ScalarMappable(norm = norm, cmap = cm.jet)
+        if i==0:
+            # cannot have different color scales
+            norm = matplotlib.colors.Normalize(vmin = vmin, vmax = vmax)
+            m = cm.ScalarMappable(norm = norm, cmap = cm.jet)
         
         index = np.nonzero((insar.xp>xpmax)|(insar.xp<xpmin)|(insar.yp>ypmax)|(insar.yp<ypmin))
         insarx,insary,los,model = np.delete(insar.x,index),np.delete(insar.y,index),np.delete(insar.ulos-orb,index),np.delete(insar.mlos,index)

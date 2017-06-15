@@ -16,7 +16,7 @@ def expCov(t, sil, lam, sig):
 
 class network(object):
     def __init__(self,network,reduction,wdir,dim,weight=1.,scale=1.,errorfile=None,\
-        los=None,heading=None,color='black',mask=None):
+        los=None,heading=None,color='black',mask=None,perc=100,cov=None):
         
         # network name
         self.network = network
@@ -49,6 +49,8 @@ class network(object):
         self.heading=heading
         self.color=color
         self.mask=mask
+        self.perc=perc
+        self.cov=cov
 
     def load(self,flt):
         f = file(self.wdir+self.network,'r')
@@ -105,6 +107,39 @@ class network(object):
             self.y = self.y[uu]
             self.ulos = self.ulos[uu]
 
+          # optional cleaning
+          bins = np.arange(self.profile.ypmin,self.profile.ypmax,2)
+          inds = np.digitize(self.yp,bins)
+          # print inds
+          distance = []
+          ypt = []
+          xpt = []
+          xt = []
+          yt = []
+          ulost = []
+
+          # print len(self.ulos)
+
+          for j in range(len(bins)-1):
+            uu = np.flatnonzero(inds == j)
+            if len(uu)>0:
+                distance.append(bins[j] + (bins[j+1] - bins[j])/2.)
+                indice = np.flatnonzero(np.logical_and(self.ulos[uu]>=np.percentile(\
+                  self.ulos[uu],100-self.perc),self.ulos[uu]<=np.percentile(self.ulos[uu],self.perc)))
+                ypt.append(self.yp[uu][indice])
+                xpt.append(self.xp[uu][indice])
+                yt.append(self.y[uu][indice])
+                xt.append(self.x[uu][indice])
+                ulost.append(self.ulos[uu][indice])
+
+          self.ulos = np.concatenate(np.array(ulost))
+          # print len(self.ulos)
+          # sys.exit()
+          self.yp = np.concatenate(np.array(ypt))
+          self.xp = np.concatenate(np.array(xpt))
+          self.x = np.concatenate(np.array(xt))
+          self.y = np.concatenate(np.array(yt))
+
           # optional scaling 
           self.ulos = self.ulos*self.scale
           # Remove points that are at the same location (to avoid the covariance matrix being non definite positive)
@@ -113,6 +148,7 @@ class network(object):
           self.x = self.x[uu]
           self.y = self.y[uu]
           self.ulos = self.ulos[uu]
+
 
           if self.los is not None:
             self.proj[0],self.proj[1],self.proj[2] = \
@@ -303,7 +339,7 @@ class network(object):
         print 'amplitude of displacement in the fault base: ', proj
     
 
-    def computeFullCovariance(self, distmax=70., every=1., ramp='lin',maskcov=None, xbounds=[None, None], plot=False, outdir=None, param=[None,None,None]):
+    def computeFullCovariance(self, distmax=70., every=1., ramp='lin',maskcov=None, xbounds=[None, None], plot=False, outdir=None):
         '''
         Computes the covariance matrix for the dataset:
         Args:
@@ -311,7 +347,10 @@ class network(object):
                           if False, returns a diagonal matrix with sigmad on the diagonal
         '''
 
-        sill,sigm,lamb = param[0], param[1], param[2]
+        if self.cov is None:
+            sill,sigm,lamb = None, None, None
+        else:
+            sill,sigm,lamb = self.cov[0], self.cov[1], self.cov[2]
         if sigm is None or lamb is None:
             # get data
             if xbounds[0] is None:
