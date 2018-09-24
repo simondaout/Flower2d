@@ -34,7 +34,7 @@ inv=inversion(name='SAF',
 
             # Main flower structure
             mainflower(
-                name='SAF',x=-177.9,y=134.9,sstot=-26.,sigmasstot=10,short=7.,sigmashort=3.,w=15.,sigmaw=10.,dip=0.,
+                name='SAF',x=-177.9,y=134.9,ss=-26.,sigmass=10,short=7.,sigmashort=3.,w=15.,sigmaw=10.,dip=0.,
                 name3='Kink',ss3=0.,sigmass3=0.,D3=0.,sigmaD3=20.,H3=10.,sigmaH3=10., 
                 name2='SG',ss2=0.,sigmass2=0.,D2=-20.,sigmaD2=20.,H2=10.,sigmaH2=10.,
                 # optional: define prior distribution for each parameters (default: 'Unif')
