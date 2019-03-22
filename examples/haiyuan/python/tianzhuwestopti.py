@@ -23,7 +23,7 @@ inv=inversion(name='Haiyuan Fault System',
               maindecol(
               # define one main fault and various optional secondary faults
               # ss: strike-slip, short: shortening, w: depth
-              name='JQH',x=-36.,y=10.2,sstot=10.,sigmasstot=10.,short=-5.,
+              name='JQH',x=-36.,y=10.2,ss=10.,sigmass=10.,short=-5.,
               sigmashort=5.,w=15.,sigmaw=15,dip=180.,
               # optional: define prior distribution for each parameters (default: 'Unif')
               distss='Unif',distshort='Unif',distH='Unif'
