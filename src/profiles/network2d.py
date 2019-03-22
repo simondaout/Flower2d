@@ -47,12 +47,13 @@ class network:
     def loadinsar(self):
         insarf=file(self.wdir+self.network)
         if self.theta is False:
-            self.x,self.y,self.ulos=np.loadtxt(insarf,comments='#',unpack=True,dtype='f,f,f')
-            self.x,self.y,self.ulos=self.x[::self.samp],self.y[::self.samp],self.ulos[::self.samp] 
+            self.x,self.y,ulos=np.loadtxt(insarf,comments='#',unpack=True,dtype='f,f,f')
+            self.x,self.y,ulos=self.x[::self.samp],self.y[::self.samp],ulos[::self.samp] 
         else:
-            self.x,self.y,self.ulos,self.los=np.loadtxt(insarf,comments='#',unpack=True,dtype='f,f,f,f')
-            self.x,self.y,self.ulos,self.los=self.x[::self.samp],self.y[::self.samp],self.ulos[::self.samp],self.los[::self.samp]
-        self.ulos=self.ulos*self.scale
+            self.x,self.y,ulos,self.los=np.loadtxt(insarf,comments='#',unpack=True,dtype='f,f,f,f')
+            self.x,self.y,ulos,self.los=self.x[::self.samp],self.y[::self.samp],ulos[::self.samp],self.los[::self.samp]
+        ulos[np.logical_or(ulos==0.0,ulos>9990.)] = np.float('NaN')
+        self.ulos=ulos*self.scale
         self.Npoint=len(self.ulos)
     
 

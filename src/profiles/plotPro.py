@@ -69,7 +69,6 @@ for i in xrange(len(insardata)):
 		  insar.ulos = insar.ulos * \
         (np.sin(np.deg2rad(insar.losm))/np.sin(np.deg2rad(insar.los)))
 
-
 # MAP
 fig=plt.figure(0,figsize = (9,8))
 ax = fig.add_subplot(1,1,1)
@@ -77,15 +76,13 @@ ax.axis('equal')
 
 for i in xrange(len(insardata)):
   insar=insardata[i]
-  samp = 1
+  samp = 10
 
-  norm = matplotlib.colors.Normalize(vmin = losmin, vmax = losmax)
+  norm = matplotlib.colors.Normalize(vmin=profiles[0].losmin, vmax=profiles[0].losmax)
   m = cm.ScalarMappable(norm = norm, cmap = 'rainbow')
   m.set_array(insar.ulos[::samp])
   facelos = m.to_rgba(insar.ulos[::samp])
-  #facelos = m.to_rgba(insarulos)
   ax.scatter(insar.x[::samp],insar.y[::samp],s = 2,marker = 'o',color = facelos,label = 'LOS Velocity %s'%(insar.reduction))
-  #ax.scatter(insar.xx,insar.yy,s = 2,marker = 'o',color = facelos,alpha=0.5,label = 'LOS Velocity %s'%(insar.reduction))
 
   # save flatten map
   # np.savetxt('{}_flat'.format(insardata[i].network), np.vstack([insar.x,insar.y,insar.ulos]).T, fmt='%.6f')
@@ -93,7 +90,6 @@ for i in xrange(len(insardata)):
 for i in xrange(len(gpsdata)):
   gps=gpsdata[i]
   ax.quiver(gps.x,gps.y,gps.ux,gps.uy,scale = 100,width = 0.005,color = 'red')
-
 
 # plot faults
 for kk in xrange(Mfault):
@@ -157,6 +153,8 @@ for k in xrange(len(profiles)):
   y0=profiles[k].y
   name=profiles[k].name
   typ=profiles[k].typ
+  losmin=profiles[k].losmin
+  losmax=profiles[k].losmax
 
   # lim profile
   ypmax,ypmin=l/2,-l/2
@@ -181,9 +179,8 @@ for k in xrange(len(profiles)):
 
         index=np.nonzero((plot.xpp>xpmax)|(plot.xpp<xpmin)|(plot.ypp>ypmax)|(plot.ypp<ypmin))
         plotxpp,plotypp,plotz=np.delete(plot.xpp,index),np.delete(plot.ypp,index),np.delete(plot.z,index)
-        topomax, topomin = np.max(-plotz), np.min(-plotz) 
         
-        bins = np.arange(-l/2,l/2,1)
+        bins = np.arange(-l/2,l/2,0.1)
         inds = np.digitize(plotypp,bins)
         distance = []
         moy_topo = []
@@ -193,13 +190,13 @@ for k in xrange(len(profiles)):
             if len(uu)>0:
                 distance.append(bins[j] + (bins[j+1] - bins[j])/2.)
                 std_topo.append(np.std(plotz[uu]))
-                moy_topo.append(np.mean(plotz[uu]))
+                moy_topo.append(np.median(plotz[uu]))
         
         distance = np.array(distance)
         std_topo = np.array(std_topo)
         moy_topo = np.array(moy_topo)
 
-        ax1.scatter(plotypp,-plotz,s=plot.width, marker='o',label=plot.name,color=plot.color)
+        #ax1.scatter(plotypp,-plotz,s=plot.width, marker='o',label=plot.name,color=plot.color)
         ax1.plot(distance,-moy_topo,label=plot.name,color='black',lw=1)
         #ax1.plot(distance,-moy_topo-std_topo,color='black',lw=1)
         #ax1.plot(distance,-moy_topo+std_topo,color='black',lw=1)
@@ -208,10 +205,11 @@ for k in xrange(len(profiles)):
             # ax1.plot([fperp[kk],fperp[kk]],[8,-8],color='red')
             # ax1.text(fperp[kk],0.5,fmodel[kk].name,color='red')
         
-        #plt.ylim([-30,5])
-        #plt.ylim([topomin,topomax])
-        # plt.ylim([0.5,6.5])
-        # plt.title('Profile %s'%(profiles[k].name))
+	#topomax, topomin = np.max(-plotz), np.min(-plotz) 
+        if (plot.topomin is not None) and (plot.topomax is not None) :
+            ax1.set_ylim([plot.topomin,plot.topomax])
+	else:
+	    sys.exit()
   
   # LOS profile/map
   ax2=fig2.add_subplot(len(profiles),1,k+1)
@@ -252,10 +250,10 @@ for k in xrange(len(profiles)):
 
       ax3.plot(gpsyp,gpsupar,markers[i],color = 'blue',mew = 1.,label =\
        '%s fault-parallel velocities'%gpsdata[i].reduction )
-      ax3.errorbar(gpsyp,gpsupar,yerr = gpssigmapar,ecolor = 'blue',barsabove = 'True',fmt = None)
+      ax3.errorbar(gpsyp,gpsupar,yerr = gpssigmapar,ecolor = 'blue',barsabove = 'True',fmt = "none")
       ax3.plot(gpsyp,gpsuperp,markers[i],color = 'green',mew = 1.,\
         label = '%s fault-perpendicular velocities'%gpsdata[i].reduction)
-      ax3.errorbar(gpsyp,gpsuperp,yerr = gpssigmaperp,ecolor = 'green',fmt = None)
+      ax3.errorbar(gpsyp,gpsuperp,yerr = gpssigmaperp,ecolor = 'green',fmt = "none")
 
       if 3 == gps.dim:
           gpsuv,gpssigmav = np.delete(gps.uv,index), np.delete(gps.sigmav,index)
@@ -264,7 +262,7 @@ for k in xrange(len(profiles)):
           ax2.plot(gpsyp,gpsulos,'+',color='black',mew=5.,label='%s GPS LOS'%gpsdata[i].reduction)
           
           ax3.plot(gpsyp,gpsuv,markers[i],color = 'red',mew = 1.,label = '%s vertical velocities'%gpsdata[i].reduction)
-          ax3.errorbar(gpsyp,gpsuv,yerr = gpssigmav,ecolor = 'red',fmt = None)          
+          ax3.errorbar(gpsyp,gpsuv,yerr = gpssigmav,ecolor = 'red',fmt = "none")          
 
       # set born profile equal to map
       if 'gpsmin' in locals():
@@ -282,20 +280,9 @@ for k in xrange(len(profiles)):
       index=np.nonzero((insar.xpp>xpmax)|(insar.xpp<xpmin)|(insar.ypp>ypmax)|(insar.ypp<ypmin))
       insar.uu,insar.xx,insar.yy,insar.xxpp,insar.yypp=np.delete(insar.ulos,index),np.delete(insar.x,index),\
       np.delete(insar.y,index),np.delete(insar.xpp,index),np.delete(insar.ypp,index)
-      if len(insar.uu) > 1000:
-        #binsarlos=np.mean(insarulos)
-
-        # clean data
-        # index = np.flatnonzero(np.logical_and(insar.uu>np.mean(insar.uu)+np.percentile(insar.uu,95),insar.uu<np.mean(insar.uu)-np.percentile(insar.uu,95)))
-        # print np.percentile(insar.uu,35), np.percentile(insar.uu,65)
-        # index = np.flatnonzero(np.logical_or(insar.uu<np.percentile(insar.uu,35),insar.uu>np.percentile(insar.uu,65)))
-        # insar.uu,insar.xx,insar.yy,insar.xxpp,insar.yypp=np.delete(insar.uu,index),np.delete(insar.xx,index),\
-        # np.delete(insar.yy,index),np.delete(insar.xxpp,index),np.delete(insar.yypp,index)
-        
-        # print insar.xxpp.max(),insar.xxpp.min()
-        # print xpmax, xpmin
-
-        bins = np.arange(-l/2,l/2,2)
+      
+      if len(insar.uu) > 100:
+        bins = np.arange(-l/2-1,l/2+1,1)
         inds = np.digitize(insar.yypp,bins)
         insar.distance = []
         insar.moy_los = []
@@ -306,31 +293,36 @@ for k in xrange(len(profiles)):
  
         for j in range(len(bins)-1):
             uu = np.flatnonzero(inds == j)
-            # at leat 500 insar points
-            # print len(uu)
-            if len(uu)>50:
+            # remove NaN
+            kk = np.flatnonzero(~np.isnan(insar.uu[uu]))
+            _los = np.copy(insar.uu[uu][kk])
+	    _xperp = np.copy(insar.xxpp[uu][kk])
+            _yperp = np.copy(insar.yypp[uu][kk])
+            # at least more points than the width/2 of profile
+            if len(kk)>w/2:
                 insar.distance.append(bins[j] + (bins[j+1] - bins[j])/2.)
 
-                # indice = np.flatnonzero(np.logical_and(insar.uu[uu]>np.percentile(\
-                # 	insar.uu[uu],5.),insar.uu[uu]<np.percentile(insar.uu[uu],95.)))
-                indice = np.flatnonzero(np.logical_and(insar.uu[uu]>np.percentile(\
-                  insar.uu[uu],100-insar.perc),insar.uu[uu]<np.percentile(insar.uu[uu],insar.perc)))
+                indice = np.flatnonzero(np.logical_and(_los>np.percentile(\
+                  _los,100-insar.perc),_los<np.percentile(_los,insar.perc)))
 
-                insar.std_los.append(np.std(insar.uu[uu][indice]))
-                insar.moy_los.append(np.mean(insar.uu[uu][indice]))
-                insar.xperp.append(insar.xxpp[uu][indice])
-                insar.yperp.append(insar.yypp[uu][indice])
-                insar.uulos.append(insar.uu[uu][indice])
+                insar.std_los.append(np.std(_los[indice]))
+                insar.moy_los.append(np.median(_los[indice]))
+                insar.xperp.append(_xperp[indice])
+                insar.yperp.append(_yperp[indice])
+                insar.uulos.append(_los[indice])
 
-                # insar.std_los.append(np.std(insar.uu[uu])) 
-                # insar.moy_los.append(np.mean(insar.uu[uu]))
-                # print len(uu), insar.moy_los[-1], insar.std_los[-1]
+	del _los; del _xperp; del _yperp
         insar.distance = np.array(insar.distance)
         insar.std_los = np.array(insar.std_los)
         insar.moy_los = np.array(insar.moy_los)
-       	insar.xperp = np.concatenate(np.array(insar.xperp))
-        insar.yperp = np.concatenate(np.array(insar.yperp))
-        insar.uulos =  np.concatenate(np.array(insar.uulos))
+       	try:
+          insar.xperp = np.concatenate(np.array(insar.xperp))
+          insar.yperp = np.concatenate(np.array(insar.yperp))
+          insar.uulos =  np.concatenate(np.array(insar.uulos))
+        except:
+          insar.xperp = np.array(insar.xperp)
+          insar.yperp = np.array(insar.yperp)
+          insar.uulos = np.array(insar.uulos)
 
         # PLOT
         if typ is 'distscale':
@@ -346,17 +338,17 @@ for k in xrange(len(profiles)):
           # plot mean and standard deviation
           # ax2.scatter(insar.yperp,insar.uulos,s = .1, marker='o',alpha=0.4,\
           #    label=insardata[i].reduction,color=colors[i])
-          ax2.plot(insar.distance,insar.moy_los,color=insar.color,lw=1.,label=insardata[i].reduction)
-          ax2.plot(insar.distance,insar.moy_los-insar.std_los,color=insar.color,lw=0.5)
-          ax2.plot(insar.distance,insar.moy_los+insar.std_los,color=insar.color,lw=0.5)
+          ax2.plot(insar.distance,insar.moy_los,color=insar.color,lw=3.,label=insardata[i].reduction)
+          ax2.plot(insar.distance,insar.moy_los-insar.std_los,color=insar.color,lw=.5)
+          ax2.plot(insar.distance,insar.moy_los+insar.std_los,color=insar.color,lw=.5)
 
         elif typ is 'stdscat':
           # plot mean and standard deviation
           # ax2.scatter(insar.yperp,insar.uulos,s = .1, marker='o',alpha=0.4,\
           #    label=insardata[i].reduction,color=colors[i])
-          ax2.plot(insar.distance,insar.moy_los,color='black',lw=1.,label=insardata[i].reduction)
-          ax2.plot(insar.distance,insar.moy_los-insar.std_los,color='black',lw=0.5)
-          ax2.plot(insar.distance,insar.moy_los+insar.std_los,color='black',lw=0.5)
+          ax2.plot(insar.distance,insar.moy_los,color='black',lw=3.,label=insardata[i].reduction)
+          ax2.plot(insar.distance,insar.moy_los-insar.std_los,color='black',lw=.5)
+          ax2.plot(insar.distance,insar.moy_los+insar.std_los,color='black',lw=.5)
           ax2.scatter(insar.yperp,insar.uulos,s = .1, marker='o',alpha=0.4,color=insar.color,rasterized=True)
 
 
@@ -393,8 +385,9 @@ ax2.set_ylabel('LOS velocity (mm/yr)')
 
 fig1.savefig(outdir+profiles[k].name+'protopo.eps', format='EPS', dpi=150)
 fig2.savefig(outdir+profiles[k].name+'prolos.pdf', format='PDF',dpi=150)
-fig.savefig(outdir+profiles[k].name+'promap.eps', format='EPS',)
 fig3.savefig(outdir+profiles[k].name+'progps.eps', format='EPS',)
+
+fig.savefig(outdir+profiles[k].name+'promap.eps', format='EPS',)
 
 plt.show()
 

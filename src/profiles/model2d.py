@@ -11,7 +11,7 @@ class fault2d:
         self.strike=strike
 
 class prof:
-    def __init__(self,name,x,y,l,w,strike,type=None):
+    def __init__(self,name,x,y,l,w,strike,losmin,losmax,type=None):
         self.name=name
         self.x=x
         self.y=y
@@ -19,15 +19,19 @@ class prof:
         self.w=w
         self.strike=strike
         self.typ=type
+	self.losmin=losmin
+	self.losmax=losmax
 
 class topo:
-    def __init__(self,name,wdir,filename,color,width,scale=1):
+    def __init__(self,name,wdir,filename,color,width,scale=1,topomin=None,topomax=None):
         self.name=name
         self.wdir=wdir
         self.filename=filename
         self.color=color
         self.width=width
         self.scale=scale
+        self.topomin=topomin
+        self.topomax=topomax
         
         self.yp=[]
         self.xp=[]
