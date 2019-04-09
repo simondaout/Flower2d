@@ -11,7 +11,7 @@ class fault2d:
         self.strike=strike
 
 class prof:
-    def __init__(self,name,x,y,l,w,strike,losmin,losmax,type=None):
+    def __init__(self,name,x,y,l,w,strike,losmin=None,losmax=None,type=None):
         self.name=name
         self.x=x
         self.y=y
