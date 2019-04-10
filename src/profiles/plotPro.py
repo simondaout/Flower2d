@@ -78,7 +78,7 @@ ax.axis('equal')
 for i in xrange(len(insardata)):
   
   insar=insardata[i]
-  samp = 10
+  samp = 1
 
   norm = matplotlib.colors.Normalize(vmin=insar.lmin, vmax=insar.lmax)
   m = cm.ScalarMappable(norm = norm, cmap = 'rainbow')
@@ -180,7 +180,7 @@ for k in xrange(len(profiles)):
         index=np.nonzero((plot.xpp>xpmax)|(plot.xpp<xpmin)|(plot.ypp>ypmax)|(plot.ypp<ypmin))
         plotxpp,plotypp,plotz=np.delete(plot.xpp,index),np.delete(plot.ypp,index),np.delete(plot.z,index)
         
-        bins = np.arange(-l/2,l/2,l/200.)
+        bins = np.arange(-l/2,l/2,l/500.)
         inds = np.digitize(plotypp,bins)
         distance = []
         moy_topo = []
