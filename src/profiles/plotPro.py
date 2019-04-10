@@ -66,7 +66,6 @@ for i in xrange(len(insardata)):
     insar = insardata[i]
     insar.loadinsar()
     if insar.theta is True:
-		  sys.exit()
 		  insar.losm = np.mean(insar.los)
 		  insar.ulos = insar.ulos * \
         (np.sin(np.deg2rad(insar.losm))/np.sin(np.deg2rad(insar.los)))
@@ -181,7 +180,7 @@ for k in xrange(len(profiles)):
         index=np.nonzero((plot.xpp>xpmax)|(plot.xpp<xpmin)|(plot.ypp>ypmax)|(plot.ypp<ypmin))
         plotxpp,plotypp,plotz=np.delete(plot.xpp,index),np.delete(plot.ypp,index),np.delete(plot.z,index)
         
-        bins = np.arange(-l/2,l/2,0.1)
+        bins = np.arange(-l/2,l/2,l/500.)
         inds = np.digitize(plotypp,bins)
         distance = []
         moy_topo = []
