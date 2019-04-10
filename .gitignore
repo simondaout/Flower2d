@@ -1,0 +1,5 @@
+bin
+build
+*.eps
+*.pyc
+__init__.py
