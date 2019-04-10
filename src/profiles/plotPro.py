@@ -304,7 +304,7 @@ for k in xrange(len(profiles)):
 	    _xperp = np.copy(insar.xxpp[uu][kk])
             _yperp = np.copy(insar.yypp[uu][kk])
             # at least more points than the width/10 of profile
-	    if len(kk)>w/10:
+	    if len(kk)>10:
                 insar.distance.append(bins[j] + (bins[j+1] - bins[j])/2.)
 
                 indice = np.flatnonzero(np.logical_and(_los>np.percentile(\
