@@ -180,7 +180,7 @@ for k in xrange(len(profiles)):
         index=np.nonzero((plot.xpp>xpmax)|(plot.xpp<xpmin)|(plot.ypp>ypmax)|(plot.ypp<ypmin))
         plotxpp,plotypp,plotz=np.delete(plot.xpp,index),np.delete(plot.ypp,index),np.delete(plot.z,index)
         
-        bins = np.arange(-l/2,l/2,l/500.)
+        bins = np.arange(-l/2,l/2,l/200.)
         inds = np.digitize(plotypp,bins)
         distance = []
         moy_topo = []
