@@ -78,7 +78,7 @@ ax.axis('equal')
 for i in xrange(len(insardata)):
   
   insar=insardata[i]
-  samp = 1
+  samp = insar.samp
 
   norm = matplotlib.colors.Normalize(vmin=insar.lmin, vmax=insar.lmax)
   m = cm.ScalarMappable(norm = norm, cmap = 'rainbow')
@@ -285,7 +285,7 @@ for k in xrange(len(profiles)):
       index=np.nonzero((insar.xpp>xpmax)|(insar.xpp<xpmin)|(insar.ypp>ypmax)|(insar.ypp<ypmin))
       insar.uu,insar.xx,insar.yy,insar.xxpp,insar.yypp=np.delete(insar.ulos,index),np.delete(insar.x,index),\
       np.delete(insar.y,index),np.delete(insar.xpp,index),np.delete(insar.ypp,index)
-      
+     
       if len(insar.uu) > 100:
         bins = np.arange(-l/2-1,l/2+1,1)
         inds = np.digitize(insar.yypp,bins)
@@ -304,7 +304,8 @@ for k in xrange(len(profiles)):
 	    _xperp = np.copy(insar.xxpp[uu][kk])
             _yperp = np.copy(insar.yypp[uu][kk])
             # at least more points than the width/2 of profile
-            if len(kk)>w/2:
+            print len(kk), w/2
+	    if len(kk)>w/10:
                 insar.distance.append(bins[j] + (bins[j+1] - bins[j])/2.)
 
                 indice = np.flatnonzero(np.logical_and(_los>np.percentile(\
