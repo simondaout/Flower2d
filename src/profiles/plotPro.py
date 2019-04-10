@@ -1,8 +1,8 @@
 #!/usr/bin/env python2.7 
 
+from __future__ import print_function
 import numpy as np
 from readgmt import *
-
 from matplotlib import pyplot as plt
 #from matplotlib import mpl
 import matplotlib
@@ -13,39 +13,55 @@ import getopt
 import os
 from os import path
 
+import logging
+
+def usage():
+  print('plotPro.py infile.py [-v] [-h]')
+  print('-v Verbose mode. Show more information about the processing')
+  print('-h Show this screen')
+
 #load input file 
 try:
     opts,args = getopt.getopt(sys.argv[1:], "h", ["help"])
 except getopt.GetoptError, err:
-    print str(err)
-    print "for help use --help"
+    print(str(err))
+    print("for help use --help")
     sys.exit()
 
-for o in opts:
+level = 'basic'
+for o in sys.argv:
     if o in ("-h","--help"):
        usage()
        sys.exit()
-    else:
-       assert False, "unhandled option"
-       sys.exit()
+    if o in ("-v","--verbose"):
+      level = 'debug'
+
+# init logger 
+if level == 'debug':
+    logging.basicConfig(level=logging.DEBUG,\
+        format='%(asctime)s -- %(levelname)s -- %(message)s')
+else:
+    logging.basicConfig(level=logging.INFO,\
+        format='%(asctime)s -- %(levelname)s -- %(message)s')
+logger = logging.getLogger('plotPro.log')
 
 if 1==len(sys.argv):
   usage()
   assert False, "no input file"
+  logger.critical('No input file')
+  sys.exit()
 
-if 2==len(sys.argv):
+if len(sys.argv)>1:
   fname=sys.argv[1]
-  print
-  print 'input file :', fname
+  logger.info('Read input file {0}'.format(fname))
   try:
-   sys.path.append(path.dirname(path.abspath(fname)))
-   exec ("from "+path.basename(fname)+" import *")
+    sys.path.append(path.dirname(path.abspath(fname)))
+    exec ("from "+path.basename(fname)+" import *")
   except:
-   execfile(path.abspath(fname))
-else:
-  assert False, "too many arguments"
+    execfile(path.abspath(fname))
 
 if not os.path.exists(outdir):
+    logger.info('Creating output directory {0}'.format(outdir))
     os.makedirs(outdir)
 
 # distance between fault and center of profile in fault azimuth 
@@ -56,68 +72,78 @@ fperp=np.zeros(Mfault)
 # Load data
 for i in xrange(len(topodata)):
     plot=topodata[i]
+    logger.info('Load data {0}'.format(plot.name))
     plot.load()
 
 for i in xrange(len(gpsdata)):
     gps = gpsdata[i]
+    logger.info('Load data {0}'.format(gps.network))
     gps.loadgps()
 
 for i in xrange(len(insardata)):
     insar = insardata[i]
+    logger.info('Load data {0}'.format(insar.network))
     insar.loadinsar()
     if insar.theta is True:
-		  insar.losm = np.mean(insar.los)
-		  insar.ulos = insar.ulos * \
-        (np.sin(np.deg2rad(insar.losm))/np.sin(np.deg2rad(insar.los)))
+      logger.debug('Read incidence angle...')
+      insar.losm = np.mean(insar.los)
+      # insar.ulos = insar.ulos * \
+      #   (np.sin(np.deg2rad(insar.losm))/np.sin(np.deg2rad(insar.los)))
 
 # MAP
 fig=plt.figure(0,figsize = (9,8))
 ax = fig.add_subplot(1,1,1)
 ax.axis('equal')
 
+logger.info('Plot Map ....') 
+
 for i in xrange(len(insardata)):
   
   insar=insardata[i]
   samp = insar.samp
 
+  logger.info('Plot data {0} between {1} and {2}'.format(insar.network, insar.lmin, insar.lmax))
+  logger.info('Subsample data every {0} km'.format(insar.samp))
   norm = matplotlib.colors.Normalize(vmin=insar.lmin, vmax=insar.lmax)
   m = cm.ScalarMappable(norm = norm, cmap = 'rainbow')
   m.set_array(insar.ulos[::samp])
   facelos = m.to_rgba(insar.ulos[::samp])
-  ax.scatter(insar.x[::samp],insar.y[::samp],s = 2,marker = 'o',color = facelos,label = 'LOS Velocity %s'%(insar.reduction))
+  ax.scatter(insar.x[::samp],insar.y[::samp], s=1, marker = 'o',color = facelos, label = 'LOS Velocity %s'%(insar.reduction))
 
   # save flatten map
   # np.savetxt('{}_flat'.format(insardata[i].network), np.vstack([insar.x,insar.y,insar.ulos]).T, fmt='%.6f')
 
 for i in xrange(len(gpsdata)):
   gps=gpsdata[i]
-  ax.quiver(gps.x,gps.y,gps.ux,gps.uy,scale = 100,width = 0.005,color = 'red')
+  logger.info('Plot GPS data {0}'.format(gps.network))
+  ax.quiver(gps.x,gps.y,gps.ux,gps.uy,scale = 100, width = 0.005, color = 'red')
 
 # plot faults
 for kk in xrange(Mfault):
-	xf,yf = np.zeros((2)),np.zeros((2))
-	strike=fmodel[kk].strike
-	str=(strike*math.pi)/180
-	s=[math.sin(str),math.cos(str),0]
-	n=[math.cos(str),-math.sin(str),0]
-	xf[0] = fmodel[kk].x+2*-150*s[0]
-	xf[1] = fmodel[kk].x+2*150*s[0]
-	yf[0] = fmodel[kk].y+2*-150*s[1]
-	yf[1] = fmodel[kk].y+2*150*s[1]
-	# plot fault
-	ax.plot(xf[:],yf[:],'--',color = 'black',lw = 1.)
+  xf,yf = np.zeros((2)),np.zeros((2))
+  strike=fmodel[kk].strike
+  str=(strike*math.pi)/180
+  s=[math.sin(str),math.cos(str),0]
+  n=[math.cos(str),-math.sin(str),0]
+  xf[0] = fmodel[kk].x+2*-150*s[0]
+  xf[1] = fmodel[kk].x+2*150*s[0]
+  yf[0] = fmodel[kk].y+2*-150*s[1]
+  yf[1] = fmodel[kk].y+2*150*s[1]
+  # plot fault
+  ax.plot(xf[:],yf[:],'--',color = 'black',lw = 1.)
 
 for ii in xrange(len(gmtfiles)):
-	name = gmtfiles[ii].name
-	wdir = gmtfiles[ii].wdir
-	filename = gmtfiles[ii].filename
-	color = gmtfiles[ii].color
-	width = gmtfiles[ii].width
-	fx,fy = gmtfiles[ii].load()
-	for i in xrange(len(fx)):
-	  ax.plot(fx[i],fy[i],color = color,lw = width)
+  name = gmtfiles[ii].name
+  wdir = gmtfiles[ii].wdir
+  filename = gmtfiles[ii].filename
+  color = gmtfiles[ii].color
+  width = gmtfiles[ii].width
+  fx,fy = gmtfiles[ii].load()
+  for i in xrange(len(fx)):
+    ax.plot(fx[i],fy[i],color = color,lw = width)
 
 if 'xmin' in locals(): 
+  logger.info('Found boundaries map plot {0}-{1} and {2}-{3} in locals'.format(xmin,xmax,ymin,ymax))
   ax.set_xlim(xmin,xmax)
   ax.set_ylim(ymin,ymax)
 
@@ -145,7 +171,9 @@ if len(profiles) > 2:
 else:
   fig3=plt.figure(5,figsize=(10,3))
 fig3.subplots_adjust(hspace=0.0001)
-    
+
+logger.info('Plot Profiles ....')
+
 # Plot profile
 for k in xrange(len(profiles)): 
 
@@ -153,8 +181,11 @@ for k in xrange(len(profiles)):
   w=profiles[k].w
   x0=profiles[k].x
   y0=profiles[k].y
+  strike = profiles[k].strike
   name=profiles[k].name
   typ=profiles[k].typ
+
+  logger.info('Plot profile {0}. length: {1}, width :{2}, strike: {3}'.format(name, l, w, strike)) 
 
   # lim profile
   ypmax,ypmin=l/2,-l/2
@@ -179,8 +210,11 @@ for k in xrange(len(profiles)):
 
         index=np.nonzero((plot.xpp>xpmax)|(plot.xpp<xpmin)|(plot.ypp>ypmax)|(plot.ypp<ypmin))
         plotxpp,plotypp,plotz=np.delete(plot.xpp,index),np.delete(plot.ypp,index),np.delete(plot.z,index)
-        
-        bins = np.arange(-l/2,l/2,l/500.)
+
+            
+        nb = np.float(l/(len(plotz)/20.))
+        logger.debug('Load {0}. Create bins every {1:.3f} km'.format(plot.name, nb)) 
+        bins = np.arange(-l/2,l/2, nb)
         inds = np.digitize(plotypp,bins)
         distance = []
         moy_topo = []
@@ -196,20 +230,19 @@ for k in xrange(len(profiles)):
         std_topo = np.array(std_topo)
         moy_topo = np.array(moy_topo)
 
-        #ax1.scatter(plotypp,-plotz,s=plot.width, marker='o',label=plot.name,color=plot.color)
         ax1.plot(distance,-moy_topo,label=plot.name,color='black',lw=1)
-        #ax1.plot(distance,-moy_topo-std_topo,color='black',lw=1)
-        #ax1.plot(distance,-moy_topo+std_topo,color='black',lw=1)
+        if plot.plotminmax == True:
+          logger.debug('plotminmax set to True')
+          ax1.plot(distance,-moy_topo-std_topo,color='black',lw=1)
+          ax1.plot(distance,-moy_topo+std_topo,color='black',lw=1)
         
         # for kk in xrange(Mfault):    
             # ax1.plot([fperp[kk],fperp[kk]],[8,-8],color='red')
             # ax1.text(fperp[kk],0.5,fmodel[kk].name,color='red')
         
-	#topomax, topomin = np.max(-plotz), np.min(-plotz) 
         if (plot.topomin is not None) and (plot.topomax is not None) :
+            logger.info('Set ylim to {} and {}'.format(plot.topomin,plot.topomax))
             ax1.set_ylim([plot.topomin,plot.topomax])
-	else:
-	    pass
   
   # LOS profile/map
   ax2=fig2.add_subplot(len(profiles),1,k+1)
@@ -234,6 +267,7 @@ for k in xrange(len(profiles)):
       gps=gpsdata[i]
       gpsmin = gps.lmin
       gpsmax = gps.lmax
+      logger.info('Load GPS {0}'.format(gps.network)) 
 
       # perp and par composante ref to the profile 
       gps.ypp=(gps.x-profiles[k].x)*profiles[k].n[0]+(gps.y-profiles[k].y)*profiles[k].n[1]
@@ -258,6 +292,8 @@ for k in xrange(len(profiles)):
         label = '%s fault-perpendicular velocities'%gpsdata[i].reduction)
       ax3.errorbar(gpsyp,gpsuperp,yerr = gpssigmaperp,ecolor = 'green',fmt = "none")
 
+      logger.debug('Number of GPS left within profile {0}'.format(len(gpsyp))) 
+
       if 3 == gps.dim:
           gpsuv,gpssigmav = np.delete(gps.uv,index), np.delete(gps.sigmav,index)
 
@@ -268,6 +304,7 @@ for k in xrange(len(profiles)):
           ax3.errorbar(gpsyp,gpsuv,yerr = gpssigmav,ecolor = 'red',fmt = "none")          
 
       # set born profile equal to map
+      logger.debug('Set ylim GPS profile to {0}-{1}'.format(gpsmin,gpsmax))
       ax3.set_ylim([gpsmin,gpsmax])
 
   colors = ['blue','red','orange','magenta']
@@ -277,6 +314,8 @@ for k in xrange(len(profiles)):
       losmin=insar.lmin
       losmax=insar.lmax
 
+      logger.info('Load InSAR {0}'.format(insar.network)) 
+
       # perp and par composante ref to the profile 
       insar.ypp=(insar.x-profiles[k].x)*profiles[k].n[0]+(insar.y-profiles[k].y)*profiles[k].n[1]
       insar.xpp=(insar.x-profiles[k].x)*profiles[k].s[0]+(insar.y-profiles[k].y)*profiles[k].s[1]
@@ -285,9 +324,15 @@ for k in xrange(len(profiles)):
       index=np.nonzero((insar.xpp>xpmax)|(insar.xpp<xpmin)|(insar.ypp>ypmax)|(insar.ypp<ypmin))
       insar.uu,insar.xx,insar.yy,insar.xxpp,insar.yypp=np.delete(insar.ulos,index),np.delete(insar.x,index),\
       np.delete(insar.y,index),np.delete(insar.xpp,index),np.delete(insar.ypp,index)
+
+      logger.debug('Number of InSAR point left within profile {0}'.format(len(insar.uu))) 
      
-      if len(insar.uu) > 100:
-        bins = np.arange(-l/2-1,l/2+1,1)
+      if len(insar.uu) > 50:
+
+        nb = np.float(l/(len(insar.uu)/20.))
+        logger.debug('Create bins every {0:.3f}'.format(nb)) 
+
+        bins = np.arange(-l/2-1,l/2+1,nb)
         inds = np.digitize(insar.yypp,bins)
         insar.distance = []
         insar.moy_los = []
@@ -301,10 +346,11 @@ for k in xrange(len(profiles)):
             # remove NaN
             kk = np.flatnonzero(~np.isnan(insar.uu[uu]))
             _los = np.copy(insar.uu[uu][kk])
-	    _xperp = np.copy(insar.xxpp[uu][kk])
+            _xperp = np.copy(insar.xxpp[uu][kk])
             _yperp = np.copy(insar.yypp[uu][kk])
-            # at least more points than the width/10 of profile
-	    if len(kk)>10:
+
+            
+            if len(kk)>10:
                 insar.distance.append(bins[j] + (bins[j+1] - bins[j])/2.)
 
                 indice = np.flatnonzero(np.logical_and(_los>np.percentile(\
@@ -315,15 +361,19 @@ for k in xrange(len(profiles)):
                 insar.xperp.append(_xperp[indice])
                 insar.yperp.append(_yperp[indice])
                 insar.uulos.append(_los[indice])
+            else:
+                logger.debug('{} points within the bin'.format(len(kk)))
+                logger.debug('Less than 10 points within the bin. Nothing to be plot')
 
-	del _los; del _xperp; del _yperp
+        del _los; del _xperp; del _yperp
         insar.distance = np.array(insar.distance)
         insar.std_los = np.array(insar.std_los)
         insar.moy_los = np.array(insar.moy_los)
-       	try:
+
+        try:
           insar.xperp = np.concatenate(np.array(insar.xperp))
           insar.yperp = np.concatenate(np.array(insar.yperp))
-          insar.uulos =  np.concatenate(np.array(insar.uulos))
+          insar.uulos = np.concatenate(np.array(insar.uulos))
         except:
           insar.xperp = np.array(insar.xperp)
           insar.yperp = np.array(insar.yperp)
@@ -331,15 +381,17 @@ for k in xrange(len(profiles)):
 
         # PLOT
         if typ is 'distscale':
+          logger.info('Plot InSAR with distscale option')
           # colorscale fct of the parrallel distance to the profile
           norm = matplotlib.colors.Normalize(vmin=xpmin, vmax=xpmax)
           m1 = cm.ScalarMappable(norm=norm,cmap='cubehelix_r')
           m1.set_array(insar.xperp)
           facelos=m1.to_rgba(insar.xperp)
           ax2.scatter(insar.yperp,insar.uulos,s = .1, marker='o',alpha=0.4,\
-          	 label=insardata[i].reduction,color=facelos, rasterized=True)
+             label=insardata[i].reduction,color=facelos, rasterized=True)
         
         elif typ is 'std':
+          logger.info('Plot InSAR with std option')
           # plot mean and standard deviation
           # ax2.scatter(insar.yperp,insar.uulos,s = .1, marker='o',alpha=0.4,\
           #    label=insardata[i].reduction,color=colors[i])
@@ -348,6 +400,7 @@ for k in xrange(len(profiles)):
           ax2.plot(insar.distance,insar.moy_los+insar.std_los,color=insar.color,lw=.5)
 
         elif typ is 'stdscat':
+          logger.info('Plot InSAR with stdscat option')
           # plot mean and standard deviation
           # ax2.scatter(insar.yperp,insar.uulos,s = .1, marker='o',alpha=0.4,\
           #    label=insardata[i].reduction,color=colors[i])
@@ -356,21 +409,25 @@ for k in xrange(len(profiles)):
           ax2.plot(insar.distance,insar.moy_los+insar.std_los,color='black',lw=.5)
           ax2.scatter(insar.yperp,insar.uulos,s = .1, marker='o',alpha=0.4,color=insar.color,rasterized=True)
 
-
         else:
           # plot scattering plot
+          logger.info('No type profile give. Plot InSAR scatter point')
           ax2.scatter(insar.yperp,insar.uulos,s = .1, marker='o',alpha=0.4,color=insar.color,rasterized=True)
 
         cst+=1.
-        
+      
         # set born profile equal to map
+        logger.debug('Set ylim InSAR profile to {0}-{1}'.format(losmin,losmax))
         ax2.set_ylim([losmin,losmax])
 
         # for j in xrange(Mfault):
-          # ax2.plot([fperp[j],fperp[j]],[losmax,losmin],color='red')
-          # ax2.plot([fperp[j],fperp[j]],[losmax+cst,losmin-cst],color='red')
-          # ax2.plot([fperp[j],fperp[j]],[6,-4],color='red')
+        # ax2.plot([fperp[j],fperp[j]],[losmax,losmin],color='red')
+        # ax2.plot([fperp[j],fperp[j]],[losmax+cst,losmin-cst],color='red')
+        # ax2.plot([fperp[j],fperp[j]],[6,-4],color='red')
 
+      else:
+          logger.critical('Number of InSAR points inferior to 50. Exit plot profile!') 
+          
   if k is not len(profiles)-1:
     plt.setp(ax2.get_xticklabels(), visible=False)
     plt.setp(ax1.get_xticklabels(), visible=False)
@@ -387,10 +444,16 @@ ax1.set_ylabel('Elevation (km)')
 ax2.set_xlabel('Distance (km)')
 ax2.set_ylabel('LOS velocity (mm/yr)')
 
+logger.debug('Save {0} output file'.format(outdir+profiles[k].name+'protopo.eps'))
 fig1.savefig(outdir+profiles[k].name+'protopo.eps', format='EPS', dpi=150)
+
+logger.debug('Save {0} output file'.format(outdir+profiles[k].name+'prolos.pdf'))
 fig2.savefig(outdir+profiles[k].name+'prolos.pdf', format='PDF',dpi=150)
+
+logger.debug('Save {0} output file'.format(outdir+profiles[k].name+'progps.eps'))
 fig3.savefig(outdir+profiles[k].name+'progps.eps', format='EPS',)
 
+logger.debug('Save {0} output file'.format(outdir+profiles[k].name+'promap.eps'))
 fig.savefig(outdir+profiles[k].name+'promap.eps', format='EPS',)
 
 plt.show()
