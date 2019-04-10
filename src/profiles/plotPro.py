@@ -78,14 +78,10 @@ ax.axis('equal')
 
 for i in xrange(len(insardata)):
   
-  if (profiles[0].losmin or profiles[0].losmax) is None:
-    profiles[0].losmax = np.nanpercentile(insar.ulos, 90)
-    profiles[0].losmin = np.nanpercentile(insar.ulos, 10)   
-
   insar=insardata[i]
   samp = 10
 
-  norm = matplotlib.colors.Normalize(vmin=profiles[0].losmin, vmax=profiles[0].losmax)
+  norm = matplotlib.colors.Normalize(vmin=insar.lmin, vmax=insar.lmax)
   m = cm.ScalarMappable(norm = norm, cmap = 'rainbow')
   m.set_array(insar.ulos[::samp])
   facelos = m.to_rgba(insar.ulos[::samp])
@@ -160,8 +156,6 @@ for k in xrange(len(profiles)):
   y0=profiles[k].y
   name=profiles[k].name
   typ=profiles[k].typ
-  losmin=profiles[k].losmin
-  losmax=profiles[k].losmax
 
   # lim profile
   ypmax,ypmin=l/2,-l/2
@@ -239,6 +233,9 @@ for k in xrange(len(profiles)):
   markers = ['+','d','x','v']
   for i in xrange(len(gpsdata)):
       gps=gpsdata[i]
+      gpsmin = gps.lmin
+      gpsmax = gps.lmax
+
       # perp and par composante ref to the profile 
       gps.ypp=(gps.x-profiles[k].x)*profiles[k].n[0]+(gps.y-profiles[k].y)*profiles[k].n[1]
       gps.xpp=(gps.x-profiles[k].x)*profiles[k].s[0]+(gps.y-profiles[k].y)*profiles[k].s[1]
@@ -272,13 +269,15 @@ for k in xrange(len(profiles)):
           ax3.errorbar(gpsyp,gpsuv,yerr = gpssigmav,ecolor = 'red',fmt = "none")          
 
       # set born profile equal to map
-      if 'gpsmin' in locals():
-          ax3.set_ylim([gpsmin,gpsmax])
+      ax3.set_ylim([gpsmin,gpsmax])
 
   colors = ['blue','red','orange','magenta']
   cst=0
   for i in xrange(len(insardata)):
       insar=insardata[i]
+      losmin=insar.lmin
+      losmax=insar.lmax
+
       # perp and par composante ref to the profile 
       insar.ypp=(insar.x-profiles[k].x)*profiles[k].n[0]+(insar.y-profiles[k].y)*profiles[k].n[1]
       insar.xpp=(insar.x-profiles[k].x)*profiles[k].s[0]+(insar.y-profiles[k].y)*profiles[k].s[1]
@@ -366,8 +365,7 @@ for k in xrange(len(profiles)):
         cst+=1.
         
         # set born profile equal to map
-        if 'losmin' in locals():
-          ax2.set_ylim([losmin,losmax])
+        ax2.set_ylim([losmin,losmax])
 
         # for j in xrange(Mfault):
           # ax2.plot([fperp[j],fperp[j]],[losmax,losmin],color='red')

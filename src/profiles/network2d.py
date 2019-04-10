@@ -4,7 +4,7 @@ import numpy as np
 import math
 
 class network:
-    def __init__(self,network,reduction,wdir,dim,color='black',weight=1.,scale=1.,theta=False,samp=1,perc=95):
+    def __init__(self,network,reduction,wdir,dim,color='black',weight=1.,scale=1.,theta=False,samp=1,perc=95,lmin=None,lmax=None):
         self.network=network
         self.reduction=reduction
         self.wdir=wdir
@@ -26,6 +26,9 @@ class network:
         self.samp=samp
         self.perc=perc
 
+        self.lmin = lmin
+        self.lmax = lmax
+
         # Model
         self.mx,self.my=[],[]
         self.mlos=[]
@@ -43,6 +46,10 @@ class network:
             dated,east,north,esigma,nsigma=np.loadtxt(station,comments='#',usecols=(0,1,2,3,4),unpack=True,dtype='f,f,f,f,f')
             self.ux[j],self.uy[j]=east*self.scale,north*self.scale
             self.sigmax[j],self.sigmay[j]=esigma*self.scale,nsigma*self.scale
+        
+        if (self.lmin or self.lmax) is None:
+           self.lmin = np.nanpercentile(np.array([self.ux,self.uy]), 2)
+           self.lmin = np.nanpercentile(np.array([self.ux,self.uy]), 98)
 
     def loadinsar(self):
         insarf=file(self.wdir+self.network)
@@ -55,6 +62,10 @@ class network:
         ulos[np.logical_or(ulos==0.0,ulos>9990.)] = np.float('NaN')
         self.ulos=ulos*self.scale
         self.Npoint=len(self.ulos)
+        
+        if (self.lmin or self.lmax) is None:
+	    self.lmin = np.nanpercentile(self.ulos, 2)    
+	    self.lmax = np.nanpercentile(self.ulos, 98)    
     
 
 
