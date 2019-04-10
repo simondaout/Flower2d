@@ -31,7 +31,7 @@ class gmt:
                 x.append([])
                 y.append([])
             else:
-                x[i].append(line[0])
-                y[i].append(line[1])
+                x[i].append(float(line[0]))
+                y[i].append(float(line[1]))
 
         return x,y
