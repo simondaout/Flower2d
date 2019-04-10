@@ -49,6 +49,8 @@ else:
         format='%(asctime)s -- %(levelname)s -- %(message)s')
 logger = logging.getLogger('plotPro.log')
 
+logger.info('Initialise log file {0}. Use option -v for a verbose mode'.format('plotPro.log'))
+
 if 1==len(sys.argv):
   usage()
   assert False, "no input file"
