@@ -37,9 +37,11 @@ if 2==len(sys.argv):
   fname=sys.argv[1]
   print
   print 'input file :', fname
-  sys.path.append(path.dirname(path.abspath(fname)))
-  exec ("from "+path.basename(fname)+" import *")
-  #exec ("from " + fname+ " import *")
+  try:
+   sys.path.append(path.dirname(path.abspath(fname)))
+   exec ("from "+path.basename(fname)+" import *")
+  except:
+   execfile(path.abspath(fname))
 else:
   assert False, "too many arguments"
 
@@ -75,6 +77,11 @@ ax = fig.add_subplot(1,1,1)
 ax.axis('equal')
 
 for i in xrange(len(insardata)):
+  
+  if (profiles[0].losmin or profiles[0].losmax) is None:
+    profiles[0].losmax = np.nanpercentile(insar.ulos, 90)
+    profiles[0].losmin = np.nanpercentile(insar.ulos, 10)   
+
   insar=insardata[i]
   samp = 10
 
@@ -209,7 +216,7 @@ for k in xrange(len(profiles)):
         if (plot.topomin is not None) and (plot.topomax is not None) :
             ax1.set_ylim([plot.topomin,plot.topomax])
 	else:
-	    sys.exit()
+	    pass
   
   # LOS profile/map
   ax2=fig2.add_subplot(len(profiles),1,k+1)
