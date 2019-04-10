@@ -4,6 +4,14 @@ import numpy as np
 import math
 
 class fault2d:
+    """ 
+    fault2d class: Load 2D fault 
+    Parameters: 
+    name: name fault
+    x,y: reference point 
+    strike: strike fault
+    """
+
     def __init__(self,name,x,y,strike):
         self.name=name
         self.x=x
@@ -11,6 +19,18 @@ class fault2d:
         self.strike=strike
 
 class prof:
+    """ 
+    prof class: Load profiles 
+    Parameters: 
+    name: name profile
+    x,y: reference point 
+    l,w: length, width progile
+    strike: strike fault
+    type:  std - plot mean and standard deviation InSAR;
+    distscale - scatter plot with color scale function of the profile-parallel distance;
+    stdscat - plot scatter + standar deviation. 
+    """
+
     def __init__(self,name,x,y,l,w,strike,type=None):
         self.name=name
         self.x=x
@@ -21,12 +41,23 @@ class prof:
         self.typ=type
 
 class topo:
-    def __init__(self,name,wdir,filename,color,width,scale=1,topomin=None,topomax=None,plotminmax=False):
+    """ 
+    topo class: Load topographic file 
+    Parameters: 
+    filename: name input file
+    name: name file for plot
+    wdir: path input file
+    scale: scale values
+    color
+    topomin,topomax
+    plotminmax: option to also plot min max topo within bins
+    """
+
+    def __init__(self,name,filename,wdir,color='black',scale=1,topomin=None,topomax=None,plotminmax=False):
         self.name=name
-        self.wdir=wdir
         self.filename=filename
+        self.wdir=wdir
         self.color=color
-        self.width=width
         self.scale=scale
         self.topomin=topomin
         self.topomax=topomax

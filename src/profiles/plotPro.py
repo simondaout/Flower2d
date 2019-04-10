@@ -8,6 +8,10 @@ from matplotlib import pyplot as plt
 import matplotlib
 import matplotlib.cm as cm
 
+from network2d import *
+from model2d import *
+from readgmt import *
+
 from sys import argv,exit,stdin,stdout
 import getopt
 import os
@@ -52,13 +56,24 @@ if 1==len(sys.argv):
   sys.exit()
 
 if len(sys.argv)>1:
-  fname=sys.argv[1]
-  logger.info('Read input file {0}'.format(fname))
   try:
-    sys.path.append(path.dirname(path.abspath(fname)))
-    exec ("from "+path.basename(fname)+" import *")
-  except:
-    execfile(path.abspath(fname))
+    fname=sys.argv[1]
+    logger.info('Read input file {0}'.format(fname))
+    try:
+      sys.path.append(path.dirname(path.abspath(fname)))
+      exec ("from "+path.basename(fname)+" import *")
+    except:
+      execfile(path.abspath(fname))
+  
+  except Exception as e: 
+    logger.critical('Problem in input file')
+    logger.critical(e)
+    print(network.__doc__)
+    print(fault2d.__doc__)
+    print(topo.__doc__)
+    print(prof.__doc__)
+    sys.exit()
+
 
 if not os.path.exists(outdir):
     logger.info('Creating output directory {0}'.format(outdir))
@@ -230,11 +245,11 @@ for k in xrange(len(profiles)):
         std_topo = np.array(std_topo)
         moy_topo = np.array(moy_topo)
 
-        ax1.plot(distance,-moy_topo,label=plot.name,color='black',lw=1)
+        ax1.plot(distance,-moy_topo,label=plot.name,color=plot.color,lw=1)
         if plot.plotminmax == True:
           logger.debug('plotminmax set to True')
-          ax1.plot(distance,-moy_topo-std_topo,color='black',lw=1)
-          ax1.plot(distance,-moy_topo+std_topo,color='black',lw=1)
+          ax1.plot(distance,-moy_topo-std_topo,color=plot.color,lw=.5)
+          ax1.plot(distance,-moy_topo+std_topo,color=plot.color,lw=.5)
         
         # for kk in xrange(Mfault):    
             # ax1.plot([fperp[kk],fperp[kk]],[8,-8],color='red')

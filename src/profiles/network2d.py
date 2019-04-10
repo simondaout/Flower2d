@@ -4,13 +4,27 @@ import numpy as np
 import math
 
 class network:
-    def __init__(self,network,reduction,wdir,dim,color='black',weight=1.,scale=1.,theta=False,samp=1,perc=95,lmin=None,lmax=None):
+    """ 
+    Network class: Load InSAR or GPS data 
+    Parameters: 
+    network: name input text file
+    reduction: reduction name for plot
+    wdir: relative path input file
+    dim: 1=InSAR, 2,3=GPS
+    color: plot option, default: 'black' 
+    scale: scale option, default: 1
+    theta: load insicence angle in 4th column, default: False
+    samp: subsample option, default:1 
+    perc: cleaning outliers option within bins profile, default: percentile=95
+    lmin,lmax: min max options for plots
+    """
+    
+    def __init__(self,network,reduction,wdir,dim,color='black',scale=1.,theta=False,samp=1,perc=95,lmin=None,lmax=None):
         self.network=network
         self.reduction=reduction
         self.wdir=wdir
         self.dim=dim
         self.color=color
-        self.sigmad=1./weight
         self.scale=scale
        
         self.Npoint=0.
@@ -21,7 +35,6 @@ class network:
         self.ulos=[]
         self.upar,self.uperp=[],[]
         #self.d=[]
-        #self.sigmad=[]
         self.theta=theta
         self.samp=samp
         self.perc=perc
