@@ -103,7 +103,7 @@ for i in xrange(len(insardata)):
   samp = insar.samp
 
   logger.info('Plot data {0} between {1} and {2}'.format(insar.network, insar.lmin, insar.lmax))
-  logger.info('Subsample data every {0} km'.format(insar.samp))
+  logger.info('Subsample data every {0} point'.format(insar.samp))
   norm = matplotlib.colors.Normalize(vmin=insar.lmin, vmax=insar.lmax)
   m = cm.ScalarMappable(norm = norm, cmap = 'rainbow')
   m.set_array(insar.ulos[::samp])
@@ -330,7 +330,7 @@ for k in xrange(len(profiles)):
       if len(insar.uu) > 50:
 
         nb = np.float(l/(len(insar.uu)/20.))
-        logger.debug('Create bins every {0:.3f}'.format(nb)) 
+        logger.debug('Create bins every {0:.3f} km'.format(nb)) 
 
         bins = np.arange(-l/2-1,l/2+1,nb)
         inds = np.digitize(insar.yypp,bins)
