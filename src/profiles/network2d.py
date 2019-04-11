@@ -13,12 +13,13 @@ class network:
     dim: 1=InSAR, 2,3=GPS
     color: plot option, default: 'black' 
     scale: scale option, default: 1
-    theta: load insicence angle in 4th column, default: False
+    theta: load insicence angle in 4th column and project los to average incidence angle
+    assuming horizontal displacements, default: False
     samp: subsample option, default:1 
     perc: cleaning outliers option within bins profile, default: percentile=95
     lmin,lmax: min max options for plots
     """
-    
+
     def __init__(self,network,reduction,wdir,dim,color='black',scale=1.,theta=False,samp=1,perc=95,lmin=None,lmax=None):
         self.network=network
         self.reduction=reduction
@@ -72,6 +73,7 @@ class network:
         else:
             self.x,self.y,ulos,self.los=np.loadtxt(insarf,comments='#',usecols=(0,1,2,3),unpack=True,dtype='f,f,f,f')
             self.x,self.y,ulos,self.los=self.x[::self.samp],self.y[::self.samp],ulos[::self.samp],self.los[::self.samp]
+        
         ulos[np.logical_or(ulos==0.0,ulos>9990.)] = np.float('NaN')
         self.ulos=ulos*self.scale
         self.Npoint=len(self.ulos)

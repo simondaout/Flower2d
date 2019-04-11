@@ -49,7 +49,7 @@ else:
         format='%(asctime)s -- %(levelname)s -- %(message)s')
 logger = logging.getLogger('plotPro.log')
 
-logger.info('Initialise log file {0}. Use option -v for a verbose mode'.format('plotPro.log'))
+logger.info('Initialise log file {0} in INFO mode. Use option -v for a DEBUG mode'.format('plotPro.log'))
 
 if 1==len(sys.argv):
   usage()
@@ -76,7 +76,6 @@ if len(sys.argv)>1:
     print(prof.__doc__)
     sys.exit()
 
-
 if not os.path.exists(outdir):
     logger.info('Creating output directory {0}'.format(outdir))
     os.makedirs(outdir)
@@ -89,23 +88,24 @@ fperp=np.zeros(Mfault)
 # Load data
 for i in xrange(len(topodata)):
     plot=topodata[i]
-    logger.info('Load data {0}'.format(plot.name))
+    logger.debug('Load data {0}'.format(plot.name))
     plot.load()
 
 for i in xrange(len(gpsdata)):
     gps = gpsdata[i]
-    logger.info('Load data {0}'.format(gps.network))
+    logger.debug('Load data {0}'.format(gps.network))
     gps.loadgps()
 
 for i in xrange(len(insardata)):
     insar = insardata[i]
-    logger.info('Load data {0}'.format(insar.network))
+    logger.debug('Load data {0}'.format(insar.network))
     insar.loadinsar()
     if insar.theta is True:
-      logger.debug('Read incidence angle...')
+      logger.warning('Convert LOS displacements to mean LOS angle...')
+      logger.warning('Use option theta=False to avoid that')
       insar.losm = np.mean(insar.los)
-      # insar.ulos = insar.ulos * \
-      #   (np.sin(np.deg2rad(insar.losm))/np.sin(np.deg2rad(insar.los)))
+      insar.ulos = insar.ulos * \
+        (np.sin(np.deg2rad(insar.losm))/np.sin(np.deg2rad(insar.los)))
 
 # MAP
 fig=plt.figure(0,figsize = (9,8))
@@ -120,7 +120,7 @@ for i in xrange(len(insardata)):
   samp = insar.samp
 
   logger.info('Plot data {0} between {1} and {2}'.format(insar.network, insar.lmin, insar.lmax))
-  logger.info('Subsample data every {0} point'.format(insar.samp))
+  logger.info('Subsample data every {0} point (samp option)'.format(insar.samp))
   norm = matplotlib.colors.Normalize(vmin=insar.lmin, vmax=insar.lmax)
   m = cm.ScalarMappable(norm = norm, cmap = 'rainbow')
   m.set_array(insar.ulos[::samp])
@@ -253,13 +253,18 @@ for k in xrange(len(profiles)):
           ax1.plot(distance,-moy_topo-std_topo,color=plot.color,lw=.5)
           ax1.plot(distance,-moy_topo+std_topo,color=plot.color,lw=.5)
         
-        # for kk in xrange(Mfault):    
-            # ax1.plot([fperp[kk],fperp[kk]],[8,-8],color='red')
-            # ax1.text(fperp[kk],0.5,fmodel[kk].name,color='red')
-        
         if (plot.topomin is not None) and (plot.topomax is not None) :
             logger.info('Set ylim to {} and {}'.format(plot.topomin,plot.topomax))
             ax1.set_ylim([plot.topomin,plot.topomax])
+            for kk in xrange(Mfault):    
+              ax1.plot([fperp[kk],fperp[kk]],[plot.topomin,plot.topomax],color='red')
+              ax1.text(fperp[kk],0.5,fmodel[kk].name,color='red')
+        else:
+            topomin,topomax= ax1.get_ylim()
+            print(topomin,topomax)
+            for kk in xrange(Mfault):    
+              ax1.plot([fperp[kk],fperp[kk]],[topomin,topomax],color='red')
+              ax1.text(fperp[kk],0.5,fmodel[kk].name,color='red')
   
   # LOS profile/map
   ax2=fig2.add_subplot(len(profiles),1,k+1)
@@ -319,6 +324,9 @@ for k in xrange(len(profiles)):
           
           ax3.plot(gpsyp,gpsuv,markers[i],color = 'red',mew = 1.,label = '%s vertical velocities'%gpsdata[i].reduction)
           ax3.errorbar(gpsyp,gpsuv,yerr = gpssigmav,ecolor = 'red',fmt = "none")          
+
+      for j in xrange(Mfault):
+          ax3.plot([fperp[j],fperp[j]],[gpsmax,gpsmin],color='red')
 
       # set born profile equal to map
       logger.debug('Set ylim GPS profile to {0}-{1}'.format(gpsmin,gpsmax))
@@ -410,8 +418,6 @@ for k in xrange(len(profiles)):
         elif typ is 'std':
           logger.info('Plot InSAR with std option')
           # plot mean and standard deviation
-          # ax2.scatter(insar.yperp,insar.uulos,s = .1, marker='o',alpha=0.4,\
-          #    label=insardata[i].reduction,color=colors[i])
           ax2.plot(insar.distance,insar.moy_los,color=insar.color,lw=3.,label=insardata[i].reduction)
           ax2.plot(insar.distance,insar.moy_los-insar.std_los,color=insar.color,lw=.5)
           ax2.plot(insar.distance,insar.moy_los+insar.std_los,color=insar.color,lw=.5)
@@ -419,8 +425,6 @@ for k in xrange(len(profiles)):
         elif typ is 'stdscat':
           logger.info('Plot InSAR with stdscat option')
           # plot mean and standard deviation
-          # ax2.scatter(insar.yperp,insar.uulos,s = .1, marker='o',alpha=0.4,\
-          #    label=insardata[i].reduction,color=colors[i])
           ax2.plot(insar.distance,insar.moy_los,color='black',lw=3.,label=insardata[i].reduction)
           ax2.plot(insar.distance,insar.moy_los-insar.std_los,color='black',lw=.5)
           ax2.plot(insar.distance,insar.moy_los+insar.std_los,color='black',lw=.5)
@@ -437,10 +441,8 @@ for k in xrange(len(profiles)):
         logger.debug('Set ylim InSAR profile to {0}-{1}'.format(losmin,losmax))
         ax2.set_ylim([losmin,losmax])
 
-        # for j in xrange(Mfault):
-        # ax2.plot([fperp[j],fperp[j]],[losmax,losmin],color='red')
-        # ax2.plot([fperp[j],fperp[j]],[losmax+cst,losmin-cst],color='red')
-        # ax2.plot([fperp[j],fperp[j]],[6,-4],color='red')
+        for j in xrange(Mfault):
+          ax2.plot([fperp[j],fperp[j]],[losmax,losmin],color='red')
 
       else:
           logger.critical('Number of InSAR points inferior to 50. Exit plot profile!') 

@@ -5,7 +5,8 @@ import math
 
 class fault2d:
     """ 
-    fault2d class: Load 2D fault 
+    fault2d class: Load 2D fault for plot only
+    help to position fault for futher modeling
     Parameters: 
     name: name fault
     x,y: reference point 
