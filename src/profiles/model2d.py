@@ -9,11 +9,10 @@ class fault2d:
     help to position fault for futher modeling
     Parameters: 
     name: name fault
-    x,y: reference point 
-    strike: strike fault
+    x,y: position east, north
     """
 
-    def __init__(self,name,x,y,strike):
+    def __init__(self,name,x,y,strike=None):
         self.name=name
         self.x=x
         self.y=y

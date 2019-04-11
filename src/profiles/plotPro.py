@@ -44,12 +44,15 @@ for o in sys.argv:
 if level == 'debug':
     logging.basicConfig(level=logging.DEBUG,\
         format='%(asctime)s -- %(levelname)s -- %(message)s')
+    logger = logging.getLogger('plotPro.log')
+    logger.info('Initialise log file {0} in DEBUG mode'.format('plotPro.log'))
+
 else:
     logging.basicConfig(level=logging.INFO,\
         format='%(asctime)s -- %(levelname)s -- %(message)s')
-logger = logging.getLogger('plotPro.log')
+    logger = logging.getLogger('plotPro.log')
+    logger.info('Initialise log file {0} in INFO mode. Use option -v for a DEBUG mode'.format('plotPro.log'))
 
-logger.info('Initialise log file {0} in INFO mode. Use option -v for a DEBUG mode'.format('plotPro.log'))
 
 if 1==len(sys.argv):
   usage()
@@ -71,9 +74,10 @@ if len(sys.argv)>1:
     logger.critical('Problem in input file')
     logger.critical(e)
     print(network.__doc__)
-    print(fault2d.__doc__)
     print(topo.__doc__)
     print(prof.__doc__)
+    print(gmt.__doc__)
+    print(fault2d.__doc__)
     sys.exit()
 
 if not os.path.exists(outdir):
@@ -86,26 +90,41 @@ Mfault=len(fmodel)
 fperp=np.zeros(Mfault)
 
 # Load data
-for i in xrange(len(topodata)):
-    plot=topodata[i]
-    logger.debug('Load data {0}'.format(plot.name))
-    plot.load()
+try:
+  Mtopo = len(topodata)
+  for i in xrange(Mtopo):
+      plot=topodata[i]
+      logger.debug('Load data {0}'.format(plot.name))
+      plot.load()
+except:
+  logger.warning('No topodata defined')
+  Mtopo = 0
 
-for i in xrange(len(gpsdata)):
-    gps = gpsdata[i]
-    logger.debug('Load data {0}'.format(gps.network))
-    gps.loadgps()
+try:
+  Mgps = len(gpsdata)
+  for i in xrange(Mgps):
+      gps = gpsdata[i]
+      logger.debug('Load data {0}'.format(gps.network))
+      gps.loadgps()
+except:
+  logger.warning('No gpsdata defined')
+  Mgps = 0
 
-for i in xrange(len(insardata)):
-    insar = insardata[i]
-    logger.debug('Load data {0}'.format(insar.network))
-    insar.loadinsar()
-    if insar.theta is True:
-      logger.warning('Convert LOS displacements to mean LOS angle...')
-      logger.warning('Use option theta=False to avoid that')
-      insar.losm = np.mean(insar.los)
-      insar.ulos = insar.ulos * \
-        (np.sin(np.deg2rad(insar.losm))/np.sin(np.deg2rad(insar.los)))
+try:
+  Minsar = len(insardata)
+  for i in xrange(Minsar):
+      insar = insardata[i]
+      logger.debug('Load data {0}'.format(insar.network))
+      insar.loadinsar()
+      if insar.theta is True:
+        logger.warning('Convert LOS displacements to mean LOS angle...')
+        logger.warning('Use option theta=False to avoid that')
+        insar.losm = np.mean(insar.los)
+        insar.ulos = insar.ulos * \
+          (np.sin(np.deg2rad(insar.losm))/np.sin(np.deg2rad(insar.los)))
+except:
+  logger.warning('No insardata defined')
+  Minsar = 0
 
 # MAP
 fig=plt.figure(0,figsize = (9,8))
@@ -114,7 +133,7 @@ ax.axis('equal')
 
 logger.info('Plot Map ....') 
 
-for i in xrange(len(insardata)):
+for i in xrange(Minsar):
   
   insar=insardata[i]
   samp = insar.samp
@@ -130,7 +149,7 @@ for i in xrange(len(insardata)):
   # save flatten map
   # np.savetxt('{}_flat'.format(insardata[i].network), np.vstack([insar.x,insar.y,insar.ulos]).T, fmt='%.6f')
 
-for i in xrange(len(gpsdata)):
+for i in xrange(Mgps):
   gps=gpsdata[i]
   logger.info('Plot GPS data {0}'.format(gps.network))
   ax.quiver(gps.x,gps.y,gps.ux,gps.uy,scale = 100, width = 0.005, color = 'red')
@@ -138,7 +157,11 @@ for i in xrange(len(gpsdata)):
 # plot faults
 for kk in xrange(Mfault):
   xf,yf = np.zeros((2)),np.zeros((2))
-  strike=fmodel[kk].strike
+  if fmodel[kk].strike is not None:
+      strike = fmodel[kk].strike
+  else:
+      strike = profiles[0].strike
+  
   str=(strike*math.pi)/180
   s=[math.sin(str),math.cos(str),0]
   n=[math.cos(str),-math.sin(str),0]
@@ -218,7 +241,8 @@ for k in xrange(len(profiles)):
 
   ax1=fig1.add_subplot(len(profiles),1,k+1)
   ax1.set_xlim([-l/2,l/2])
-  for i in xrange(len(topodata)):
+
+  for i in xrange(Mtopo):
         plot=topodata[i]
 
         # perp and par composante ref to the profile 
@@ -228,7 +252,6 @@ for k in xrange(len(profiles)):
         index=np.nonzero((plot.xpp>xpmax)|(plot.xpp<xpmin)|(plot.ypp>ypmax)|(plot.ypp<ypmin))
         plotxpp,plotypp,plotz=np.delete(plot.xpp,index),np.delete(plot.ypp,index),np.delete(plot.z,index)
 
-            
         nb = np.float(l/(len(plotz)/20.))
         logger.debug('Load {0}. Create bins every {1:.3f} km'.format(plot.name, nb)) 
         bins = np.arange(-l/2,l/2, nb)
@@ -285,7 +308,7 @@ for k in xrange(len(profiles)):
 
   # GPS plot
   markers = ['+','d','x','v']
-  for i in xrange(len(gpsdata)):
+  for i in xrange(Mgps):
       gps=gpsdata[i]
       gpsmin = gps.lmin
       gpsmax = gps.lmax
@@ -334,7 +357,7 @@ for k in xrange(len(profiles)):
 
   colors = ['blue','red','orange','magenta']
   cst=0
-  for i in xrange(len(insardata)):
+  for i in xrange(Minsar):
       insar=insardata[i]
       losmin=insar.lmin
       losmax=insar.lmax
@@ -451,7 +474,7 @@ for k in xrange(len(profiles)):
     plt.setp(ax2.get_xticklabels(), visible=False)
     plt.setp(ax1.get_xticklabels(), visible=False)
 
-  if len(insardata) > 0:  
+  if Minsar > 0:  
     if typ is 'distscale':
       fig2.colorbar(m1,shrink=0.5, aspect=5)
     else:
