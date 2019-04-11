@@ -5,12 +5,9 @@ from readgmt import *
 
 maindir='../'
 outdir=maindir+'output/profiles/' 
-
-
-# perpandicular distance to the fault
-fmodel=[
-        fault2d(name='SAF',x=-177.9,y=134.9,strike=-62.5),
-        ] 
+# boundaries map
+xmin,xmax=-300,-100
+ymin,ymax=0,250
 
 # type profile:
 # default: scatter plot
@@ -24,22 +21,21 @@ profiles=[
         prof(name='Big Bend',x=-160,y=125,l=200,w=20,strike=-62.5),
         ]
 
-
 # InSAR data (defined in networkopti.py)
 insardata=[
         network(network='t170_cmyr_km.xylos',reduction='T170',wdir=maindir+'insar/',dim=1,scale=-10.,color='red',samp=2)
         ]
 
 # Plot GPS data not implemented yet: not co
-# gpsdata=[
-#         network(network='cgps_stations_km.dat',reduction='PBO',wdir=maindir+'gps/',dim=3,weight=.025,scale=1.),
+gpsdata=[
+#         network(network='cgps_stations_km.dat',reduction='PBO',wdir=maindir+'gps/',dim=3,scale=1.),
 #         #network(network='cgps_stations_km.dat',reduction='PBO',wdir=maindir+'gps/',dim=3,weight=1.,scale=1.,\
 #         # errorfile='../../output/gps/PBOresidus_0.psvelo'),
-#         ]
+         ]
 
 # topographic file
 topodata=[
-        topo(name='SRTM3',wdir=maindir+'gmt/',filename='srtm_ell_nan_km.xyz',color='black',width=0.001),
+        topo(name='SRTM3',wdir=maindir+'gmt/',filename='srtm_ell_nan_km.xyz',color='black'),
      ]
 
 # optionnal: add data for plots in gmt format (>)
@@ -48,8 +44,7 @@ gmtfiles=[
         gmt(name='coast lines',wdir=maindir+'gmt/',filename='ca_coasts_north_km.xyz',color='grey',width=1.),
         ]
 
+fmodel=[
+        fault2d(name='SAF',x=-177.9,y=134.9),
+        ] 
 
-# parameters figures
-vmin,vmax = -12,2.
-xmin,xmax=-300,-100
-ymin,ymax=0,250
