@@ -1,8 +1,3 @@
-#!/usr/bin/env python2.7
-from network2d import *
-from model2d import *
-from readgmt import *
-
 maindir='../'
 outdir=maindir+'output/profiles/' 
 # boundaries map
