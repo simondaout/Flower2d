@@ -1,10 +1,3 @@
-#!/usr/bin/env python2.7
-from modelopti import *
-from flatten import *
-from networkopti import *
-from readgmt import *
-import os
-
 # path to gps insar gmt ... directories
 maindir='../'
 # path to output files
@@ -12,7 +5,7 @@ outdir=maindir+'output/'
 
 # Minimisation Parameters
 niter=10000 # number of iterations
-nburn=5000  # numbert of burned iterations to not be influenced by itinial values
+nburn=5000 # numbert of burned iterations to not be influenced by itinial values
 
 # Model Parameters (defined in modelopti.py) 
 inv=inversion(name='Haiyuan Fault System',
@@ -22,7 +15,7 @@ inv=inversion(name='Haiyuan Fault System',
               #######################
               maindecol(
               # define one main fault and various optional secondary faults
-              # ss: strike-slip, short: shortening, w: depth
+               ss: strike-slip, short: shortening, w: depth
               name='JQH',x=-36.,y=10.2,ss=10.,sigmass=10.,short=-5.,
               sigmashort=5.,w=15.,sigmaw=15,dip=180.,
               # optional: define prior distribution for each parameters (default: 'Unif')
@@ -31,13 +24,13 @@ inv=inversion(name='Haiyuan Fault System',
               # D: horizontal distance to the main fault, H: vertical distance to the main fault
               ramp(
                 name='QT',ss=0.,sigmass=0.,D=30,sigmaD=25.,H=15.,sigmaH=15
-                ),
+              #  ),
 
               #######################
               # Option 2: flower structure
               ####################### 
               # mainflower(
-              #   name='JQH',x=-36.,y=10.2,sstot=10.,sigmasstot=10.,short=-5.,sigmashort=5.,w=15.,sigmaw=15.,dip=180.,
+              #   name='JQH',x=-36.,y=10.2,ss=10.,sigmass=10.,short=-5.,sigmashort=5.,w=15.,sigmaw=15.,dip=180.,
               #   name2='QT',ss2=0.,sigmass2=0.,D2=30,sigmaD2=25.,H2=15.,sigmaH2=15,
               #   name3='Creeping',ss3=10.,sigmass3=10.,D3=0,sigmaD3=0.,H3=15.,sigmaH3=15,
               #   distss='Unif',distshort='Unif',distH='Unif'
@@ -80,7 +73,7 @@ plotdata=[
 
 #topographic plot
 topodata = [
-  topo(name='SRTM3',wdir=maindir+'gmt/',filename='topo_km.xy-z',color='black',width=0.1)
+  topo(name='SRTM3',wdir=maindir+'gmt/',filename='topo_km.xy-z',color='black')
 ]
 
 # Parameters covariance  (defined in networkopti.py) 
