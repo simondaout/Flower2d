@@ -15,8 +15,8 @@ inv=inversion(name='Haiyuan Fault System',
               #######################
               maindecol(
               # define one main fault and various optional secondary faults
-               ss: strike-slip, short: shortening, w: depth
-              name='JQH',x=-36.,y=10.2,ss=10.,sigmass=10.,short=-5.,
+              #ss: strike-slip, short: shortening, w: depth
+              name='JQH',D=0.,sigmaD=5,ss=10.,sigmass=10.,short=-5.,
               sigmashort=5.,w=15.,sigmaw=15,dip=180.,
               # optional: define prior distribution for each parameters (default: 'Unif')
               distss='Unif',distshort='Unif',distH='Unif'
@@ -24,7 +24,7 @@ inv=inversion(name='Haiyuan Fault System',
               # D: horizontal distance to the main fault, H: vertical distance to the main fault
               ramp(
                 name='QT',ss=0.,sigmass=0.,D=30,sigmaD=25.,H=15.,sigmaH=15
-              #  ),
+                ),
 
               #######################
               # Option 2: flower structure
@@ -39,7 +39,7 @@ inv=inversion(name='Haiyuan Fault System',
           # azimuth of the 2d model: azimuth of the main fault
           strike=-68,
           # l: lenght, w: width, proj: Envisat proj los to east,north,z coordinates (for a mean incidence of 20.5)
-          profiles=profile(name='West',x=-38,y=10,l=300,w=50,proj=[0.318, -0.0827, 0.9396]), 
+          profile=profile(name='West',x=-36.,y=10.2,l=300,w=50,proj=[0.318, -0.0827, 0.9396]), 
           )
 
 # GPS data (defined in networkopti.py)              
