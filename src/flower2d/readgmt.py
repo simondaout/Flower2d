@@ -5,7 +5,14 @@ import csv
 
 #GMT files
 class gmt:
-    def __init__(self,name,wdir,filename,color='black',width=2.):
+    """
+    Class gmt: read GMT file: text file with object separated with >
+    filename: name input file
+    wdir: path input file
+    name: name for plot
+    color, width options for plot
+    """
+    def __init__(self,name,wdir,filename,color='black',width=1.):
         self.name=name
         self.wdir=wdir
         self.filename=filename
@@ -19,11 +26,12 @@ class gmt:
         self.yp=[]
 
     #load gmt segments
-    def load(self,delimiter=' '):
+    def load(self,delimiter=' ',ybounds=None,xbounds=None):
         n=0
         x=[[]]
         y=[[]]
         i=0
+
         infile=csv.reader(open(self.wdir+self.filename,"rb"),delimiter=delimiter)
         for line in infile:
             if line[0] is '>':
@@ -31,7 +39,7 @@ class gmt:
                 x.append([])
                 y.append([])
             else:
-                x[i].append(line[0])
-                y[i].append(line[1])
+                x[i].append(float(line[0]))
+                y[i].append(float(line[1]))
 
         return x,y
