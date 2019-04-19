@@ -16,7 +16,7 @@ inv=inversion(name='Haiyuan Fault System',
               mainfault(
               # define one main fault and various optional secondary faults
               #ss: strike-slip, ds: dip-slip, w: depth, D: horizontal distance to the center of profile
-              name='JQH',D=0.,sigmaD=5,ss=10.,sigmass=10.,ds=-5.,
+              name='JQH',D=0.,sigmaD=10,ss=10.,sigmass=10.,ds=-5.,
               sigmads=5.,w=15.,sigmaw=15,dip=180.,
               # optional: define prior distribution for each parameters (default: 'Unif')
               distss='Unif',distds='Unif',distH='Unif'
@@ -73,6 +73,6 @@ plotdata=[
 
 #topographic plot
 topodata = [
-  topo(name='SRTM3',wdir=maindir+'gmt/',filename='topo_km.xy-z',color='black')
+  topo(name='SRTM3',wdir=maindir+'gmt/',filename='topo_km.xy-z',color='black',scale=-1)
 ]
 
