@@ -197,8 +197,7 @@ def plotLOS(flt,nfigure):
 
     # 2) Plot 
     markers = ['+','d','x','v']
-    # colors = ['orange','m','yellow','red','blue']
-    
+
     # los component
     ax3 = fig.add_subplot(4,1,3)
     ax3.set_xlim([-l/2,l/2])
@@ -217,7 +216,7 @@ def plotLOS(flt,nfigure):
     ax4.set_xlabel('Distance (km)')
     
     # 3) InSAR data and model
-    colors = ['red','orangered','farebrick','r']
+    colors = ['red','darkred','r']
     ymin,ymax = ax3.get_ylim()
     for i in xrange(len(insardata)):
         insar = insardata[i]
@@ -226,10 +225,9 @@ def plotLOS(flt,nfigure):
         binsarlos = insar.a+insar.b*insar.yp
         ilos = insar.ulos-binsarlos
 
-        ax3.scatter(insar.yp,insar.ulos-binsarlos,s = 3.,marker = 'o',label = insardata[i].reduction,color = insardata[i].color)
+        ax3.scatter(insar.yp,insar.ulos-binsarlos,s = insar.width ,marker = 'o',label = insardata[i].reduction,color = insardata[i].color, alpha=.5)
         # problem if several insar with differents weight...
         
-
         ymean = np.mean(ilos)
         tempmax = ymean + 2.5*np.std(ilos)
         tempmin = ymean - 2.5*np.std(ilos)
@@ -311,42 +309,44 @@ def plotMap(flt,nfigure):
 
     logger = flt.logger
 
-    fig = plt.figure(nfigure,figsize = (12,8)) #width, height
-    fig.subplots_adjust()
-    ax1 = fig.add_subplot(1,3,1)
-    ax2 = fig.add_subplot(1,3,2) 
-    ax3 = fig.add_subplot(1,3,3) 
-    markers = ['^','v','/^']
-    colors = ['orange','m','yellow','red','blue']
-
-    # bundary profile
-    xp,yp = np.zeros((7)),np.zeros((7))
-    x0 = profile.x
-    y0 = profile.y
-    l = profile.l
-    w = profile.w
-    name = profile.name
-    xpmin,xpmax = profile.xpmin,profile.xpmax
-    ypmin,ypmax = profile.ypmin,profile.ypmax
-    
-    strike = flt.strike
-    proj = profile.proj
-    outdir = outdir
-
-    s = flt.s
-    n = flt.n
-
-    xp[:] = x0-w/2*s[0]-l/2*n[0],x0+w/2*s[0]-l/2*n[0],x0+w/2*s[0]+l/2*n[0],x0-w/2*s[0]+l/2*n[0],x0-w/2*s[0]-l/2*n[0],x0-l/2*n[0],x0+l/2*n[0]
-    yp[:] = y0-w/2*s[1]-l/2*n[1],y0+w/2*s[1]-l/2*n[1],y0+w/2*s[1]+l/2*n[1],y0-w/2*s[1]+l/2*n[1],y0-w/2*s[1]-l/2*n[1],y0-l/2*n[1],y0+l/2*n[1]
- 
-    logger.info('Save profile coordiantes in {}'.format(outdir+'/profile/'+name+'_coord.xy'))
-    fid = open(outdir+'/profile/'+name+'_coord.xy','w')
-    np.savetxt(fid, np.vstack([xp[:],yp[:]]).T ,header = 'x(km)     y(km) ',comments = '# ')
-    fid.write('\n')
-    fid.close
-
-    ##InSAR DATA
     for i in xrange(len(insardata)):
+        nn = i
+        fig = plt.figure(nfigure,figsize = (12,8)) #width, height
+        nfigure = nfigure + 1
+        fig.subplots_adjust()
+        ax1 = fig.add_subplot(1,3,1)
+        ax2 = fig.add_subplot(1,3,2) 
+        ax3 = fig.add_subplot(1,3,3) 
+        markers = ['^','v','/^']
+        colors = ['orange','m','yellow','red','blue']
+
+        # bundary profile
+        xp,yp = np.zeros((7)),np.zeros((7))
+        x0 = profile.x
+        y0 = profile.y
+        l = profile.l
+        w = profile.w
+        name = profile.name
+        xpmin,xpmax = profile.xpmin,profile.xpmax
+        ypmin,ypmax = profile.ypmin,profile.ypmax
+        
+        strike = flt.strike
+        proj = profile.proj
+        outdir = outdir
+
+        s = flt.s
+        n = flt.n
+
+        xp[:] = x0-w/2*s[0]-l/2*n[0],x0+w/2*s[0]-l/2*n[0],x0+w/2*s[0]+l/2*n[0],x0-w/2*s[0]+l/2*n[0],x0-w/2*s[0]-l/2*n[0],x0-l/2*n[0],x0+l/2*n[0]
+        yp[:] = y0-w/2*s[1]-l/2*n[1],y0+w/2*s[1]-l/2*n[1],y0+w/2*s[1]+l/2*n[1],y0-w/2*s[1]+l/2*n[1],y0-w/2*s[1]-l/2*n[1],y0-l/2*n[1],y0+l/2*n[1]
+     
+        logger.info('Save profile coordiantes in {}'.format(outdir+'/profile/'+name+'_coord.xy'))
+        fid = open(outdir+'/profile/'+name+'_coord.xy','w')
+        np.savetxt(fid, np.vstack([xp[:],yp[:]]).T ,header = 'x(km)     y(km) ',comments = '# ')
+        fid.write('\n')
+        fid.close
+
+        ##InSAR DATA
         insar = insardata[i]
         imax = np.percentile(insar.ulos,99.5)
         kk = np.flatnonzero(insar.ulos>imax)
@@ -363,7 +363,7 @@ def plotMap(flt,nfigure):
             m = cm.ScalarMappable(norm = norm, cmap = cm.jet)
         
         index = np.nonzero((insar.xp>xpmax)|(insar.xp<xpmin)|(insar.yp>ypmax)|(insar.yp<ypmin))
-        insarx,insary,los,model = np.delete(insar.x,index),np.delete(insar.y,index),np.delete(insar.ulos-orb,index),np.delete(insar.mlos,index)
+        insarx,insary,los,model = np.delete(insar.x,index),np.delete(insar.y,index),np.delete(insar.ulos,index),np.delete(insar.mlos+orb,index)
 
         logger.info('Write InSAR data in {} text file'.format(outdir+'/insar/'+name+'.xylos'))
         fid = open(outdir+'/insar/'+name+'.xylos','w')
@@ -388,150 +388,150 @@ def plotMap(flt,nfigure):
         facemodel = m.to_rgba(model)
         faceres = m.to_rgba(los-model) 
 
-        ax1.scatter(insarx,insary,s = 10,marker = 'o',color = facelos,label = 'LOS Velocity %s'%(insar.reduction))
-        ax2.scatter(insarx,insary,s = 10,marker = 'o',color = facemodel,label = 'LOS Velocity %s'%(insar.reduction))
-        ax3.scatter(insarx,insary,s = 10,marker = 'o',color = faceres,label = 'LOS Velocity %s'%(insar.reduction))
+        ax1.scatter(insarx,insary,s = insar.width*3, marker = 'o',color = facelos,label = 'LOS Velocity %s'%(insar.reduction))
+        ax2.scatter(insarx,insary,s = insar.width*3, marker = 'o',color = facemodel,label = 'LOS Velocity %s'%(insar.reduction))
+        ax3.scatter(insarx,insary,s = insar.width*3, marker = 'o',color = faceres,label = 'LOS Velocity %s'%(insar.reduction))
 
-    for i in xrange(len(gpsdata)):
-        gps = gpsdata[i]
-        name = gps.reduction
+        for j in xrange(len(gpsdata)):
+            gps = gpsdata[j]
+            name = gps.reduction
 
-        index = np.nonzero((gps.xp>xpmax)|(gps.xp<xpmin)|(gps.yp>ypmax)|(gps.yp<ypmin))        
-        if gps.dim==2:
-            gpsname,gpsx,gpsy,gpsux,gpsuy,gpsmx,gpsmy,gpssigmax,gpssigmay = np.delete(gps.name,index),np.delete(gps.x,index),np.delete(gps.y,index),np.delete(gps.ux,index),np.delete(gps.uy,index),np.delete(gps.mx,index),np.delete(gps.my,index),np.delete(gps.sigmax,index),np.delete(gps.sigmay,index)
-        else:
-            gpsname,gpsx,gpsy,gpsux,gpsuy,gpsuv,gpsmx,gpsmy,gpsmz,gpssigmax,gpssigmay,gpssigmav = np.delete(gps.name,index),np.delete(gps.x,index),np.delete(gps.y,index),np.delete(gps.ux,index),np.delete(gps.uy,index),np.delete(gps.uv,index),np.delete(gps.mx,index),np.delete(gps.my,index),np.delete(gps.mz,index),np.delete(gps.sigmax,index),np.delete(gps.sigmay,index),np.delete(gps.sigmav,index)
-        # remove wieght in gps uncertainties
-        wd = gps.wd
-        gpssigmax,gpssigmay = gpssigmax/wd , gpssigmay/wd
-        
-        bx = (gps.a*flt.s[0]+gps.b*flt.n[0])
-        by = (gps.a*flt.s[1]+gps.b*flt.n[1])
-        
-        if gps.dim==2:
-        
-            logger.info('Write GPS data in {} text file'.format(outdir+'/gps/'+name+'_%s.psvelo'%(i)))
-            fid = open(outdir+'/gps/'+name+'_%s.psvelo'%(i),'w')
-            np.savetxt(fid, np.vstack([gpsx, gpsy, gpsux,gpsuy,gpssigmax,gpssigmay]).T ,header = 'x(km)  y(km)   East_Vel    North_Vel   East_StdDev North_StdDev',comments = '# ')
-            fid.write('\n')
-            fid.close
-            logger.info('Write GPS model in {} text file'.format(outdir+'/gps/'+name+'model_%s.psvelo'%(i)))
-            fid = open(outdir+'/gps/'+name+'model_%s.psvelo'%(i),'w')
-            np.savetxt(fid, np.vstack([gpsx, gpsy, gpsmx,gpsmy,gpssigmax,gpssigmay]).T ,header = 'x(km)  y(km)   East_Vel    North_Vel   East_StdDev North_StdDev',comments = '# ')
-            fid.write('\n')
-            fid.close    
-            logger.info('Write GPS model without optimised baselines in {} text file'.format(outdir+'/gps/'+name+'residus_%s.psvelo'%(i)))
-            fid=open(outdir+'/gps/'+name+'residus_%s.psvelo'%(i),'w')
-            np.savetxt(fid, np.vstack([gpsx, gpsy,gpsux-gpsmx-bx,gpsuy-gpsmy-by,gpssigmax,gpssigmay]).T ,header='x(km)  y(km)   East_Dev    North_Dev   East_StdDev North_StdDev',comments='# ')
-            fid.write('\n')
-            fid.close
-            logger.info('Write GPS residual in {} text file'.format(outdir+'/gps/'+name+'_%s_rf.psvelo'%(i)))
-            fid = open(outdir+'/gps/'+name+'_%s_rf.psvelo'%(i),'w')
-            np.savetxt(fid, np.vstack([gpsx, gpsy, gpsux-bx,gpsuy-by,gpssigmax,gpssigmay]).T ,header = 'x(km)   y(km)   East_Vel    North_Vel   East_StdDev North_StdDev',comments = '# ')
-            fid.write('\n')
-            fid.close
-        
-        else:
+            index = np.nonzero((gps.xp>xpmax)|(gps.xp<xpmin)|(gps.yp>ypmax)|(gps.yp<ypmin))        
+            if gps.dim==2:
+                gpsname,gpsx,gpsy,gpsux,gpsuy,gpsmx,gpsmy,gpssigmax,gpssigmay = np.delete(gps.name,index),np.delete(gps.x,index),np.delete(gps.y,index),np.delete(gps.ux,index),np.delete(gps.uy,index),np.delete(gps.mx,index),np.delete(gps.my,index),np.delete(gps.sigmax,index),np.delete(gps.sigmay,index)
+            else:
+                gpsname,gpsx,gpsy,gpsux,gpsuy,gpsuv,gpsmx,gpsmy,gpsmz,gpssigmax,gpssigmay,gpssigmav = np.delete(gps.name,index),np.delete(gps.x,index),np.delete(gps.y,index),np.delete(gps.ux,index),np.delete(gps.uy,index),np.delete(gps.uv,index),np.delete(gps.mx,index),np.delete(gps.my,index),np.delete(gps.mz,index),np.delete(gps.sigmax,index),np.delete(gps.sigmay,index),np.delete(gps.sigmav,index)
+            # remove wieght in gps uncertainties
+            wd = gps.wd
+            gpssigmax,gpssigmay = gpssigmax/wd , gpssigmay/wd
             
-            bv=gps.c
-            logger.info('Write GPS data in {} text file'.format(outdir+'/gps/'+name+'_%s.psvelo'%(i)))
-            fid = open(outdir+'/gps/'+name+'_%s.psvelo'%(i),'w')
-            np.savetxt(fid, np.vstack([gpsx, gpsy, gpsux,gpsuy,gpsuv,gpssigmax,gpssigmay,gpssigmav]).T ,header = 'x(km)  y(km)   East_Vel    North_Vel Up_Vel  East_StdDev North_StdDev Up_StdDev',comments = '# ')
-            fid.write('\n')
-            fid.close
-            logger.info('Write GPS model in {} text file'.format(outdir+'/gps/'+name+'model_%s.psvelo'%(i)))
-            fid = open(outdir+'/gps/'+name+'model_%s.psvelo'%(i),'w')
-            np.savetxt(fid, np.vstack([gpsx, gpsy, gpsmx,gpsmy,gpsmz,gpssigmax,gpssigmay,gpssigmav]).T ,header = 'x(km)  y(km)   East_Vel    North_Vel Up_Vel  East_StdDev North_StdDev Up_StdDev',comments = '# ')
-            fid.write('\n')
-            fid.close  
-            logger.info('Write GPS model without optimised baselines in {} text file'.format(outdir+'/gps/'+name+'_%s_rf.psvelo'%(i)))  
-            fid = open(outdir+'/gps/'+name+'_%s_rf.psvelo'%(i),'w')
-            np.savetxt(fid, np.vstack([gpsx, gpsy, gpsux-bx,gpsuy-by,gpsuv-bv,gpssigmax,gpssigmay,gpssigmav]).T ,header = 'x(km)   y(km)   East_Vel    North_Vel  Up_Vel  East_StdDev North_StdDev Up_StdDev',comments = '# ')
-            fid.write('\n')
-            fid.close
-            logger.info('Write GPS residual in {} text file'.format(outdir+'/gps/'+name+'residus_%s.psvelo'%(i)))
-            fid=open(outdir+'/gps/'+name+'residus_%s.psvelo'%(i),'w')
-            np.savetxt(fid, np.vstack([gpsx, gpsy,gpsux-gpsmx-bx,gpsuy-gpsmy-by,gpsuv-gpsmz-bv,gpssigmax,gpssigmay,gpssigmav]).T ,header='x(km)  y(km)   East_Dev    North_Dev  Up_Dev   East_StdDev North_StdDev  Up_StdDev',comments='# ')
-            fid.write('\n')
-            fid.close
-        
-        data = ax1.quiver(gpsx,gpsy,gpsux-bx,gpsuy-by,scale = 100,width = 0.005,color = 'black')
-        model = ax2.quiver(gpsx,gpsy,gpsmx,gpsmy,scale = 100,width = 0.005,color = 'red')
-        residus = plt.quiver(gpsx,gpsy,gpsux-gpsmx-bx,gpsuy-gpsmy-by,scale = 100,width = 0.005,color = 'purple')
+            bx = (gps.a*flt.s[0]+gps.b*flt.n[0])
+            by = (gps.a*flt.s[1]+gps.b*flt.n[1])
+            
+            if gps.dim==2:
+            
+                logger.info('Write GPS data in {} text file'.format(outdir+'/gps/'+name+'_%s.psvelo'%(j)))
+                fid = open(outdir+'/gps/'+name+'_%s.psvelo'%(j),'w')
+                np.savetxt(fid, np.vstack([gpsx, gpsy, gpsux,gpsuy,gpssigmax,gpssigmay]).T ,header = 'x(km)  y(km)   East_Vel    North_Vel   East_StdDev North_StdDev',comments = '# ')
+                fid.write('\n')
+                fid.close
+                logger.info('Write GPS model in {} text file'.format(outdir+'/gps/'+name+'model_%s.psvelo'%(j)))
+                fid = open(outdir+'/gps/'+name+'model_%s.psvelo'%(j),'w')
+                np.savetxt(fid, np.vstack([gpsx, gpsy, gpsmx,gpsmy,gpssigmax,gpssigmay]).T ,header = 'x(km)  y(km)   East_Vel    North_Vel   East_StdDev North_StdDev',comments = '# ')
+                fid.write('\n')
+                fid.close    
+                logger.info('Write GPS model without optimised baselines in {} text file'.format(outdir+'/gps/'+name+'residus_%s.psvelo'%(j)))
+                fid=open(outdir+'/gps/'+name+'residus_%s.psvelo'%(j),'w')
+                np.savetxt(fid, np.vstack([gpsx, gpsy,gpsux-gpsmx-bx,gpsuy-gpsmy-by,gpssigmax,gpssigmay]).T ,header='x(km)  y(km)   East_Dev    North_Dev   East_StdDev North_StdDev',comments='# ')
+                fid.write('\n')
+                fid.close
+                logger.info('Write GPS residual in {} text file'.format(outdir+'/gps/'+name+'_%s_rf.psvelo'%(j)))
+                fid = open(outdir+'/gps/'+name+'_%s_rf.psvelo'%(j),'w')
+                np.savetxt(fid, np.vstack([gpsx, gpsy, gpsux-bx,gpsuy-by,gpssigmax,gpssigmay]).T ,header = 'x(km)   y(km)   East_Vel    North_Vel   East_StdDev North_StdDev',comments = '# ')
+                fid.write('\n')
+                fid.close
+            
+            else:
                 
-        ax1.scatter(gpsx, gpsy, c = colors[i], s = 30, marker = markers[i], label = gps.reduction)
-        ax2.scatter(gpsx, gpsy, c = colors[i], s = 30, marker = markers[i], label = gps.reduction)
-        ax3.scatter(gpsx, gpsy, c = colors[i], s = 30, marker = markers[i], label = gps.reduction)
-        ## display name of the station
-        if gps.plotName is True:
-            for kk in xrange(len(gpsname)):
-                ax1.text(gpsx[kk]-4*kk,gpsy[kk]-10,gpsname[kk],color = 'black')
-        ax1.quiverkey(data,0.1,1.015,20.,'GPS displacements',coordinates = 'axes',color = 'black')
-        ax2.quiverkey(model,0.1,1.015,20.,'Model',coordinates = 'axes',color = 'red')
-        ax3.quiverkey(model,1.3,1.015,20,'Residuals',coordinates = 'axes',color = 'red')
+                bv=gps.c
+                logger.info('Write GPS data in {} text file'.format(outdir+'/gps/'+name+'_%s.psvelo'%(j)))
+                fid = open(outdir+'/gps/'+name+'_%s.psvelo'%(j),'w')
+                np.savetxt(fid, np.vstack([gpsx, gpsy, gpsux,gpsuy,gpsuv,gpssigmax,gpssigmay,gpssigmav]).T ,header = 'x(km)  y(km)   East_Vel    North_Vel Up_Vel  East_StdDev North_StdDev Up_StdDev',comments = '# ')
+                fid.write('\n')
+                fid.close
+                logger.info('Write GPS model in {} text file'.format(outdir+'/gps/'+name+'model_%s.psvelo'%(j)))
+                fid = open(outdir+'/gps/'+name+'model_%s.psvelo'%(j),'w')
+                np.savetxt(fid, np.vstack([gpsx, gpsy, gpsmx,gpsmy,gpsmz,gpssigmax,gpssigmay,gpssigmav]).T ,header = 'x(km)  y(km)   East_Vel    North_Vel Up_Vel  East_StdDev North_StdDev Up_StdDev',comments = '# ')
+                fid.write('\n')
+                fid.close  
+                logger.info('Write GPS model without optimised baselines in {} text file'.format(outdir+'/gps/'+name+'_%s_rf.psvelo'%(j)))  
+                fid = open(outdir+'/gps/'+name+'_%s_rf.psvelo'%(j),'w')
+                np.savetxt(fid, np.vstack([gpsx, gpsy, gpsux-bx,gpsuy-by,gpsuv-bv,gpssigmax,gpssigmay,gpssigmav]).T ,header = 'x(km)   y(km)   East_Vel    North_Vel  Up_Vel  East_StdDev North_StdDev Up_StdDev',comments = '# ')
+                fid.write('\n')
+                fid.close
+                logger.info('Write GPS residual in {} text file'.format(outdir+'/gps/'+name+'residus_%s.psvelo'%(j)))
+                fid=open(outdir+'/gps/'+name+'residus_%s.psvelo'%(j),'w')
+                np.savetxt(fid, np.vstack([gpsx, gpsy,gpsux-gpsmx-bx,gpsuy-gpsmy-by,gpsuv-gpsmz-bv,gpssigmax,gpssigmay,gpssigmav]).T ,header='x(km)  y(km)   East_Dev    North_Dev  Up_Dev   East_StdDev North_StdDev  Up_StdDev',comments='# ')
+                fid.write('\n')
+                fid.close
+            
+            data = ax1.quiver(gpsx,gpsy,gpsux-bx,gpsuy-by,scale = 100,width = 0.005,color = 'black')
+            model = ax2.quiver(gpsx,gpsy,gpsmx,gpsmy,scale = 100,width = 0.005,color = 'red')
+            residus = plt.quiver(gpsx,gpsy,gpsux-gpsmx-bx,gpsuy-gpsmy-by,scale = 100,width = 0.005,color = 'purple')
+                    
+            ax1.scatter(gpsx, gpsy, c = colors[j], s = 30, marker = markers[j], label = gps.reduction)
+            ax2.scatter(gpsx, gpsy, c = colors[j], s = 30, marker = markers[j], label = gps.reduction)
+            ax3.scatter(gpsx, gpsy, c = colors[j], s = 30, marker = markers[j], label = gps.reduction)
+            ## display name of the station
+            if gps.plotName is True:
+                for kk in xrange(len(gpsname)):
+                    ax1.text(gpsx[kk]-4*kk,gpsy[kk]-10,gpsname[kk],color = 'black')
+            ax1.quiverkey(data,0.1,1.015,20.,'GPS displacements',coordinates = 'axes',color = 'black')
+            ax2.quiverkey(model,0.1,1.015,20.,'Model',coordinates = 'axes',color = 'red')
+            ax3.quiverkey(model,1.3,1.015,20,'Residuals',coordinates = 'axes',color = 'red')
 
-    ax1.plot(xp[:],yp[:],color = 'black',lw = 2.)
-    ylim, xlim = ax1.get_ylim(), ax1.get_xlim()
-    
-    xf,yf = np.zeros((Mseg,2)),np.zeros((Mseg,2))
-    for j in xrange(Mseg):
-        xf[j,0] = fmodel[j].x+2*-200*s[0]
-        xf[j,1] = fmodel[j].x+2*200*s[0]
-        yf[j,0] = fmodel[j].y+2*-200*s[1]
-        yf[j,1] = fmodel[j].y+2*200*s[1]
-    
-    axes = [ax1, ax2, ax3]
-    titles = ['Data', 'Model', 'Residual']
-    for ax, title in zip(axes,titles):
-        ax.axis('equal')
-        for ii in xrange(len(gmtfiles)):
-                    name = gmtfiles[ii].name
-                    wdir = gmtfiles[ii].wdir
-                    filename = gmtfiles[ii].filename
-                    color = gmtfiles[ii].color
-                    width = gmtfiles[ii].width
-                    fx,fy = gmtfiles[ii].load()
-                    for i in xrange(len(fx)):
-                        ax.plot(fx[i],fy[i],color = color,lw = width)
-
-        ax.plot(xp[:],yp[:],color = 'black',lw = 2.)
-        for f in xrange(Mseg):
-            ax.plot(xf[f,:],yf[f,:],'--',color = 'black',lw = 1.)
-        ax.legend(loc='best',fontsize='x-small')
+        ax1.plot(xp[:],yp[:],color = 'black',lw = 2.)
+        ylim, xlim = ax1.get_ylim(), ax1.get_xlim()
         
-        # plot LOS
-        h = xlim[1] - xlim[0]
-        x1, y1 = xlim[1] - int(h/5) , ylim[0] + (ylim[1]-ylim[0])/5
+        xf,yf = np.zeros((Mseg,2)),np.zeros((Mseg,2))
+        for j in xrange(Mseg):
+            xf[j,0] = fmodel[j].x+2*-200*s[0]
+            xf[j,1] = fmodel[j].x+2*200*s[0]
+            yf[j,0] = fmodel[j].y+2*-200*s[1]
+            yf[j,1] = fmodel[j].y+2*200*s[1]
+        
+        axes = [ax1, ax2, ax3]
+        titles = ['Data', 'Model', 'Residual']
+        for ax, title in zip(axes,titles):
+            ax.axis('equal')
+            for ii in xrange(len(gmtfiles)):
+                        name = gmtfiles[ii].name
+                        wdir = gmtfiles[ii].wdir
+                        filename = gmtfiles[ii].filename
+                        color = gmtfiles[ii].color
+                        width = gmtfiles[ii].width
+                        fx,fy = gmtfiles[ii].load()
+                        for i in xrange(len(fx)):
+                            ax.plot(fx[i],fy[i],color = color,lw = width)
 
-        if proj is not None:
-            l_arrow = np.float(w)/2
-            w_arrow = np.sqrt((proj[0]*l_arrow)**2+(proj[1]*l_arrow)**2)/8.
-            los_arrow = patches.FancyArrow(
-                    x=x1, y=y1,
-                    dx=proj[0]*l_arrow, dy=proj[1]*l_arrow,
-                    width=w_arrow,
-                    head_length=w_arrow*2.,
-                    head_width=w_arrow*2.,
-                    alpha=.8, fc='k',
-                    length_includes_head=True)
+            ax.plot(xp[:],yp[:],color = 'black',lw = 2.)
+            for f in xrange(Mseg):
+                ax.plot(xf[f,:],yf[f,:],'--',color = 'black',lw = 1.)
+            ax.legend(loc='best',fontsize='x-small')
+            
+            # plot LOS
+            h = xlim[1] - xlim[0]
+            x1, y1 = xlim[1] - int(h/5) , ylim[0] + (ylim[1]-ylim[0])/5
 
-            ax.add_artist(los_arrow)
-            # ax.arrow(x1,y1,30*proj[0],30*proj[1],fill = True,width = 0.5,color = 'black')
-            # ax.text(x1-1,y1-1,'LOS',color = 'black',alpha=.8)
+            if proj is not None:
+                l_arrow = np.float(w)/2
+                w_arrow = np.sqrt((proj[0]*l_arrow)**2+(proj[1]*l_arrow)**2)/8.
+                los_arrow = patches.FancyArrow(
+                        x=x1, y=y1,
+                        dx=proj[0]*l_arrow, dy=proj[1]*l_arrow,
+                        width=w_arrow,
+                        head_length=w_arrow*2.,
+                        head_width=w_arrow*2.,
+                        alpha=.8, fc='k',
+                        length_includes_head=True)
 
-        ax.set_xlabel('Distance (km)')
-        ax.set_title(title)
-        ax.set_xlim(xlim)
-        ax.set_ylim(ylim)
+                ax.add_artist(los_arrow)
+                # ax.arrow(x1,y1,30*proj[0],30*proj[1],fill = True,width = 0.5,color = 'black')
+                # ax.text(x1-1,y1-1,'LOS',color = 'black',alpha=.8)
 
-        if len(insardata)>0:
-            divider = make_axes_locatable(ax)
-            c = divider.append_axes("right", size="5%", pad=0.05)
-            plt.colorbar(m, cax=c)
-            # fig.colorbar(m,shrink = 0.5, aspect = 5)
+            ax.set_xlabel('Distance (km)')
+            ax.set_title(title)
+            ax.set_xlim(xlim)
+            ax.set_ylim(ylim)
 
-    plt.suptitle('Geodetic map')
-    fig.savefig(outdir+'/map/'+profile.name+'_map.eps',format = 'EPS')
+            if len(insardata)>0:
+                divider = make_axes_locatable(ax)
+                c = divider.append_axes("right", size="5%", pad=0.05)
+                plt.colorbar(m, cax=c)
+                # fig.colorbar(m,shrink = 0.5, aspect = 5)
+
+        plt.suptitle('Geodetic map')
+        fig.savefig(outdir+'/map/'+profile.name+'_map_%s.eps'%(nn),format = 'EPS')
 
 def plotHist(flt,model,nfigure):
    

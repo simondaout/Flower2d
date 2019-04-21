@@ -52,13 +52,13 @@ for o in sys.argv:
 # init logger 
 if level == 'debug':
     logging.basicConfig(level=logging.DEBUG,\
-        format='line %(lineno)s -- %(levelname)s -- %(message)s')
+        format=' %(filename)s -- line %(lineno)s -- %(levelname)s -- %(message)s')
     logger = logging.getLogger('optimize.log')
     logger.info('Initialise log file {0} in DEBUG mode'.format('optimize.log'))
 
 else:
     logging.basicConfig(level=logging.INFO,\
-        format='line %(lineno)s -- %(levelname)s -- %(message)s')
+        format=' %(filename)s -- line %(lineno)s -- %(levelname)s -- %(message)s')
     logger = logging.getLogger('optimize.log')
     logger.info('Initialise log file {0} in INFO mode. Use option -v for a DEBUG mode'.format('optimize.log'))
 
@@ -78,7 +78,7 @@ if len(sys.argv)>1:
         sys.exit()
 
 # Create directories for output files
-inv.outdir = outdir
+inv.outdir = outdir + '/'
 if not path.exists(inv.outdir):
     logger.info('Creating output directory {0}'.format(outdir))
     makedirs(inv.outdir)
@@ -849,7 +849,7 @@ plotLOS(inv,nfigures)
 nfigures +=  1
 logger.info('Plot and save Map plot')
 plotMap(inv,nfigures)
-nfigures +=  1
+nfigures +=  len(inv.insardata)
 logger.info('Plot and save Histrograms plot')
 plotHist(inv,model,nfigures)
 nfigures +=  1

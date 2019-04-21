@@ -38,12 +38,13 @@ class network(object):
     samp: subsample option, default:1 
     perc: cleaning outliers option (default: 100)
     lmin,lmax: min max options for plots
+    width: size scatter point for plots (default: 3.)
     """
     
     def __init__(self,network,reduction,wdir,dim,weight=1.,scale=1.,errorfile=None,perc=100,\
         los=False,head=False,av_heading=None,av_los=None,\
         mask=None, cov=None,base=None,\
-        color='black',samp=1,lmin=None,lmax=None,plotName=True):
+        color='black',samp=1,lmin=None,lmax=None,plotName=True,width=3.):
         
         # network name
         self.network = network
@@ -87,6 +88,7 @@ class network(object):
 
         self.base = base
         self.plotName=plotName
+        self.width=width
 
     def load(self,flt):
         logger = flt.logger
