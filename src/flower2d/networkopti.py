@@ -25,8 +25,10 @@ class network(object):
     weight: weight for inversion (default: 1)
     scale: scaling value input data (default: 1)
     errorfile: optional error file  (default: None)
-    los: if True then read look angle in 4th column of InSAR text file (default: None)
-    heading: average heading angle value (eg. Envisat: -76) (default: None)
+    los: if True then read look angle in the 4th column of InSAR text file (default: False)
+    heading: if True then read heading angle in the 5th column of InSAR text file (default: False)
+    av_los: average los angle value (eg.: 23 as for desc Envisat) (default: None)
+    av_heading: average heading angle value (eg.: -76 as for desc Envisat) (default: None)
     cov=[sill, sigm, lamb]: covariance parameters, default: None,None,None
     mask: optional mask (default: None)
     base: uncertainties for reference frame
@@ -38,8 +40,8 @@ class network(object):
     lmin,lmax: min max options for plots
     """
     
-    def __init__(self,network,reduction,wdir,dim,weight=1.,scale=1.,errorfile=None,\
-        los=None,heading=None,perc=100,\
+    def __init__(self,network,reduction,wdir,dim,weight=1.,scale=1.,errorfile=None,perc=100,\
+        los=False,head=False,av_heading=None,av_los=None,\
         mask=None, cov=None,base=None,\
         color='black',samp=1,lmin=None,lmax=None,plotName=True):
         
@@ -67,16 +69,18 @@ class network(object):
         self.mlos = []
         self.mpar,self.mperp = [],[]
         self.a,self.b,self.c = 0,0,0
-
         self.errorfile=errorfile
+
         self.los=los
-        self.heading=heading
-        self.color=color
+        self.heading=head
+        self.phim=av_heading # average heading angle
+        self.lookm=av_los # average los angle
         
         self.mask=mask
         self.perc=perc
         self.cov=cov
-        
+
+        self.color=color
         self.samp=samp
         self.lmin = lmin
         self.lmax = lmax
@@ -102,10 +106,15 @@ class network(object):
         if 1 == self.dim:     # InSAR case
             logger.debug('Dim = 1, Load InSAR')
 
-            if self.los is not None:
+            if (self.los is True) and (self.heading is False):
 
                 logger.info('los is True, read LOS angle in the 4th column of the text file for each points')
-                x,y,los,theta=np.loadtxt(f,comments='#',unpack=True,dtype='f,f,f,f')
+                logger.info('heading is False, read average heading angle')
+                if self.phim is None:
+                    logger.critical('Average heading angle not defined. Define av_heading value. Exit!')
+                    print(profile.__doc__)
+                    sys.exit()
+                x,y,los,look=np.loadtxt(f,comments='#',unpack=True,dtype='f,f,f,f')
 
                 logger.debug('Compute horizontal distances to the center of the profile')
                 xp=(x-self.profile.x)*self.profile.s[0]+(y-self.profile.y)*self.profile.s[1]
@@ -113,28 +122,77 @@ class network(object):
 
                 logger.debug('Only keep points within profile')
                 index=np.nonzero((xp>self.profile.xpmax)|(xp<self.profile.xpmin)|(yp>self.profile.ypmax)|(yp<self.profile.ypmin))
-                ulos,self.x,self.y,self.xp,self.yp,self.theta=np.delete(los,index),np.delete(x,index),np.delete(y,index),np.delete(xp,index),np.delete(yp,index),np.delete(theta,index)
+                ulos,self.x,self.y,self.xp,self.yp,look=np.delete(los,index),np.delete(x,index),np.delete(y,index),np.delete(xp,index),np.delete(yp,index),np.delete(look,index)
                 ulos[np.logical_or(ulos==0.0,ulos>9990.)] = np.float('NaN')
                 self.ulos=ulos*self.scale
 
                 logger.debug('Defined projection to east, north, up for each points')
-                self.phi = np.deg2rad(-90-self.heading)
-                self.theta = np.deg2rad(90.-self.theta)
-                phim,thetam=np.mean(self.phi),np.mean(self.theta)
+                self.phi = np.deg2rad(-90-self.phim*np.ones(len(look)))
+                self.theta = np.deg2rad(90.-look)
+                self.phim,self.thetam=np.mean(self.phi),np.mean(self.theta)
+                logger.info('Average angle vertical between horizontal and LOS:{0:.1f}, Average horizontal angle between East and LOS:{1:.1f}'.format(np.rad2deg(self.thetam),np.rad2deg(self.phim)))
+                
                 self.proj=[np.cos(self.theta)*np.cos(self.phi),
                 np.cos(self.theta)*np.sin(self.phi),
                 np.sin(self.theta)
                 ]
 
-                self.projm=[np.cos(thetam)*np.cos(phim),
-                np.cos(thetam)*np.sin(phim),
-                np.sin(thetam)]
-                logger.info('Average LOS projection to east, north, up: {0:.3f} {1:.3f} {2:.3f}'.format(self.projm[0],self.projm[1],self.projm[2]))
-                flt.profile.proj = self.projm
+                self.projm=[np.cos(self.thetam)*np.cos(self.phim),
+                np.cos(self.thetam)*np.sin(self.phim),
+                np.sin(self.thetam)]
+
+                logger.info('Average LOS projection to east, north, up: {0:.5f} {1:.5f} {2:.5f}'.format(self.projm[0],self.projm[1],self.projm[2]))
+                logger.debug('Set profile proj attribute')
+                self.profile.proj = self.projm
+
+            elif (self.los is True) and (self.heading is True):
+
+                logger.info('los is True, read LOS angle in the 4th column of the text file for each points')
+                logger.info('heading is True, read heading angle in the 5th column of the text file for each points')
+
+                x,y,los,look,head=np.loadtxt(f,comments='#',unpack=True,dtype='f,f,f,f,f')
+
+                logger.debug('Compute horizontal distances to the center of the profile')
+                xp=(x-self.profile.x)*self.profile.s[0]+(y-self.profile.y)*self.profile.s[1]
+                yp=(x-self.profile.x)*self.profile.n[0]+(y-self.profile.y)*self.profile.n[1]
+
+                logger.debug('Only keep points within profile')
+                index=np.nonzero((xp>self.profile.xpmax)|(xp<self.profile.xpmin)|(yp>self.profile.ypmax)|(yp<self.profile.ypmin))
+                ulos,self.x,self.y,self.xp,self.yp,look,self.head=np.delete(los,index),np.delete(x,index),np.delete(y,index),np.delete(xp,index),np.delete(yp,index),np.delete(look,index),np.delete(head,index)
+                ulos[np.logical_or(ulos==0.0,ulos>9990.)] = np.float('NaN')
+                self.ulos=ulos*self.scale
+
+                logger.debug('Defined projection to east, north, up for each points')
+                self.phi = np.deg2rad(-90-self.head)
+                self.theta = np.deg2rad(90.-look)
+                self.phim,self.thetam=np.mean(self.phi),np.mean(self.theta)
+                logger.info('Average angle vertical between horizontal and LOS:{0:.1f}, Average horizontal angle between East and LOS:{1:.1f}'.format(np.rad2deg(self.thetam),np.rad2deg(self.phim)))
+                
+                self.proj=[np.cos(self.theta)*np.cos(self.phi),
+                np.cos(self.theta)*np.sin(self.phi),
+                np.sin(self.theta)
+                ]
+
+                self.projm=[np.cos(self.thetam)*np.cos(self.phim),
+                np.cos(self.thetam)*np.sin(self.phim),
+                np.sin(self.thetam)]
+                logger.info('Average LOS projection to east, north, up: {0:.5f} {1:.5f} {2:.5f}'.format(self.projm[0],self.projm[1],self.projm[2]))
+                logger.debug('Set profile proj attribute')
+                self.profile.proj = self.projm
 
             else:
 
                 logger.info('los is not True, LOS angle not defined in the text file for each points')
+                
+                if (self.phim is None) and (self.profile.proj is None):
+                    logger.critical('Average heading angle not defined. Define av_heading value. Exit!')
+                    print(profile.__doc__)
+                    sys.exit()
+                if (self.lookm is None) and (self.profile.proj is None):
+                    logger.critical('Average LOS angle not defined. Define av_los value. Exit!')
+                    print(profile.__doc__)
+                    sys.exit()
+
                 x,y,los=np.loadtxt(f,comments='#',unpack=True,dtype='f,f,f')
                 xp=(x-self.profile.x)*self.profile.s[0]+(y-self.profile.y)*self.profile.s[1]
                 yp=(x-self.profile.x)*self.profile.n[0]+(y-self.profile.y)*self.profile.n[1]
@@ -145,10 +203,20 @@ class network(object):
 
                 if self.profile.proj is not None:
                     self.proj= self.profile.proj
+                    self.projm= self.profile.proj
+                    logger.info('Read average LOS projection to east, north, up defined in Profile: {0:.5f} {1:.5f} {2:.5f}'.format(self.projm[0],self.projm[1],self.projm[2]))
                 else:
-                    logger.critical('No average projection of look angle set in the profile class. Exit!')
-                    print(profile.__doc__)
-                    sys.exit()
+                    
+                    self.phim = np.deg2rad(-90-self.phim)
+                    self.thetam = np.deg2rad(90.-self.lookm)
+                    logger.info('Average angle vertical between horizontal and LOS:{0:.1f}, Average horizontal angle between East and LOS:{1:.1f}'.format(np.rad2deg(self.thetam),np.rad2deg(self.phim)))
+                    self.projm=[np.cos(self.thetam)*np.cos(self.phim),
+                    np.cos(self.thetam)*np.sin(self.phim),
+                    np.sin(self.thetam)]
+                    self.proj= self.projm
+                    logger.info('Average LOS projection to east, north, up: {0:.5f} {1:.5f} {2:.5f}'.format(self.projm[0],self.projm[1],self.projm[2]))
+                    logger.debug('Set profile proj attribute')
+                    self.profile.proj = self.projm
 
             if self.mask is not None:
                 uu = np.flatnonzero(np.logical_or(self.yp<=self.mask[0], self.yp>=self.mask[1]))
@@ -220,7 +288,10 @@ class network(object):
             self.name,self.x,self.y,self.xp,self.yp = np.delete(name,index),np.delete(x,index),np.delete(y,index),np.delete(xp,index),np.delete(yp,index)
             self.Npoint = len(self.name)
             
-            self.proj= self.profile.proj
+            if self.profile.proj is not None:
+                self.proj = self.profile.proj
+            else:
+                self.proj = [0,0,0]
 
             self.ux,self.uy = np.zeros(self.Npoint),np.zeros(self.Npoint)
             self.upar,self.uperp = np.zeros(self.Npoint),np.zeros(self.Npoint)
@@ -242,9 +313,10 @@ class network(object):
                 self.sigmaperp[i]=((self.sigmax[i]*np.cos(self.str))**2 + (self.sigmay[i]*np.sin(self.str))**2)**0.5
                 self.sigmapar[i]=((self.sigmax[i]*np.sin(self.str))**2 + (self.sigmay[i]*np.cos(self.str))**2)**0.5
                 
-                logger.debug('Project GPS data into LOS, for an average proj vector: {}'.format(self.proj))
-                self.ulos[i] = self.ux[i]*self.proj[0]+self.uy[i]*self.proj[1]
-                self.sigmalos[i] = self.sigmax[i]*self.proj[0]+self.sigmay[i]*self.proj[1]
+                if self.proj is not None:
+                    logger.debug('Project GPS data into LOS, for an average proj vector: {}'.format(self.proj))
+                    self.ulos[i] = self.ux[i]*self.proj[0]+self.uy[i]*self.proj[1]
+                    self.sigmalos[i] = self.sigmax[i]*self.proj[0]+self.sigmay[i]*self.proj[1]
 
             if self.errorfile is not None:
                 logger.info('Load error file: {}'.format(self.errorfile))
@@ -284,7 +356,10 @@ class network(object):
             self.name,self.x,self.y,self.xp,self.yp = np.delete(name,index),np.delete(x,index),np.delete(y,index),np.delete(xp,index),np.delete(yp,index)
             self.Npoint = len(self.name)
     
-            self.proj= self.profile.proj
+            if self.profile.proj is not None:
+                self.proj = self.profile.proj
+            else:
+                self.proj = [0,0,0]
             
             self.ux,self.uy,self.uv = np.zeros(self.Npoint),np.zeros(self.Npoint),np.zeros(self.Npoint)
             self.upar,self.uperp = np.zeros(self.Npoint),np.zeros(self.Npoint)
@@ -303,9 +378,11 @@ class network(object):
                 logger.debug('Extract perpendicular en parallele errors for GPS data')
                 self.sigmaperp[i]=((self.sigmax[i]*np.cos(self.str))**2 + (self.sigmay[i]*np.sin(self.str))**2)**0.5
                 self.sigmapar[i]=((self.sigmax[i]*np.sin(self.str))**2 + (self.sigmay[i]*np.cos(self.str))**2)**0.5
-                logger.debug('Project GPS data into LOS, for an average proj vector: {}'.format(self.proj))
-                self.ulos[i] = self.ux[i]*self.proj[0]+self.uy[i]*self.proj[1]+self.uv[i]*self.proj[2]
-                self.sigmalos[i] = self.sigmax[i]*self.proj[0]+self.sigmay[i]*self.proj[1]+self.sigmav[i]*self.proj[2]
+                
+                if self.proj is not None:
+                    logger.debug('Project GPS data into LOS, for an average proj vector: {}'.format(self.proj))
+                    self.ulos[i] = self.ux[i]*self.proj[0]+self.uy[i]*self.proj[1]+self.uv[i]*self.proj[2]
+                    self.sigmalos[i] = self.sigmax[i]*self.proj[0]+self.sigmay[i]*self.proj[1]+self.sigmav[i]*self.proj[2]
            
             if self.errorfile is not None:
                 logger.info('Load error file: {}'.format(self.errorfile))

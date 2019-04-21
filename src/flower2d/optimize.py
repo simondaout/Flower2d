@@ -189,6 +189,7 @@ except:
     inv.gpsdata = []
     logger.warning('No gpsdata list defined')
 
+# need to load insardata first
 manifolds =  inv.insardata + inv.gpsdata
 manifolds = flatten(manifolds)
 if len(manifolds) == 0:
@@ -493,7 +494,8 @@ print("    SAMPLING .....    ")
 print("---------------------------------------------------------------------------")
 print()
 
-model.sample(iter = niter, burn = nburn, thin=1)
+# model.sample(iter = niter, burn = nburn, thin=1)
+model.sample(iter = niter, burn = nburn)
 # check acceptance rates
 #print()
 #print('Checking accpetance rates:')

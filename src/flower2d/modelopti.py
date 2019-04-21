@@ -10,7 +10,7 @@ class profile:
     name: name profile
     x,y: reference point: everything is refered to this point 
     l,w: length, width profile
-    strike: strike profile (default: perpendicular to main fault)
+    strike: strike profile (default: defined by inversion class)
     proj=[east, notth, up]: average LOS projection into east, north, up used for plots [default: None]
     type:  std - plot mean and standard deviation InSAR;
     distscale - scatter plot with color scale function of the profile-parallel distance;
@@ -25,7 +25,6 @@ class profile:
         self.l = l
         self.w = w
         self.proj = proj
-
         if strike > 0:
             self.strike=strike-180
         else:
@@ -36,7 +35,7 @@ class inversion:
     """
     Inversion class
     structure: define all structures
-    strike: azimuth inversion profile
+    strike: azimuth inversion profile (ie perpandicular to the main fault)
     profile: profile class 
     fullcov      :   if True, estimates a full covariance matrix for InSAR data
                      if False, returns a diagonal matrix with sigmad on the diagonal
@@ -51,17 +50,22 @@ class inversion:
         self.name = name
         self.fmodel = []
         self.structures = structures
-        self.strike = strike
         self.profile = profile
-        
-        self.str = np.deg2rad(strike)
-        self.s = [math.sin(self.str),math.cos(self.str),0]
-        self.n = [math.cos(self.str),-math.sin(self.str),0]
         # ref point inversion is ref point profile
         self.x, self.y = self.profile.x, self.profile.y
-        # strike of the fault is the strike of the profile
+
+        # define north to the right of the profile 
+        if strike > 0:
+            self.strike=strike-180
+        else:
+            self.strike=strike
+        self.str = np.deg2rad(self.strike)
+        self.s = [math.sin(self.str),math.cos(self.str),0]
+        self.n = [math.cos(self.str),-math.sin(self.str),0]
         self.profile.s = self.s
         self.profile.n = self.n
+        self.profile.str=self.str
+        self.profile.strike=self.strike
 
         self.fullcov = fullcov
         self.maskcov = maskcov
@@ -290,6 +294,7 @@ class ramp:
         self.segments[0].dip = np.rad2deg(self.segments[0].dipr)
         # self.gamma = math.atan2((self.segments[0].H),-self.segments[0].D*self.quadrant)
         self.gamma = math.atan2((self.segments[0].H),-self.segments[0].D*self.quadrant)
+        self.segments[0].gamma = self.gamma
         # compute change of dip in between the two segments
         # # dip0=0 --> alpha = gamma
         self.alpha = self.gamma - seg.gamma
@@ -588,7 +593,8 @@ class topo:
             yp = (x-profile.x)*profile.n[0]+(y-profile.y)*profile.n[1]
             index = np.nonzero((xp>profile.xpmax)|(xp<profile.xpmin)|(yp>profile.ypmax)|(yp<profile.ypmin))
             self.x,self.y,self.z = np.delete(x,index),np.delete(y,index),np.delete(z,index)*self.scale
-
+            # print(self.z)
+            # sys.exit()
         except Exception as e: 
             logger.critical(e)
             print(topo.__doc__)

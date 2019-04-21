@@ -69,8 +69,8 @@ def plotLOS(flt,nfigure):
             uu = np.flatnonzero(inds == j)
             if len(uu)>0:
                 distance.append(bins[j] + (bins[j+1] - bins[j])/2.)
-                std_topo.append(np.std(-plot.z[uu]))
-                moy_topo.append(np.mean(-plot.z[uu]))
+                std_topo.append(np.std(plot.z[uu]))
+                moy_topo.append(np.mean(plot.z[uu]))
 
         distance = np.array(distance)
         std_topo = np.array(std_topo)
@@ -91,7 +91,7 @@ def plotLOS(flt,nfigure):
             ax1.set_ylim([plot.topomin,plot.topomax])
         else:
             ax1.set_ylim([np.min(tmin)-0.5,np.max(tmax)+0.5])
-            
+
         plt.setp( ax1.get_xticklabels(), visible = False)
         ax1.set_ylabel('Elevation (km)')
         ax1.yaxis.set_major_locator(tic.MaxNLocator(3))
@@ -108,6 +108,7 @@ def plotLOS(flt,nfigure):
     ax2.text(fmodel[0].fperp+3,-(fmodel[0].w+4),fmodel[0].name,color = 'black',style='italic',size='xx-small')
     ax2.text(fmodel[0].fperp+3,-(fmodel[0].w+8),'SS: %4.1f mm'%(fmodel[0].sst),style='italic',size='xx-small') 
     ax2.text(fmodel[0].fperp+3,-(fmodel[0].w+12),'DS: %4.1f mm'%(fmodel[0].ds),style='italic',size='xx-small') 
+    
     ax2.scatter(fmodel[0].fperp,-fmodel[0].w, s = 30,marker = 'x',color = 'blue')
     
     if (fmodel[0].dip == 0 or fmodel[0].dip == 180):
@@ -120,6 +121,7 @@ def plotLOS(flt,nfigure):
 
     # plot ramp and kink 
     for k in xrange(1,flt.structures[0].Mseg):
+        ax2.scatter(fmodel[k].fperp,-fmodel[k].w, s = 30,marker = 'x',color = 'blue')
         ax2.text(fmodel[k].fperp+3,-fmodel[k].w,fmodel[k].name,color = 'black',style='italic',size='xx-small')
         ax2.text(fmodel[k].fperp+3,-(fmodel[k].w+3),'SS: %4.1f mm'%((fmodel[k].ss)),style='italic',size='xx-small') 
         ax2.text(fmodel[k].fperp+3,-(fmodel[k].w+6),'DS: %4.1f mm'%((fmodel[k].ds)),style='italic',size='xx-small') 
@@ -130,9 +132,10 @@ def plotLOS(flt,nfigure):
     for j in xrange(1,Mstruc):
         for k in xrange(flt.structures[j].Mseg):
             # kink
-            ax2.text(fmodel[Mtemp+k].fperp+3,-fmodel[k].w,fmodel[Mtemp+k].name,color = 'black',style='italic',size='xx-small')
-            ax2.text(fmodel[Mtemp+k].fperp+3,-(fmodel[k].w+3),'SS: %4.1f mm'%(fmodel[Mtemp+k].ss),style='italic',size='xx-small') 
-            ax2.text(fmodel[Mtemp+k].fperp+3,-(fmodel[k].w+6),'DS: %4.1f mm'%(fmodel[Mtemp+k].ds),style='italic',size='xx-small') 
+            ax2.scatter(fmodel[Mtemp+k].fperp,-fmodel[Mtemp+k].w, s = 30,marker = 'x',color = 'blue')
+            ax2.text(fmodel[Mtemp+k].fperp+3,-fmodel[Mtemp+k].w,fmodel[Mtemp+k].name,color = 'black',style='italic',size='xx-small')
+            ax2.text(fmodel[Mtemp+k].fperp+3,-(fmodel[Mtemp+k].w+3),'SS: %4.1f mm'%(fmodel[Mtemp+k].ss),style='italic',size='xx-small') 
+            ax2.text(fmodel[Mtemp+k].fperp+3,-(fmodel[Mtemp+k].w+6),'DS: %4.1f mm'%(fmodel[Mtemp+k].ds),style='italic',size='xx-small') 
             for i in xrange(0,len(fmodel[0].tracew),nb):
                 ax2.plot([ fmodel[Mtemp-1].traceF[i], fmodel[Mtemp+k].traceF[i] ],[ -fmodel[Mtemp-1].tracew[i], -fmodel[Mtemp+k].tracew[i] ], '-' ,lw= .01, color='blue')
         Mtemp += flt.structures[j].Mseg
@@ -191,16 +194,10 @@ def plotLOS(flt,nfigure):
     usx = u[:,0]*s[0]+u[:,1]*n[0] 
     usy = u[:,0]*s[1]+u[:,1]*n[1]
     usz = u[:,2]
-    uslos = usx*proj[0]+usy*proj[1]+usz*proj[2]
-    # default value if no insar
-    sigmalos = np.ones(uslos.shape[0]) 
-    # ymin,ymax = ax2.get_ylim()
-    # for j in xrange(1,Mseg):
-    #     ax2.plot([fmodel[j].fperp,fmodel[j].fperp],[ymin,ymax],'--',lw=1.,color = 'black')
 
     # 2) Plot 
     markers = ['+','d','x','v']
-    colors = ['orange','m','yellow','red','blue']
+    # colors = ['orange','m','yellow','red','blue']
     
     # los component
     ax3 = fig.add_subplot(4,1,3)
@@ -220,7 +217,7 @@ def plotLOS(flt,nfigure):
     ax4.set_xlabel('Distance (km)')
     
     # 3) InSAR data and model
-    colors = ['blue','red','aqua','orange']
+    colors = ['red','orangered','farebrick','r']
     ymin,ymax = ax3.get_ylim()
     for i in xrange(len(insardata)):
         insar = insardata[i]
@@ -231,7 +228,7 @@ def plotLOS(flt,nfigure):
 
         ax3.scatter(insar.yp,insar.ulos-binsarlos,s = 3.,marker = 'o',label = insardata[i].reduction,color = insardata[i].color)
         # problem if several insar with differents weight...
-        sigmalos *=  insar.sigmad[0]
+        
 
         ymean = np.mean(ilos)
         tempmax = ymean + 2.5*np.std(ilos)
@@ -242,9 +239,9 @@ def plotLOS(flt,nfigure):
         if (insar.lmin != None) and (insar.lmax != None):
             ax3.set_ylim([insar.lmin,insar.lmax])
 
-    ax3.plot(ysp,uslos,'-',color = 'red',label = 'modeled LOS displacements',lw = 2.)
-    # ax3.plot(ysp,uslos-sigmalos,'-',color = 'red',label = 'uncertainty',lw = .5)
-    # ax3.plot(ysp,uslos+sigmalos,'-',color = 'red',lw = .5)
+        uslos = usx*insar.projm[0]+usy*insar.projm[1]+usz*insar.projm[2]
+        ax3.plot(ysp,uslos,'-',color=colors[i], label = 'modeled {} LOS displacements'.format(insar.reduction),lw = 2.)
+        # sigmalos =  insar.sigmad[0]*np.ones(len(uslos))
   
     # 4) GPS data and model
     for i in xrange(len(gpsdata)):
@@ -274,9 +271,10 @@ def plotLOS(flt,nfigure):
             #gps.sigmav = (gps.sigmav/wd)*2
             bx = bpar*s[0]+bperp*n[0] 
             by = bpar*s[1]+bperp*n[1]
-            blos = bx*proj[0]+by*proj[1]+bv*proj[2]
             # add gps in los if dim is 3
-            ax3.plot(gps.yp,gps.ulos-blos,'+',color='black',mew=1.,label='%s GPS LOS'%gpsdata[i].reduction)
+            if proj is not None:
+                blos = bx*proj[0]+by*proj[1]+bv*proj[2]
+                ax3.plot(gps.yp,gps.ulos-blos,'+',color='black',mew=1.,label='%s GPS LOS'%gpsdata[i].reduction)
             ax4.plot(gps.yp,gps.uv-bv,markers[i],color = 'red',mew = 1.,label = '%s vertical displacements'%gpsdata[i].reduction)
             ax4.errorbar(gps.yp,gps.uv-bv,yerr = gps.sigmav,ecolor = 'red',fmt = 'none')
             
@@ -505,20 +503,21 @@ def plotMap(flt,nfigure):
         h = xlim[1] - xlim[0]
         x1, y1 = xlim[1] - int(h/5) , ylim[0] + (ylim[1]-ylim[0])/5
 
-        l_arrow = np.float(w)/2
-        w_arrow = np.sqrt((proj[0]*l_arrow)**2+(proj[1]*l_arrow)**2)/8.
-        los_arrow = patches.FancyArrow(
-                x=x1, y=y1,
-                dx=proj[0]*l_arrow, dy=proj[1]*l_arrow,
-                width=w_arrow,
-                head_length=w_arrow*2.,
-                head_width=w_arrow*2.,
-                alpha=.8, fc='k',
-                length_includes_head=True)
+        if proj is not None:
+            l_arrow = np.float(w)/2
+            w_arrow = np.sqrt((proj[0]*l_arrow)**2+(proj[1]*l_arrow)**2)/8.
+            los_arrow = patches.FancyArrow(
+                    x=x1, y=y1,
+                    dx=proj[0]*l_arrow, dy=proj[1]*l_arrow,
+                    width=w_arrow,
+                    head_length=w_arrow*2.,
+                    head_width=w_arrow*2.,
+                    alpha=.8, fc='k',
+                    length_includes_head=True)
 
-        ax.add_artist(los_arrow)
-        # ax.arrow(x1,y1,30*proj[0],30*proj[1],fill = True,width = 0.5,color = 'black')
-        # ax.text(x1-1,y1-1,'LOS',color = 'black',alpha=.8)
+            ax.add_artist(los_arrow)
+            # ax.arrow(x1,y1,30*proj[0],30*proj[1],fill = True,width = 0.5,color = 'black')
+            # ax.text(x1-1,y1-1,'LOS',color = 'black',alpha=.8)
 
         ax.set_xlabel('Distance (km)')
         ax.set_title(title)
