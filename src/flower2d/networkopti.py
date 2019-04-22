@@ -672,7 +672,7 @@ class network(object):
         self.fmodel[0].sst = m[0] + tot_ss
 
         # Get model parameters for the main fault
-        self.fmodel[0].ds, self.fmodel[0].H, self.fmodel[0].D, self.fmodel[0].L,self.fmodel[0].dip = m[1:self.fmodel[0].Mker]
+        self.fmodel[0].vh, self.fmodel[0].H, self.fmodel[0].D, self.fmodel[0].L,self.fmodel[0].dip = m[1:self.fmodel[0].Mker]
         # print(self.fmodel[0].ds, self.fmodel[0].H, self.fmodel[0].D, self.fmodel[0].L,self.fmodel[0].dip)
 
         if self.struc[0].Mseg == 1:

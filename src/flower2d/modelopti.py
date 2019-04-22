@@ -143,16 +143,17 @@ class segment:
 
 #class main structure
 class main(segment):
-    def __init__(self,name,ss,sigmass,sigmaH,ds,sigmads,dip,\
-        distss,distH,distds,distD,distL,distdip,
+    def __init__(self,name,ss,sigmass,sigmaH,short,sigmashort,dip,\
+        distss,distH,distshort,distD,distL,distdip,
         H=0,D=0,sigmaD=0,L=660.,sigmaL=0.,sigmadip=0):
 
         # H is initially zero bc main fault 
         segment.__init__(self,name,ss,sigmass,H,sigmaH,distss,distH)
 
-        self.ds = ds
-        self.sigmads = sigmads
-        self.distds = distds
+        self.vh = short
+        self.sigmavh = sigmashort
+        self.distvh = distshort
+
         # position to the center of profile
         self.D, self.fperp = D, D
         self.sigmaD = sigmaD
@@ -166,10 +167,6 @@ class main(segment):
         self.distdip = distdip
         self.dipr = np.deg2rad(self.dip)
 
-        if self.ds > 0. and self.L > 50. and ((self.dip == 0) or  (self.dip == 180)):
-            print('Warning! Setting a long dipping thrust will create long-wavelength vertical Displacements')
-            print('Warning! Set dip to 0 or 180 to model a large scale shortening')
-
         self.Mker = 6
         if math.cos(self.dipr) >= 0:
             self.quadrant = 1
@@ -177,17 +174,23 @@ class main(segment):
         else:
             self.quadrant = -1
             self.gamma = np.deg2rad(180 - self.dip)
+
+        self.ds = self.vh/np.cos(self.gamma)
         self.sst = ss
+
+        if self.ds > 0. and self.L > 50. and ((self.dip == 0) or  (self.dip == 180)):
+            print('Warning! Setting a long dipping thrust will create long-wavelength vertical Displacements')
+            print('Warning! Set dip to 0 or 180 to model a large scale shortening')
     
     def info(self):
         print(self.name)
-        line=['ss', 'ss_total',  'ds',  'Depth', 'D' , 'Length', 'dip']
+        line=['ss', 'ss_total',  'short',  'Depth', 'D' , 'Length', 'dip']
         print('{:>8} {:>8} {:>8} {:>8} {:>8} {:>8} {:>8}'.format(*line))
-        line=[self.ss, self.sst, self.ds, self.w,self.D,self.L,self.dip]
+        line=[self.ss, self.sst, self.vh, self.w,self.D,self.L,self.dip]
         print('{:8.2f} {:8.2f} {:8.2f} {:8.0f} {:8.0f} {:8.0f} {:8.0f}'.format(*line))
-        line=['sigmass', 'sigmads',  'sigmaDepth',  'sigmaD', 'sigmaL','sigmadip']
+        line=['sigmass', 'sigmashort',  'sigmaDepth',  'sigmaD', 'sigmaL','sigmadip']
         print('{:>8} {:>8} {:>8} {:>8} {:>8} {:>8}'.format(*line))
-        line=[self.sigmass, self.sigmads, self.sigmaw,self.sigmaD,self.sigmaL,self.sigmadip]
+        line=[self.sigmass, self.sigmavh, self.sigmaw,self.sigmaD,self.sigmaL,self.sigmadip]
         print('{:8.2f} {:8.2f} {:8.2f} {:8.2f} {:8.2f} {:8.2f}'.format(*line))
         # print("#    ss      ss_total         ds              w      D       L    dip")
         # print('%4.1f mm/yr   %4.1f mm/yr      %4.1f mm/yr      %4i km     %4i km      %4i km    %4.1f'%(self.ss, self.sst, self.ds, self.w,self.D,self.L,self.dip))
@@ -196,9 +199,10 @@ class main(segment):
 
     def write(self,fid):
         fid.write('{}\n'.format(self.name))
-        fid.write('# ss ds w\n')
-        np.savetxt(fid, np.vstack([self.ss,self.sst,self.ds,self.w]).T, fmt = '%.6f' ,delimiter = '\t', newline = '\n' )
-        np.savetxt(fid,np.vstack([self.sigmass,self.sigmads,self.sigmaH]).T,fmt = '%.6f',delimiter = '\t', newline = '\n')
+        fid.write('# ss sst short depth\n')
+        np.savetxt(fid, np.vstack([self.ss,self.sst,self.vh,self.w]).T, fmt = '%.6f' ,delimiter = '\t', newline = '\n' )
+        fid.write('# sigma_ss sigma_short sigma_depth\n')
+        np.savetxt(fid,np.vstack([self.sigmass,self.sigmavh,self.sigmaH]).T,fmt = '%.6f',delimiter = '\t', newline = '\n')
 
 # class secondary structure
 class second(segment):
@@ -240,15 +244,15 @@ class second(segment):
 
 # one decollement as first structure 
 class mainfault:
-    def __init__(self,name,ss,sigmass,ds,sigmads,w,sigmaw,dip,\
-        distss='Unif',distds='Unif',distH='Unif',distL='Unif',distD='Unif',distdip='Unif',
+    def __init__(self,name,ss,sigmass,short,sigmashort,w,sigmaw,dip,\
+        distss='Unif',distshort='Unif',distH='Unif',distL='Unif',distD='Unif',distdip='Unif',
         D=0.,sigmaD=0.,L=660.,sigmaL=0.,sigmadip=0.):
        
         # init H to zero because main fault
         self.segments = [
-                main(name = name, D = D, sigmaD = sigmaD, ss = ss, sigmass = sigmass, ds = ds, 
-                    sigmads = sigmads, H = 0, sigmaH = sigmaw, dip = dip, sigmadip=sigmadip, L = L, sigmaL = sigmaL, 
-                    distss=distss,distds=distds,distH=distH,distL=distL,distD=distD,distdip=distdip),
+                main(name = name, D = D, sigmaD = sigmaD, ss = ss, sigmass = sigmass, short = short, 
+                    sigmashort = sigmashort, H = 0, sigmaH = sigmaw, dip = dip, sigmadip=sigmadip, L = L, sigmaL = sigmaL, 
+                    distss=distss,distshort=distshort,distH=distH,distL=distL,distD=distD,distdip=distdip),
                 ]
 
         self.Mseg = 1
@@ -260,12 +264,14 @@ class mainfault:
         
     def conservation(self):
         self.segments[0].w = self.winit - self.segments[0].H
-        self.segments[0].vh = self.segments[0].ds * np.cos(self.segments[0].dipr)
+        
         # self.segments[0].gamma = self.segments[0].dipr
         if math.cos(self.segments[0].dipr) >= 0:
             self.segments[0].gamma = np.deg2rad(self.segments[0].dip)
         else:
             self.segments[0].gamma = np.deg2rad(180 - self.segments[0].dip)
+        self.segments[0].ds = self.segments[0].vh/np.cos(self.segments[0].gamma)
+
         self.segments[0].fperp = self.segments[0].D
         # print('main F:{}, dip:{}, ds: {}, vh:{}'.format(self.segments[0].name,self.segments[0].dip,self.segments[0].ds,self.segments[0].vh))
 
@@ -306,16 +312,16 @@ class ramp:
 
 # flower structure as first structure
 class mainflower:
-    def __init__(self,name,ss,sigmass,ds,sigmads,w,sigmaw,dip,\
+    def __init__(self,name,ss,sigmass,short,sigmashort,w,sigmaw,dip,\
         name2,H2,sigmaH2,ss2,sigmass2,D2,sigmaD2,\
         name3,H3,sigmaH3,ss3,sigmass3,D3,sigmaD3,\
-        distss='Unif',distds='Unif',distH='Unif',distD='Unif',distL='Unif',distdip='Unif',
+        distss='Unif',distshort='Unif',distH='Unif',distD='Unif',distL='Unif',distdip='Unif',
         D=0.,sigmaD=0.,L=660.,sigmaL=0.,sigmadip=0.):
 
         self.segments = [
-                main(name = name, D = D, sigmaD = sigmaD, ss = ss, sigmass = sigmass, ds = ds,
-                   sigmads = sigmads, H = 0, sigmaH = sigmaw, dip = dip, sigmadip= sigmadip, L = L, sigmaL = sigmaL,
-                   distss=distss, distds=distds, distH=distH, distL=distL,distD=distD, distdip=distdip),
+                main(name = name, D = D, sigmaD = sigmaD, ss = ss, sigmass = sigmass, short = short,
+                   sigmashort = sigmashort, H = 0, sigmaH = sigmaw, dip = dip, sigmadip= sigmadip, L = L, sigmaL = sigmaL,
+                   distss=distss, distshort=distshort, distH=distH, distL=distL,distD=distD, distdip=distdip),
                 second(name = name3, ss = ss3, sigmass = sigmass3, D = D3, 
                    sigmaD = sigmaD3, H = H3, sigmaH = sigmaH3, 
                    distss= distss, distH=distH, distD=distD), 
@@ -325,6 +331,7 @@ class mainflower:
                 ]
 
         self.winit,self.segments[0].winit = w, w
+        self.segments[0].ds = self.segments[0].vh/np.cos(self.segments[0].dipr)
         self.Mseg = len(self.segments)
         self.segments[0].w,self.segments[1].w,self.segments[2].w = w, w - self.segments[1].H, w - self.segments[2].H
         self.segments[0].sigmaw = sigmaw
@@ -339,7 +346,10 @@ class mainflower:
         self.segments[0].fperp =  self.segments[0].D 
 
         # Get model parameters for the main fault
-        v1, H1 = self.segments[0].ds, self.segments[0].H
+        self.segments[0].ds = self.segments[0].vh/np.cos(self.segments[0].gamma)
+        # v1 is ds on the main fault. shortening if flat seg only
+        v1 = self.segments[0].ds
+
         self.segments[1].fperp =  self.segments[1].D + self.segments[0].fperp
         self.segments[1].w = self.segments[0].w - self.segments[1].H
         self.segments[1].L = math.sqrt(self.segments[1].D**2+(self.segments[1].H)**2)
@@ -362,14 +372,14 @@ class mainflower:
         # alpha between 0 and 90
         self.alpha = self.gamma - self.segments[0].gamma
         # kink
-        self.segments[1].ds = -v1*math.sin(self.alpha)/math.sin(self.beta-self.gamma)
+        self.segments[1].ds = -self.segments[0].vh*math.sin(self.alpha)/math.sin(self.beta-self.gamma)
         # ramp
-        self.segments[2].ds = v1*math.sin(self.beta-self.gamma+self.alpha)/math.sin(self.beta-self.gamma)
+        self.segments[2].ds = self.segments[0].vh*math.sin(self.beta-self.gamma+self.alpha)/math.sin(self.beta-self.gamma)
         # # dip0=0 --> alpha = gamma
         # self.segments[1].ds = -v1*math.sin(self.gamma)/math.sin(self.beta-self.gamma)
         # self.segments[2].ds = v1*math.sin(self.beta)/math.sin(self.beta-self.gamma)      
+        
         # compute the horizontal component of the dip-slip
-        self.segments[0].vh = self.segments[0].ds
         self.segments[1].vh = -self.segments[1].ds*math.cos(self.beta)
         self.segments[2].vh = self.segments[2].ds*math.cos(self.gamma)
         # print('MP:{}, dip: {}, v1: {}, V1h:{}:'.format(self.segments[0].name,self.segments[0].dip,v1,self.segments[0].vh ))
@@ -593,7 +603,7 @@ class topo:
             yp = (x-profile.x)*profile.n[0]+(y-profile.y)*profile.n[1]
             index = np.nonzero((xp>profile.xpmax)|(xp<profile.xpmin)|(yp>profile.ypmax)|(yp<profile.ypmin))
             self.x,self.y,self.z = np.delete(x,index),np.delete(y,index),np.delete(z,index)*self.scale
-            # print(self.z)
+            # print(np.nanmin(self.z),np.nanmax(self.z))
             # sys.exit()
         except Exception as e: 
             logger.critical(e)

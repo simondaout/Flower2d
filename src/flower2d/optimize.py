@@ -237,8 +237,8 @@ def buildm():
     logger.debug('Get parameters for the main segment')
     m_init[0],sigmam[0],pdist[0] = inv.fmodel[0].ss,inv.fmodel[0].sigmass,inv.fmodel[0].distss
     m_name[0] = '{} Strike Slip'.format(inv.fmodel[0].name)
-    m_init[1],sigmam[1],pdist[1] = inv.fmodel[0].ds,inv.fmodel[0].sigmads,inv.fmodel[0].distds
-    m_name[1] = '{} DS'.format(inv.fmodel[0].name)
+    m_init[1],sigmam[1],pdist[1] = inv.fmodel[0].vh,inv.fmodel[0].sigmavh,inv.fmodel[0].distvh
+    m_name[1] = '{} Shortening'.format(inv.fmodel[0].name)
     m_init[2],sigmam[2],pdist[2] = inv.fmodel[0].H,inv.fmodel[0].sigmaH,inv.fmodel[0].distH
     m_name[2] = '{} H'.format(inv.fmodel[0].name)
     m_init[3],sigmam[3],pdist[3] = inv.fmodel[0].D,inv.fmodel[0].sigmaD,inv.fmodel[0].distD
@@ -537,17 +537,17 @@ if '{} Strike Slip'.format(inv.fmodel[0].name) in inv.Sampled:
 else:
     inv.fmodel[0].ss = m_init[0]
    
-if '{} DS'.format(inv.fmodel[0].name) in inv.Sampled:
-    m = model.trace('{} DS'.format(inv.fmodel[0].name))[:]
+if '{} Shortening'.format(inv.fmodel[0].name) in inv.Sampled:
+    m = model.trace('{} Shortening'.format(inv.fmodel[0].name))[:]
     mf.append(np.mean(m))
-    inv.fmodel[0].ds = np.mean(m)
-    inv.fmodel[0].sigmads = 2*np.std(m) 
+    inv.fmodel[0].vh = np.mean(m)
+    inv.fmodel[0].sigmavh = 2*np.std(m) 
     inv.traces.append(m)
-    inv.labels.append('{} DS'.format(inv.fmodel[0].name))
+    inv.labels.append('{} Shortening'.format(inv.fmodel[0].name))
 
-    logger.info('Saving posterior models {0}'.format(outstat+'{}_ds.txt'.format(inv.fmodel[0].name)))
-    fid = open(outstat+'{}_ds.txt'.format(inv.fmodel[0].name), 'w')
-    m = model.trace('{} DS'.format(inv.fmodel[0].name))[:]
+    logger.info('Saving posterior models {0}'.format(outstat+'{}_short.txt'.format(inv.fmodel[0].name)))
+    fid = open(outstat+'{}_short.txt'.format(inv.fmodel[0].name), 'w')
+    m = model.trace('{} Shortening'.format(inv.fmodel[0].name))[:]
     np.savetxt(fid, m)
     fid.close()
 
@@ -778,7 +778,7 @@ if inv.structures[0].Mseg >1:
     print('{} = {} - {}'.format(inv.fmodel[0].name, inv.fmodel[1].name, inv.fmodel[2].name))
     print('{} = {} - {}'.format(inv.fmodel[0].vh, inv.fmodel[1].vh, inv.fmodel[2].vh))
 else:
-    print(inv.fmodel[0].name, inv.fmodel[0].vh)
+    print('Shortening on {0}: {1}'.format(inv.fmodel[0].name, inv.fmodel[0].vh))
 Mtemp = inv.structures[0].Mseg 
 for j in xrange(1,inv.Mstruc):
     if inv.structures[j].Mseg > 1:
@@ -786,7 +786,7 @@ for j in xrange(1,inv.Mstruc):
         print('{} = {} - {}'.format(inv.fmodel[Mtemp-1].name,inv.fmodel[Mtemp].name, inv.fmodel[Mtemp+1].name))
         print('{} = {} - {}'.format(inv.fmodel[Mtemp-1].vh,inv.fmodel[Mtemp].vh, inv.fmodel[Mtemp+1].vh))
     else:
-        print(inv.fmodel[Mtemp].name, inv.fmodel[Mtemp].vh)
+        print('Shortening on {0}: {1}'.format(inv.fmodel[Mtemp].name, inv.fmodel[Mtemp].vh))
 
     Mtemp+=inv.structures[j].Mseg
 print('--------------------------------------------')

@@ -166,6 +166,7 @@ def plotLOS(flt,nfigure):
         alpha=.8, fc='red')
 
         ax2.add_artist(x1_arrow)
+        ax2.text(fmodel[0].fperp-(profile.l/4),-fmodel[0].w-5,'Short: %4.1f mm'%(fmodel[0].vh),style='italic',size='xx-small')
         ax2.add_artist(x2_arrow)
 
     plt.setp( ax2.get_xticklabels(), visible = False)
@@ -354,8 +355,8 @@ def plotMap(flt,nfigure):
         
         name = insar.reduction
         orb = insar.a+insar.b*insar.yp
-        vmax = np.mean((insar.ulos-orb)) + np.percentile(abs(insar.ulos-orb),98)
-        vmin = np.mean((insar.ulos-orb)) - np.percentile(abs(insar.ulos-orb),98)
+        vmax = np.mean((insar.ulos)) + np.percentile(abs(insar.ulos-orb),98)
+        vmin = np.mean((insar.ulos)) - np.percentile(abs(insar.ulos-orb),98)
 
         if i==0:
             # cannot have different color scales
@@ -551,7 +552,7 @@ def plotHist(flt,model,nfigure):
     labels = []
    
     if flt.Minv < 8:
-        fig = plt.figure(nfigure)
+        fig = plt.figure(nfigure, figsize = (6,8))
     else:
         fig = plt.figure(nfigure, figsize = (12,8))
     fig.subplots_adjust(hspace = 0.75,wspace = 0.35)
@@ -582,10 +583,10 @@ def plotHist(flt,model,nfigure):
         strike = model.trace('{} Strike Slip'.format(fmodel[0].name))[:]
         traces.append(strike)
         labels.append('{} Strike Slip'.format(fmodel[0].name))
-    if '{} DS'.format(fmodel[0].name) in Sampled:
-        short = model.trace('{} DS'.format(fmodel[0].name))[:]
+    if '{} Shortening'.format(fmodel[0].name) in Sampled:
+        short = model.trace('{} Shortening'.format(fmodel[0].name))[:]
         traces.append(short)
-        labels.append('{} DS'.format(fmodel[0].name))
+        labels.append('{} Shortening'.format(fmodel[0].name))
     if '{} H'.format(fmodel[0].name) in Sampled:
         H1 = model.trace('{} H'.format(fmodel[0].name))[:]
         traces.append(np.ones((flt.nsample))*flt.fmodel[0].winit - H1)
