@@ -15,11 +15,11 @@ inv=inversion(name='Haiyuan Fault System',
               #######################
               mainfault(
               # define one main fault and various optional secondary faults
-              #ss: strike-slip, ds: dip-slip, w: depth, D: horizontal distance to the center of profile
-              name='JQH',D=0.,sigmaD=10,ss=10.,sigmass=10.,ds=-5.,
-              sigmads=5.,w=15.,sigmaw=15,dip=180.,
+              #ss: strike-slip, short: shortening, w: depth, D: horizontal distance to the center of profile
+              name='JQH',D=0.,sigmaD=10,ss=10.,sigmass=10.,short=-5.,
+              sigmashort=5.,w=15.,sigmaw=15,dip=180.,
               # optional: define prior distribution for each parameters (default: 'Unif')
-              distss='Unif',distds='Unif',distH='Unif'
+              distss='Unif',distshort='Unif',distH='Unif'
               ),
               # D: horizontal distance to the mainfault, H: vertical distance to the mainfault
               ramp(
@@ -36,9 +36,10 @@ inv=inversion(name='Haiyuan Fault System',
               # ),
                 ],
           # azimuth of the 2d model: azimuth of the main fault
-          strike=-68,
+          strike=112,
           # l: lenght, w: width, proj: Envisat proj los to east,north,z coordinates (for a mean incidence of 20.5)
-          profile=profile(name='West',x=-36.,y=10.2,l=300,w=50,proj=[0.318, -0.0827, 0.9396]),
+          #profile=profile(name='West',x=-36.,y=10.2,l=300,w=50,proj=[0.318, -0.0827, 0.9396]),
+          profile=profile(name='West',x=-36.,y=10.2,l=300,w=50),
 	  fullcov=False, # set True to compute full covariance matrix
           )
 
@@ -46,14 +47,12 @@ inv=inversion(name='Haiyuan Fault System',
 gpsdata=[
         # network: east, north gps station, reduction: dir to gps vectors, wdir: path to reduction, dim: dimention gps vectors (2/3)
         # weight: weight to gps vectors, scale: convert unity to mm if necessary
-        network(network='stations_liang_km.dat',reduction='sblock',wdir=maindir+'gps/',dim=2,weight=1.,scale=1),
+        network(network='stations_liang_km.dat',reduction='sblock',wdir=maindir+'gps/',dim=2,weight=1.,scale=1,plotName=True),
         ]
 
 # InSAR data (defined in networkopti.py) 
 insardata=[
-        network(network='T104_spectrum-square_cleanRMS_noflata_LOSVelocity_mmyr_s200_km.xy-los',reduction='T104',wdir=maindir+'insar/',dim=1,weight=1.),
-        # residual of a first inversion to compute covariance
-        #network(network='T104residus.xylos',reduction='T104',wdir=maindir+'output/insar/',dim=1,weight=1.),
+        network(network='T104_spectrum-square_cleanRMS_noflata_LOSVelocity_mmyr_s200_km.xy-los',reduction='T104',wdir=maindir+'insar/',dim=1,weight=1.,av_los=20, av_heading=-76),
         ]
 
 # optional volumic deformation (defined in modelopti.py)
