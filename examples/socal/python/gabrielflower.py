@@ -11,14 +11,14 @@ nburn=5000# numbert of burned iterations to not be influenced by itinial values
 inv=inversion(name='SAF',
         structures=[
             # define one main fault and various optional secondary faults
-            # ss: strike-slip, ds: dsening, w: depth
+            # ss: strike-slip, short: shortening, w: depth
             # D: horizontal distance to the main fault, 
             # H: vertical distance to the main fault
 
             # Simple ramp-decollement structure
             # mainfault(
             #       name='SAF', ss=-26.,sigmass=10,
-            #       ds=7.,sigmads=3.,w=20.,sigmaw=20.,dip=0.,
+            #       short=7.,sigmashort=3.,w=20.,sigmaw=20.,dip=0.,
             #       distss='Unif',distds='Unif',distH='Unif',
             #       ),
             # ramp(
@@ -27,7 +27,7 @@ inv=inversion(name='SAF',
 
             # Main flower structure
             mainflower(
-                name='SAF',ss=-27.,sigmass=10,ds=7.,sigmads=3.,w=15.,sigmaw=10.,dip=0.,
+                name='SAF',ss=-27.,sigmass=10,short=7.,sigmashort=3.,w=15.,sigmaw=10.,dip=0.,
                 name3='Kink',ss3=0.,sigmass3=0.,D3=0.,sigmaD3=20.,H3=10.,sigmaH3=10., 
                 name2='SG',ss2=0.,sigmass2=0.,D2=-20.,sigmaD2=20.,H2=10.,sigmaH2=10.,
                 # optional: define prior distribution for each parameters (default: 'Unif')
