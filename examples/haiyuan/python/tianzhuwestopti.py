@@ -17,24 +17,24 @@ inv=inversion(name='Haiyuan Fault System',
               #ss: strike-slip, short: shortening, w: depth, D: horizontal distance to the center of profile
               # optional: define prior distribution for each parameters (default: 'Unif')
               
-              #mainfault(
-	      #name='JQH',D=0.,sigmaD=10,ss=10.,sigmass=10.,short=-5.,
-              #sigmashort=5.,w=15.,sigmaw=15,dip=180.,
+              mainfault(
+	      name='JQH',D=0.,sigmaD=10,ss=10.,sigmass=10.,short=-5.,
+              sigmashort=5.,w=15.,sigmaw=15,dip=180.,
               #distss='Unif',distshort='Unif',distH='Unif'
-              #),
+              ),
               # D: horizontal distance to the mainfault, H: vertical distance to the mainfault
-              #ramp(
-              #  name='QT',ss=0.,sigmass=0.,D=30,sigmaD=25.,H=15.,sigmaH=15
-              #  ),
+              ramp(
+                name='QT',ss=0.,sigmass=0.,D=30,sigmaD=25.,H=15.,sigmaH=15
+                ),
 
               #######################
               # Option 2: flower structure
               ####################### 
-	      mainflower(
-                 name='JQH',ss=10.,sigmass=10.,short=-5.,sigmashort=5.,w=15.,sigmaw=15.,dip=180.,
-                 name2='QT',ss2=0.,sigmass2=0.,D2=30,sigmaD2=25.,H2=15.,sigmaH2=15,
-                 name3='Creeping',ss3=10.,sigmass3=10.,D3=0,sigmaD3=0.,H3=15.,sigmaH3=15,
-               ),
+	      #mainflower(
+              #   name='JQH',ss=10.,sigmass=10.,short=-5.,sigmashort=5.,w=15.,sigmaw=15.,dip=180.,
+              #   name2='QT',ss2=0.,sigmass2=0.,D2=30,sigmaD2=25.,H2=15.,sigmaH2=15,
+              #   name3='Creeping',ss3=10.,sigmass3=10.,D3=0,sigmaD3=0.,H3=15.,sigmaH3=15,
+              # ),
                 ],
           # azimuth of the 2d model: azimuth of the main fault
           strike=112,
