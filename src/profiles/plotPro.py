@@ -43,16 +43,15 @@ for o in sys.argv:
 # init logger 
 if level == 'debug':
     logging.basicConfig(level=logging.DEBUG,\
-        format='%(asctime)s -- %(levelname)s -- %(message)s')
+        format='%(lineno)s -- %(levelname)s -- %(message)s')
     logger = logging.getLogger('plotPro.log')
     logger.info('Initialise log file {0} in DEBUG mode'.format('plotPro.log'))
 
 else:
     logging.basicConfig(level=logging.INFO,\
-        format='%(asctime)s -- %(levelname)s -- %(message)s')
+        format='%(lineno)s -- %(levelname)s -- %(message)s')
     logger = logging.getLogger('plotPro.log')
     logger.info('Initialise log file {0} in INFO mode. Use option -v for a DEBUG mode'.format('plotPro.log'))
-
 
 if 1==len(sys.argv):
   usage()
@@ -75,7 +74,7 @@ if len(sys.argv)>1:
     logger.critical(e)
     print(network.__doc__)
     print(topo.__doc__)
-    print(prof.__doc__)
+    print(profile.__doc__)
     print(gmt.__doc__)
     print(fault2d.__doc__)
     sys.exit()
@@ -92,7 +91,7 @@ fperp=np.zeros(Mfault)
 # Load data
 try:
   Mtopo = len(topodata)
-  for i in xrange(Mtopo):
+  for i in range(Mtopo):
       plot=topodata[i]
       logger.debug('Load data {0}'.format(plot.name))
       plot.load()
@@ -102,7 +101,7 @@ except:
 
 try:
   Mgps = len(gpsdata)
-  for i in xrange(Mgps):
+  for i in range(Mgps):
       gps = gpsdata[i]
       logger.debug('Load data {0}'.format(gps.network))
       gps.loadgps()
@@ -112,7 +111,7 @@ except:
 
 try:
   Minsar = len(insardata)
-  for i in xrange(Minsar):
+  for i in range(Minsar):
       insar = insardata[i]
       logger.debug('Load data {0}'.format(insar.network))
       insar.loadinsar()
@@ -133,7 +132,7 @@ ax.axis('equal')
 
 logger.info('Plot Map ....') 
 
-for i in xrange(Minsar):
+for i in range(Minsar):
   
   insar=insardata[i]
   samp = insar.samp
@@ -149,13 +148,13 @@ for i in xrange(Minsar):
   # save flatten map
   # np.savetxt('{}_flat'.format(insardata[i].network), np.vstack([insar.x,insar.y,insar.ulos]).T, fmt='%.6f')
 
-for i in xrange(Mgps):
+for i in range(Mgps):
   gps=gpsdata[i]
   logger.info('Plot GPS data {0}'.format(gps.network))
   ax.quiver(gps.x,gps.y,gps.ux,gps.uy,scale = 100, width = 0.005, color = 'red')
 
 # plot faults
-for kk in xrange(Mfault):
+for kk in range(Mfault):
   xf,yf = np.zeros((2)),np.zeros((2))
   if fmodel[kk].strike is not None:
       strike = fmodel[kk].strike
@@ -172,14 +171,14 @@ for kk in xrange(Mfault):
   # plot fault
   ax.plot(xf[:],yf[:],'--',color = 'black',lw = 1.)
 
-for ii in xrange(len(gmtfiles)):
+for ii in range(len(gmtfiles)):
   name = gmtfiles[ii].name
   wdir = gmtfiles[ii].wdir
   filename = gmtfiles[ii].filename
   color = gmtfiles[ii].color
   width = gmtfiles[ii].width
   fx,fy = gmtfiles[ii].load()
-  for i in xrange(len(fx)):
+  for i in range(len(fx)):
     ax.plot(fx[i],fy[i],color = color,lw = width)
 
 if 'xmin' in locals(): 
@@ -215,7 +214,7 @@ fig3.subplots_adjust(hspace=0.0001)
 logger.info('Plot Profiles ....')
 
 # Plot profile
-for k in xrange(len(profiles)): 
+for k in range(len(profiles)): 
 
   l=profiles[k].l
   w=profiles[k].w
@@ -236,13 +235,13 @@ for k in xrange(len(profiles)):
   profiles[k].s=[math.sin(profiles[k].str),math.cos(profiles[k].str),0]
   profiles[k].n=[math.cos(profiles[k].str),-math.sin(profiles[k].str),0]
 
-  for j in xrange(Mfault):
+  for j in range(Mfault):
     fperp[j]=(fmodel[j].x-profiles[k].x)*profiles[k].n[0]+(fmodel[j].y-profiles[k].y)*profiles[k].n[1]
 
   ax1=fig1.add_subplot(len(profiles),1,k+1)
   ax1.set_xlim([-l/2,l/2])
 
-  for i in xrange(Mtopo):
+  for i in range(Mtopo):
         plot=topodata[i]
 
         # perp and par composante ref to the profile 
@@ -253,7 +252,7 @@ for k in xrange(len(profiles)):
         plotxpp,plotypp,plotz=np.delete(plot.xpp,index),np.delete(plot.ypp,index),np.delete(plot.z,index)
 
         nb = np.float(l/(len(plotz)/20.))
-        logger.debug('Load {0}. Create bins every {1:.3f} km'.format(plot.name, nb)) 
+        logger.info('Load {0}. Create bins every {1:.3f} km'.format(plot.name, nb)) 
         bins = np.arange(-l/2,l/2, nb)
         inds = np.digitize(plotypp,bins)
         distance = []
@@ -270,22 +269,22 @@ for k in xrange(len(profiles)):
         std_topo = np.array(std_topo)
         moy_topo = np.array(moy_topo)
 
-        ax1.plot(distance,-moy_topo,label=plot.name,color=plot.color,lw=1)
+        ax1.plot(distance,-moy_topo,label=plot.name,color=plot.color,lw=plot.width)
         if plot.plotminmax == True:
           logger.debug('plotminmax set to True')
-          ax1.plot(distance,-moy_topo-std_topo,color=plot.color,lw=.5)
-          ax1.plot(distance,-moy_topo+std_topo,color=plot.color,lw=.5)
+          ax1.plot(distance,-moy_topo-std_topo,color=plot.color,lw=plot.width/2)
+          ax1.plot(distance,-moy_topo+std_topo,color=plot.color,lw=plot.width/2)
         
         if (plot.topomin is not None) and (plot.topomax is not None) :
             logger.info('Set ylim to {} and {}'.format(plot.topomin,plot.topomax))
             ax1.set_ylim([plot.topomin,plot.topomax])
-            for kk in xrange(Mfault):    
+            for kk in range(Mfault):    
               ax1.plot([fperp[kk],fperp[kk]],[plot.topomin,plot.topomax],color='red')
               ax1.text(fperp[kk],0.5,fmodel[kk].name,color='red')
         else:
             topomin,topomax= ax1.get_ylim()
             print(topomin,topomax)
-            for kk in xrange(Mfault):    
+            for kk in range(Mfault):    
               ax1.plot([fperp[kk],fperp[kk]],[topomin,topomax],color='red')
               ax1.text(fperp[kk],0.5,fmodel[kk].name,color='red')
   
@@ -308,7 +307,7 @@ for k in xrange(len(profiles)):
 
   # GPS plot
   markers = ['+','d','x','v']
-  for i in xrange(Mgps):
+  for i in range(Mgps):
       gps=gpsdata[i]
       gpsmin = gps.lmin
       gpsmax = gps.lmax
@@ -348,7 +347,7 @@ for k in xrange(len(profiles)):
           ax3.plot(gpsyp,gpsuv,markers[i],color = 'red',mew = 1.,label = '%s vertical velocities'%gpsdata[i].reduction)
           ax3.errorbar(gpsyp,gpsuv,yerr = gpssigmav,ecolor = 'red',fmt = "none")          
 
-      for j in xrange(Mfault):
+      for j in range(Mfault):
           ax3.plot([fperp[j],fperp[j]],[gpsmax,gpsmin],color='red')
 
       # set born profile equal to map
@@ -357,7 +356,7 @@ for k in xrange(len(profiles)):
 
   colors = ['blue','red','orange','magenta']
   cst=0
-  for i in xrange(Minsar):
+  for i in range(Minsar):
       insar=insardata[i]
       losmin=insar.lmin
       losmax=insar.lmax
@@ -378,7 +377,7 @@ for k in xrange(len(profiles)):
       if len(insar.uu) > 50:
 
         nb = np.float(l/(len(insar.uu)/20.))
-        logger.debug('Create bins every {0:.3f} km'.format(nb)) 
+        logger.info('Create bins every {0:.3f} km'.format(nb)) 
 
         bins = np.arange(-l/2-1,l/2+1,nb)
         inds = np.digitize(insar.yypp,bins)
@@ -464,7 +463,7 @@ for k in xrange(len(profiles)):
         logger.debug('Set ylim InSAR profile to {0}-{1}'.format(losmin,losmax))
         ax2.set_ylim([losmin,losmax])
 
-        for j in xrange(Mfault):
+        for j in range(Mfault):
           ax2.plot([fperp[j],fperp[j]],[losmax,losmin],color='red')
 
       else:

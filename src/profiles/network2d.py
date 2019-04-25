@@ -20,7 +20,8 @@ class network:
     lmin,lmax: min max options for plots
     """
 
-    def __init__(self,network,reduction,wdir,dim,color='black',scale=1.,theta=False,samp=1,perc=95,lmin=None,lmax=None):
+    def __init__(self,network,reduction,wdir,dim,color='black',scale=1.,theta=False,samp=1,perc=95,lmin=None,lmax=None,
+        weight=None):
         self.network=network
         self.reduction=reduction
         self.wdir=wdir
@@ -42,11 +43,6 @@ class network:
 
         self.lmin = lmin
         self.lmax = lmax
-
-        # Model
-        self.mx,self.my=[],[]
-        self.mlos=[]
-        self.mpar,self.mperp=[],[]
 
     def loadgps(self):
         gpsf=file(self.wdir+self.network)
@@ -78,8 +74,8 @@ class network:
         self.ulos=ulos*self.scale
         self.Npoint=len(self.ulos)
         if (self.lmin or self.lmax) is None:
-	    self.lmin = np.nanpercentile(self.ulos, 2)    
-	    self.lmax = np.nanpercentile(self.ulos, 98)    
+            self.lmin = np.nanpercentile(self.ulos, 2)    
+            self.lmax = np.nanpercentile(self.ulos, 98)    
     
 
 
