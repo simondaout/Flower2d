@@ -72,6 +72,7 @@ class topo:
         self.topomin=topomin
         self.topomax=topomax
         self.plotminmax=plotminmax
+        self.width = width
         
         self.yp=[]
         self.xp=[]

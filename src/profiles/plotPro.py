@@ -85,8 +85,15 @@ if not os.path.exists(outdir):
 
 # distance between fault and center of profile in fault azimuth 
 # Fault model
-Mfault=len(fmodel)
+try:
+  Mfault=len(fmodel)
+except:
+  logger.warning('No fmodel defined')
+  Mfault=0
+  fmodel=[]
+
 fperp=np.zeros(Mfault)
+
 
 # Load data
 try:
