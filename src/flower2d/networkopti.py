@@ -26,7 +26,7 @@ class network(object):
     scale: scaling value input data (default: 1)
     errorfile: optional error file  (default: None)
     los: if True then read look angle in the 4th column of InSAR text file (default: False)
-    heading: if True then read heading angle in the 5th column of InSAR text file (default: False)
+    head: if True then read heading angle in the 5th column of InSAR text file (default: False)
     av_los: average los angle value (eg.: 23 as for desc Envisat) (default: None)
     av_heading: average heading angle value (eg.: -76 as for desc Envisat) (default: None)
     cov=[sill, sigm, lamb]: covariance parameters, default: None,None,None
@@ -664,13 +664,7 @@ class network(object):
         g = np.zeros((self.N))
 
         self.fmodel[0].ss = m[0]
-        # Compute SS on the Shear zone 
-       
-        tot_ss = 0
-        for l in range(1,self.Mseg):
-            tot_ss += m[self.fmodel[0].Mker+(l-1)*3]
-        self.fmodel[0].sst = m[0] + tot_ss
-
+        
         # Get model parameters for the main fault
         self.fmodel[0].vh, self.fmodel[0].H, self.fmodel[0].D, self.fmodel[0].L,self.fmodel[0].dip = m[1:self.fmodel[0].Mker]
         # print(self.fmodel[0].ds, self.fmodel[0].H, self.fmodel[0].D, self.fmodel[0].L,self.fmodel[0].dip)
@@ -769,6 +763,11 @@ class network(object):
             self.my=u[:,0]*self.profile.s[1]+u[:,1]*self.profile.n[1]
             self.mz=u[:,2]
             self.mlos=self.mx*self.proj[0]+self.my*self.proj[1]+self.mz*self.proj[2]
+
+        # tot_ss = 0
+        # for l in range(0,self.Mseg):
+        #     if self.fmodel[0].L == 660:
+        #         tot_ss += self.fmodel[0].ss
 
         return self.dp
 

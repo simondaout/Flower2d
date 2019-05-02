@@ -43,10 +43,11 @@ class inversion:
     distance to the center of profile km eg. [0,20,40,50] (default: None)
     rampcov: remove ramp before covariance estimation. eg. lin, quad, cub (default: lin)
     name: give a name (Optional)
+    depthmax: maximum depth for plot (Optinala)
     """
     
     def __init__(self,structures,strike,profile, 
-        fullcov=False, maskcov=None, rampcov=False, name=''):
+        fullcov=False, maskcov=None, rampcov=False, name='', depthmax=None):
         self.name = name
         self.fmodel = []
         self.structures = structures
@@ -70,6 +71,8 @@ class inversion:
         self.fullcov = fullcov
         self.maskcov = maskcov
         self.rampcov = rampcov
+
+        self.depthmax=depthmax
 
 class segment:
     def __init__(self,name,ss,sigmass,H,sigmaH,distss,distH):
@@ -123,19 +126,23 @@ class segment:
         #######################################################
 
         # half-infinite dislocation
-        upar =  (1./(2*math.pi)) * (np.arctan2(math.sin(self.dipr)*(yp+shift)+math.cos(self.dipr)*(self.w+z),math.sin(self.dipr)*(self.w+z)-math.cos(self.dipr)*(yp+shift)) + \
-            np.arctan2(math.sin(self.dipr)*(yp+shift)-math.cos(self.dipr)*(z-self.w),-math.cos(self.dipr)*(yp+shift)-math.sin(self.dipr)*(z-self.w))) 
-        
-        # if not creeping segment, half-infinite dislocation for strike-slip
-        #if abs(self.D) > 10:
-            #L = 660
-            #print self.name,self.L,self.fperp
+        upar =  (1./(2*math.pi)) * (np.arctan2(math.sin(self.dipr)*(yp+shift)+ \
+            math.cos(self.dipr)*(self.w), math.sin(self.dipr)*(self.w) - math.cos(self.dipr)*(yp+shift)) + \
+            np.arctan2(math.sin(self.dipr)*(yp+shift) + math.cos(self.dipr)*self.w, \
+                -math.cos(self.dipr)*(yp+shift) + math.sin(self.dipr)*self.w ))  
 
-        # Linf = 660
-        # upar = upar -  (1./(2*math.pi)) * (np.arctan2(math.sin(self.dipr)*(yp+shift)+math.cos(self.dipr)*(self.w+z),math.sin(self.dipr)*(self.w+z)-math.cos(self.dipr)*(yp+shift)) + \
-        #     np.arctan2(math.sin(self.dipr)*(yp+shift)-math.cos(self.dipr)*(z-self.w),-math.cos(self.dipr)*(yp+shift)-math.sin(self.dipr)*(z-self.w))) - \
-        #     ( (1./(2*math.pi)) * (np.arctan2(math.sin(self.dipr)*(yp+shift+Linf*math.cos(self.dipr))+math.cos(self.dipr)*(self.w+z+Linf*math.sin(self.dipr)),math.sin(self.dipr)*(self.w+z+Linf*math.sin(self.dipr))-math.cos(self.dipr)*(yp+shift+Linf*math.cos(self.dipr))) +
-        #     np.arctan2(math.sin(self.dipr)*(yp+shift+Linf*math.cos(self.dipr))-math.cos(self.dipr)*(z-(self.w+Linf*math.sin(self.dipr))),-math.cos(self.dipr)*(yp+shift+Linf*math.cos(self.dipr))-math.sin(self.dipr)*(z-(self.w+Linf*math.sin(self.dipr))))) )
+        if L < 660:
+
+            shift = shift - L*math.cos(self.dipr)
+            w1 = self.w + L*math.sin(self.dipr)
+
+            uparf = (1./(2*math.pi)) * (np.arctan2(math.sin(self.dipr)*(yp+shift)+ \
+            math.cos(self.dipr)*(w1), math.sin(self.dipr)*(w1) - math.cos(self.dipr)*(yp+shift)) + \
+            np.arctan2(math.sin(self.dipr)*(yp+shift) + math.cos(self.dipr)*w1, \
+                -math.cos(self.dipr)*(yp+shift) + math.sin(self.dipr)*w1 )) 
+
+            upar = upar - uparf
+
 
         u[:,0],u[:,1],u[:,2] = self.ss*upar,self.ds*uperp,self.ds*uv
 

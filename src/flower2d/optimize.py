@@ -510,6 +510,8 @@ print()
 
 logger.info('Writing output files...')
 # model.stats()
+# model.goodness()
+# sys.exit()
 
 # Compute 95% HDI (Highest Density Interval) is the smallest width interval to contain 95% of the posterior probability. 
 def hdi(trace, cred_mass = 0.95):
@@ -646,14 +648,11 @@ for j in xrange(1,inv.Mseg):
         fid.close()
         fid.close()
 
-# Compute ss main fault
-#tot_ss = sum([inv.fmodel[j].ss for j in xrange(1,inv.Mseg)])
-tot_ss = 0
-for j in xrange(1,inv.Mseg):
-        print(tot_ss,inv.fmodel[j].ss)
-inv.fmodel[0].sst = inv.fmodel[0].ss + tot_ss 
-# print inv.fmodel[0].sst, tot_ss, inv.fmodel[0].ss
-# sys.exit()
+# Compute ss total for half-infinite dislocations
+inv.fmodel[0].sst = 0
+for j in xrange(0,inv.Mseg):
+    if inv.fmodel[0].L == 660:
+        inv.fmodel[0].sst = inv.fmodel[0].sst + inv.fmodel[j].ss
 
 logger.debug('Saving all plaussible models for plot')
 inv.fmodel[0].traceF = inv.fmodel[0].D*np.ones((inv.nsample))

@@ -106,7 +106,7 @@ def plotLOS(flt,nfigure):
     
     # plot decollement
     ax2.text(fmodel[0].fperp+3,-(fmodel[0].w+4),fmodel[0].name,color = 'black',style='italic',size='xx-small')
-    ax2.text(fmodel[0].fperp+3,-(fmodel[0].w+8),'SS: %4.1f mm'%(fmodel[0].sst),style='italic',size='xx-small') 
+    ax2.text(fmodel[0].fperp+3,-(fmodel[0].w+8),'SS: %4.1f mm'%(fmodel[0].ss),style='italic',size='xx-small') 
     ax2.text(fmodel[0].fperp+3,-(fmodel[0].w+12),'DS: %4.1f mm'%(fmodel[0].ds),style='italic',size='xx-small') 
     
     ax2.scatter(fmodel[0].fperp,-fmodel[0].w, s = 30,marker = 'x',color = 'blue')
@@ -170,7 +170,12 @@ def plotLOS(flt,nfigure):
         ax2.add_artist(x2_arrow)
 
     plt.setp( ax2.get_xticklabels(), visible = False)
-    wmax = fmodel[0].w+20
+     
+    print(flt.depthmax)
+    if flt.depthmax == None:
+        wmax = fmodel[0].w+20
+    else:
+        wmax = flt.depthmax
     ax2.set_ylim([-wmax,5])
     ax2.set_ylabel('Depth (km)')
     ax2.yaxis.set_major_locator(tic.MaxNLocator(5))
