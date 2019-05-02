@@ -21,7 +21,7 @@ class network:
     """
 
     def __init__(self,network,reduction,wdir,dim,color='black',scale=1.,theta=False,samp=1,perc=95,lmin=None,lmax=None,
-        weight=None):
+        weight=None, plotName=None):
         self.network=network
         self.reduction=reduction
         self.wdir=wdir
@@ -43,6 +43,7 @@ class network:
 
         self.lmin = lmin
         self.lmax = lmax
+        self.plotName = plotName
 
     def loadgps(self):
         gpsf=file(self.wdir+self.network)
@@ -58,8 +59,8 @@ class network:
             self.sigmax[j],self.sigmay[j]=esigma*self.scale,nsigma*self.scale
         
         if (self.lmin or self.lmax) is None:
-           self.lmin = np.nanpercentile(np.array([self.ux,self.uy]), 2)
-           self.lmin = np.nanpercentile(np.array([self.ux,self.uy]), 98)
+           self.lmin = np.nanpercentile(np.array([self.ux,self.uy]), 8)
+           self.lmax = np.nanpercentile(np.array([self.ux,self.uy]), 92)
 
     def loadinsar(self):
         insarf=file(self.wdir+self.network)
@@ -74,8 +75,8 @@ class network:
         self.ulos=ulos*self.scale
         self.Npoint=len(self.ulos)
         if (self.lmin or self.lmax) is None:
-            self.lmin = np.nanpercentile(self.ulos, 2)    
-            self.lmax = np.nanpercentile(self.ulos, 98)    
+            self.lmin = np.nanpercentile(self.ulos, 1)    
+            self.lmax = np.nanpercentile(self.ulos, 99)    
     
 
 

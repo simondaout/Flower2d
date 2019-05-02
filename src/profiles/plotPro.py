@@ -160,6 +160,10 @@ for i in range(Mgps):
   logger.info('Plot GPS data {0}'.format(gps.network))
   ax.quiver(gps.x,gps.y,gps.ux,gps.uy,scale = 100, width = 0.005, color = 'red')
 
+  if gps.plotName is True:
+      for kk in xrange(len(gps.name)):
+            ax.text(gps.x[kk], gps.y[kk], gps.name[kk], color ='black')
+
 # plot faults
 for kk in range(Mfault):
   xf,yf = np.zeros((2)),np.zeros((2))
@@ -361,6 +365,8 @@ for k in range(len(profiles)):
       logger.debug('Set ylim GPS profile to {0}-{1}'.format(gpsmin,gpsmax))
       ax3.set_ylim([gpsmin,gpsmax])
 
+  ax3.legend(loc = 'best',fontsize='x-small')
+
   colors = ['blue','red','orange','magenta']
   cst=0
   for i in range(Minsar):
@@ -383,7 +389,7 @@ for k in range(len(profiles)):
      
       if len(insar.uu) > 50:
 
-        nb = np.float(l/(len(insar.uu)/20.))
+        nb = np.float(l/(len(insar.uu)/100.))
         logger.info('Create bins every {0:.3f} km'.format(nb)) 
 
         bins = np.arange(-l/2-1,l/2+1,nb)
