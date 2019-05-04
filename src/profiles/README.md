@@ -2,7 +2,7 @@
 
 Python script to plot profiles across InSAR and GPS data and estimate residual ramps. 
 
-To perform a profile, you must at least defined those two classes: 
+To perform a profile, you must at least define those two classes: 
 
 Network:
 ============
@@ -20,7 +20,7 @@ Network:
     perc: cleaning outliers option within bins profile, default: percentile=95
     lmin,lmax: min max options for plots
 
-class profile:
+Profile:
 ============
     profile class: Load profiles 
     Parameters: 
@@ -38,7 +38,7 @@ class profile:
 
 Optional additional classes:
 
-class topo:
+Topo:
 ============
     topo class: Load topographic file 
     Parameters: 
@@ -50,7 +50,7 @@ class topo:
     topomin,topomax
     plotminmax: option to also plot min max topo within bins
 
-class fault2d:
+Fault2d:
 ============
     fault2d class: Load 2D fault for plot only
     help to position fault for futher modeling
