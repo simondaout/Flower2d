@@ -33,14 +33,22 @@ class profile:
     type:  std - plot mean and standard deviation InSAR;
     distscale - scatter plot with color scale function of the profile-parallel distance;
     stdscat - plot scatter + standar deviation. 
+    flat: if not None estimate a ramp along profile. lin: linear ramp, quad: quadratic, cub: cubic.
+    If number InSAR network is 2 then estimate ramp within the overlaping area (Default: None)
+    lbins: larger bins for profile
+    loc_ramp: location ramp estimation. Can be positive (for postive distances along profile) or negative. Default: None
     """
 
-    def __init__(self,name,x,y,l,w,strike,type=None):
+    def __init__(self,name,x,y,l,w,strike,type=None,
+        flat=None,lbins=None,loc_ramp=None):
         self.name=name
         self.x=x
         self.y=y
         self.l=l
         self.w=w
+        self.flat=flat
+        self.lbins=lbins
+        self.loc_ramp=loc_ramp
 
         if strike > 0:
             self.strike=strike-180

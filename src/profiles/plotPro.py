@@ -7,6 +7,8 @@ from matplotlib import pyplot as plt
 #from matplotlib import mpl
 import matplotlib
 import matplotlib.cm as cm
+import scipy.optimize as opt
+import scipy.linalg as lst
 
 from network2d import *
 from model2d import *
@@ -14,10 +16,14 @@ from readgmt import *
 
 from sys import argv,exit,stdin,stdout
 import getopt
-import os
+import os, math
 from os import path
-
 import logging
+
+
+def hdi(trace, cred_mass=0.95):
+    hdi_min, hdi_max = np.nanpercentile(trace,2.), np.nanpercentile(trace,98.)  
+    return hdi_min, hdi_max
 
 def usage():
   print('plotPro.py infile.py [-v] [-h]')
@@ -123,11 +129,14 @@ try:
       logger.debug('Load data {0}'.format(insar.network))
       insar.loadinsar()
       if insar.theta is True:
-        logger.warning('Convert LOS displacements to mean LOS angle...')
-        logger.warning('Use option theta=False to avoid that')
+        logger.warning('Convert LOS displacements to mean LOS angle assuming horizontal displacements...')
+        logger.warning('Use option theta=False in network class to avoid that')
         insar.losm = np.mean(insar.los)
-        insar.ulos = insar.ulos * \
+        insar.uloscor = insar.ulos * \
           (np.sin(np.deg2rad(insar.losm))/np.sin(np.deg2rad(insar.los)))
+      else:
+        insar.uloscor = insar.ulos
+
 except:
   logger.warning('No insardata defined')
   Minsar = 0
@@ -234,6 +243,9 @@ for k in range(len(profiles)):
   strike = profiles[k].strike
   name=profiles[k].name
   typ=profiles[k].typ
+  flat=profiles[k].flat
+  nb = profiles[k].lbins
+  loc_ramp = profiles[k].loc_ramp
 
   logger.info('Plot profile {0}. length: {1}, width :{2}, strike: {3}'.format(name, l, w, strike)) 
 
@@ -273,8 +285,8 @@ for k in range(len(profiles)):
             uu = np.flatnonzero(inds == j)
             if len(uu)>0:
                 distance.append(bins[j] + (bins[j+1] - bins[j])/2.)
-                std_topo.append(np.std(plotz[uu]))
-                moy_topo.append(np.median(plotz[uu]))
+                std_topo.append(np.nanstd(plotz[uu]))
+                moy_topo.append(np.nanmedian(plotz[uu]))
         
         distance = np.array(distance)
         std_topo = np.array(std_topo)
@@ -367,7 +379,6 @@ for k in range(len(profiles)):
 
   ax3.legend(loc = 'best',fontsize='x-small')
 
-  colors = ['blue','red','orange','magenta']
   cst=0
   for i in range(Minsar):
       insar=insardata[i]
@@ -389,8 +400,11 @@ for k in range(len(profiles)):
      
       if len(insar.uu) > 50:
 
-        nb = np.float(l/(len(insar.uu)/100.))
-        logger.info('Create bins every {0:.3f} km'.format(nb)) 
+        if nb is None:
+          nb = np.float(l/(len(insar.uu)/100.))
+          logger.info('Create bins every {0:.3f} km'.format(nb)) 
+        else:
+          logger.info('Set nbins to {} defined in profile class'.format(nb)) 
 
         bins = np.arange(-l/2-1,l/2+1,nb)
         inds = np.digitize(insar.yypp,bins)
@@ -416,8 +430,8 @@ for k in range(len(profiles)):
                 indice = np.flatnonzero(np.logical_and(_los>np.percentile(\
                   _los,100-insar.perc),_los<np.percentile(_los,insar.perc)))
 
-                insar.std_los.append(np.std(_los[indice]))
-                insar.moy_los.append(np.median(_los[indice]))
+                insar.std_los.append(np.nanstd(_los[indice]))
+                insar.moy_los.append(np.nanmedian(_los[indice]))
                 insar.xperp.append(_xperp[indice])
                 insar.yperp.append(_yperp[indice])
                 insar.uulos.append(_los[indice])
@@ -439,6 +453,168 @@ for k in range(len(profiles)):
           insar.yperp = np.array(insar.yperp)
           insar.uulos = np.array(insar.uulos)
 
+      else:
+          logger.critical('Number of InSAR points inferior to 50. Exit plot profile!') 
+
+  # FLATEN
+  if (flat != None):
+
+    # remove ramp between two profiles
+    if len(insardata)==2:
+
+      logger.info('Flat is not None and 2 InSAR network defined: flattening based on the differences in the overlapping areas')
+      insar1,insar2=insardata[0],insardata[1]
+      kk2 = np.in1d(insar2.distance, insar1.distance)
+      kk2 = np.flatnonzero(kk2==True)
+      kk1 = np.in1d(insar1.distance, insar2.distance)
+      kk1 = np.flatnonzero(kk1==True)
+
+      temp_los = (insar1.moy_los[kk1] - insar2.moy_los[kk2])[::]
+      temp_yp = insar1.distance[kk1][::]
+      temp_std = np.sqrt((insar1.std_los[kk1]**2 + insar2.std_los[kk2]**2))[::]
+
+      # # cut longueurs tracks
+      kmax1,kmax2=np.max(insar1.distance), np.max(insar2.distance)
+      kmin1,kmin2=np.min(insar1.distance), np.min(insar2.distance)
+      kmax,kmin = np.min([kmax1,kmax2]), np.max([kmin1,kmin2])
+
+    # remove ramp along profile on one LOS
+    else:
+
+      logger.info('Flat is not None and 1 InSAR network defined: flattening along the profile')
+      insar2 = insardata[0]
+      kmax,kmin = np.max(insar2.distance), np.min(insar2.distance)
+
+      if loc_ramp=="positive":
+        logger.info('Estimate ramp in the postive distances of the profile')
+        kk2 = np.nonzero((insar2.distance>0))
+      elif loc_ramp=="negative":
+        logger.info('Estimate ramp in the negative distances of the profile')
+        kk2 = np.nonzero((insar2.distance<0))
+      else:
+        logger.info('Estimate ramp within the whole profile')
+        kk2 = np.arange(len(insar2.distance))
+
+      temp_los = insar2.moy_los[kk2]
+      temp_yp = insar2.distance[kk2]
+      temp_std = insar2.std_los[kk2]
+
+    # temp_std = np.ones(len(temp_yp))
+    # Cd = np.diag(temp_std**2,k=0)
+    # remove residuals NaN
+    kk = np.flatnonzero(~np.isnan(temp_los))
+    temp_los,temp_yp,temp_std = temp_los[kk],temp_yp[kk],temp_std[kk]
+   
+    if flat is 'quad': 
+        G = np.zeros((len(temp_los),3))
+        G[:,0] = temp_yp**2
+        G[:,1] = temp_yp
+        G[:,2] = 1
+    elif flat is 'cub':
+        G = np.zeros((len(temp_los),4))
+        G[:,0] = temp_yp**3
+        G[:,1] = temp_yp**2
+        G[:,2] = temp_yp
+        G[:,3] = 1
+    else:
+        G = np.zeros((len(temp_los),2))
+        G[:,0] = temp_yp
+        G[:,1] = 1
+
+    try:
+      x0 = lst.lstsq(G,temp_los)[0]
+    except Exception as e:
+      logger.warning(e)
+      x0 = np.zeros(np.shape(G)[1])
+
+    # print x0
+    _func = lambda x: np.sum(((np.dot(G,x)-temp_los)/temp_std)**2)
+    _fprime = lambda x: 2*np.dot(G.T/temp_std, (np.dot(G,x)-temp_los[::])/temp_std)
+    pars = opt.fmin_slsqp(_func,x0,fprime=_fprime,iter=2000,full_output=True,iprint=0)[0]
+
+    if flat is 'quad': 
+      a = pars[0]; b = pars[1]; c = pars[2]
+      blos = a*insar2.distance[kk2]**2 + b*insar2.distance[kk2] + c
+    elif flat is 'cub':
+      a = pars[0]; b = pars[1]; c = pars[2]; d =pars[3]
+      blos = a*insar2.distance[kk2]**3 + b*insar2.distance[kk2]**2 + c*insar2.distance[kk2] + d
+    else:
+      a = pars[0]; b = pars[1]
+      blos = a*insar2.distance[kk2] + b
+    
+    if flat is 'quad':
+        a = pars[0]; b = pars[1]; c = pars[2]
+        logger.info('Remove ramp: {0} yperp**2  + {1} yperp  + {2}'.format(a,b,c))
+
+        blos = a*insar2.distance**2 + b*insar2.distance + c
+        insar2.moy_los = insar2.moy_los + blos
+
+        blos = a*insar2.yypp**2 + b*insar2.yypp + c
+        insar2.uu = insar2.uu + blos
+        blos = a*insar2.ypp**2 + b*insar2.ypp + c
+        insar2.ulos = insar2.ulos + blos
+        insar2.uloscor = insar2.uloscor + blos
+
+        x = np.arange(kmin,kmax,1)
+        ysp = a*x**2 + b*x + c
+
+    elif flat is 'cub':
+        a = pars[0]; b = pars[1]; c = pars[2]; d =pars[3]
+        logger.info('Remove ramp: {0} yperp**3 + {1} yperp**2  + {2} yperp  + {3}'.format(a,b,c,d))
+    
+        blos = a*insar2.distance**3 + b*insar2.distance**2 + c*insar2.distance + d
+        insar2.moy_los = insar2.moy_los + blos
+
+        blos = a*insar2.yypp**3 + b*insar2.yypp**2 + c*insar2.yypp + d
+        insar2.uu = insar2.uu + blos
+        blos = a*insar2.ypp**3 + b*insar2.ypp**2 + c*insar2.ypp + d
+        insar2.ulos = insar2.ulos + blos
+        insar2.uloscor = insar2.uloscor + blos
+
+        x = np.arange(kmin,kmax,1)
+        ysp = a*x**3 + b*x**2 + c*x +d
+
+    else:
+        a = pars[0]; b = pars[1]
+        logger.info('Remove ramp: {0} yperp  + {1}'.format(a,b))
+    
+        blos = a*insar2.distance + b
+        insar2.moy_los = insar2.moy_los + blos
+
+        blos = a*insar2.yypp + b
+        insar2.uu = insar2.uu + blos
+        blos = a*insar2.ypp + b
+        insar2.ulos = insar2.ulos + blos
+        insar2.uloscor = insar2.uloscor + blos
+
+        x = np.arange(kmin,kmax,1)
+        ysp = a*x + b
+
+    if len(insardata)==2:
+
+        diff = temp_los - blos[kk]
+
+        # Plot histogram
+        fig4=plt.figure(5,figsize=(8,6))
+        ax4 = fig4.add_subplot(1,1,1)
+        ax4.hist(diff,bins=30,density=True,histtype='stepfilled', \
+          color='black',alpha=0.4,label='{}-{}'.format(insardata[0].reduction,insardata[1].reduction))
+        hdi_min, hdi_max = hdi(diff)
+        opts = {'c':'green', 'linestyle':'--'}
+        ax4.axvline(x=hdi_min, **opts)
+        ax4.axvline(x=hdi_max, **opts)
+        ax4.set_xlabel("Mean: {:0.3f}\n95% HDI: {:0.3f} - {:0.3f}".format(\
+          diff.mean(), hdi_min, hdi_max))
+        ax4.legend(loc='best')
+        ax4.set_xlim(math.floor(np.nanmin(diff)),math.ceil(np.nanmax(diff)))
+        logger.debug('Save {0} output file'.format(outdir+profiles[0].name+'_'+flat+'_histo.eps'))
+        fig4.savefig(outdir+profiles[0].name+'_'+flat+'_histo.eps', format='EPS',dpi=150)
+
+  for i in range(Minsar):
+        insar=insardata[i]
+        losmin=insar.lmin
+        losmax=insar.lmax
+        
         # PLOT
         if typ is 'distscale':
           logger.info('Plot InSAR with distscale option')
@@ -479,8 +655,8 @@ for k in range(len(profiles)):
         for j in range(Mfault):
           ax2.plot([fperp[j],fperp[j]],[losmax,losmin],color='red')
 
-      else:
-          logger.critical('Number of InSAR points inferior to 50. Exit plot profile!') 
+  # plot ramp
+  ax2.plot(x,ysp,color='red',lw=1.)
           
   if k is not len(profiles)-1:
     plt.setp(ax2.get_xticklabels(), visible=False)
@@ -492,11 +668,71 @@ for k in range(len(profiles)):
     else:
       ax2.legend(loc='best')
 
+if (flat != None) and len(insardata)==2:
+  logger.info('Plot fatten Maps...')
+  # MAP
+  fig=plt.figure(6,figsize = (9,7))
+  ax = fig.add_subplot(1,1,1)
+  ax.axis('equal')
+  for i in xrange(len(insardata)):
+    insar=insardata[i]
+    # samp = insar.samp
+    samp = 60
+
+    logger.info('Plot data {0} between {1} and {2}'.format(insar.network, insar.lmin, insar.lmax))
+    logger.info('Subsample data every {0} point (samp option)'.format(insar.samp))
+    norm = matplotlib.colors.Normalize(vmin=insar.lmin, vmax=insar.lmax)
+    m = cm.ScalarMappable(norm = norm, cmap = 'rainbow')
+    m.set_array(insar.uloscor[::samp])
+    facelos = m.to_rgba(insar.uloscor[::samp])
+    ax.scatter(insar.x[::samp],insar.y[::samp],s = 2,marker = 'o',color = facelos,label = 'LOS Velocity %s'%(insar.reduction))
+
+    # plot faults
+    for kk in xrange(Mfault):
+      xf,yf = np.zeros((2)),np.zeros((2))
+      strike=fmodel[kk].strike
+      str=(strike*math.pi)/180
+      s=[math.sin(str),math.cos(str),0]
+      n=[math.cos(str),-math.sin(str),0]
+      xf[0] = fmodel[kk].x+2*-150*s[0]
+      xf[1] = fmodel[kk].x+2*150*s[0]
+      yf[0] = fmodel[kk].y+2*-150*s[1]
+      yf[1] = fmodel[kk].y+2*150*s[1]
+      # plot fault
+      ax.plot(xf[:],yf[:],'--',color = 'black',lw = 1.)
+
+    if 'xmin' in locals(): 
+      logger.info('Found boundaries map plot {0}-{1} and {2}-{3} in locals'.format(xmin,xmax,ymin,ymax))
+    else:
+      xmin,xmax=-200,200
+      ymin,ymax=-200,200
+      logger.info('Set boundaries map plot {0}-{1} and {2}-{3} by default'.format(xmin,xmax,ymin,ymax))
+    ax.set_xlim(xmin,xmax)
+    ax.set_ylim(ymin,ymax)
+
+    for ii in xrange(len(gmtfiles)):
+      name = gmtfiles[ii].name
+      wdir = gmtfiles[ii].wdir
+      filename = gmtfiles[ii].filename
+      color = gmtfiles[ii].color
+      width = gmtfiles[ii].width
+      fx,fy = gmtfiles[ii].load()
+      for i in xrange(len(fx)):
+        ax.plot(fx[i],fy[i],color = color,lw = width)
+
+    # add colorbar los
+    if len(insardata) > 0:
+      fig.colorbar(m,shrink = 0.5, aspect = 5)
+
+  # plot profile
+  ax.plot(xp[:],yp[:],color = 'black',lw = 1.)
+  ax.set_title('Flatten LOS')
+
 ax1.set_xlabel('Distance (km)')
 ax1.set_ylabel('Elevation (km)')
 
 ax2.set_xlabel('Distance (km)')
-ax2.set_ylabel('LOS velocity (mm/yr)')
+ax2.set_ylabel('LOS velocity (mm)')
 
 logger.debug('Save {0} output file'.format(outdir+profiles[k].name+'protopo.eps'))
 fig1.savefig(outdir+profiles[k].name+'protopo.eps', format='EPS', dpi=150)

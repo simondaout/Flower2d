@@ -71,7 +71,7 @@ class network:
             self.x,self.y,ulos,self.los=np.loadtxt(insarf,comments='#',usecols=(0,1,2,3),unpack=True,dtype='f,f,f,f')
             self.x,self.y,ulos,self.los=self.x[::self.samp],self.y[::self.samp],ulos[::self.samp],self.los[::self.samp]
         
-        ulos[np.logical_or(ulos==0.0,ulos>9990.)] = np.float('NaN')
+        # ulos[np.logical_or(ulos==0.0,ulos>9990.)] = np.float('NaN')
         self.ulos=ulos*self.scale
         self.Npoint=len(self.ulos)
         if (self.lmin or self.lmax) is None:
