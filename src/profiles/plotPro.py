@@ -153,7 +153,13 @@ for i in range(Minsar):
   insar=insardata[i]
   samp = insar.samp
 
-  logger.info('Plot data {0} between {1} and {2}'.format(insar.network, insar.lmin, insar.lmax))
+  if (insar.lmin or insar.lmax) is None:
+        vmin = np.nanpercentile(insar.ulos, 1)    
+        vmax = np.nanpercentile(insar.ulos, 99)
+  else:
+       vmin, vmax = insar.lmin, insar.lmax
+
+  logger.info('Plot data in map view {0} between {1} and {2}'.format(insar.network, vmin, vmax))
   logger.info('Subsample data every {0} point (samp option)'.format(insar.samp))
   norm = matplotlib.colors.Normalize(vmin=insar.lmin, vmax=insar.lmax)
   m = cm.ScalarMappable(norm = norm, cmap = 'rainbow')
@@ -609,6 +615,9 @@ for k in range(len(profiles)):
         ax4.set_xlim(math.floor(np.nanmin(diff)),math.ceil(np.nanmax(diff)))
         logger.debug('Save {0} output file'.format(outdir+profiles[0].name+'_'+flat+'_histo.eps'))
         fig4.savefig(outdir+profiles[0].name+'_'+flat+'_histo.eps', format='EPS',dpi=150)
+    
+    # plot ramp
+    ax2.plot(x,ysp,color='red',lw=1.,label='Estimated ramp')
 
   for i in range(Minsar):
         insar=insardata[i]
@@ -649,14 +658,12 @@ for k in range(len(profiles)):
         cst+=1.
       
         # set born profile equal to map
-        logger.debug('Set ylim InSAR profile to {0}-{1}'.format(losmin,losmax))
-        ax2.set_ylim([losmin,losmax])
+        if (losmin is not None) and (losmax is not None):
+          logger.debug('Set ylim InSAR profile to {0}-{1}'.format(losmin,losmax))
+          ax2.set_ylim([losmin,losmax])
 
         for j in range(Mfault):
           ax2.plot([fperp[j],fperp[j]],[losmax,losmin],color='red')
-
-  # plot ramp
-  ax2.plot(x,ysp,color='red',lw=1.)
           
   if k is not len(profiles)-1:
     plt.setp(ax2.get_xticklabels(), visible=False)
@@ -679,7 +686,7 @@ if (flat != None) and len(insardata)==2:
     # samp = insar.samp
     samp = 60
 
-    logger.info('Plot data {0} between {1} and {2}'.format(insar.network, insar.lmin, insar.lmax))
+    logger.info('Plot data in map view {0} between {1} and {2}'.format(insar.network, vmin, vmax))
     logger.info('Subsample data every {0} point (samp option)'.format(insar.samp))
     norm = matplotlib.colors.Normalize(vmin=insar.lmin, vmax=insar.lmax)
     m = cm.ScalarMappable(norm = norm, cmap = 'rainbow')
