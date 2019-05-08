@@ -27,11 +27,11 @@ inv=inversion(name='SAF',
 
             # Main flower structure
             mainflower(
-                name='SAF',ss=-27.,sigmass=10,short=7.,sigmashort=3.,w=15.,sigmaw=10.,dip=0.,
+                name='SAF',ss=-27.,sigmass=10,short=7.,sigmashort=3.,w=20.,sigmaw=20.,dip=0.,
                 name3='Kink',ss3=0.,sigmass3=0.,D3=0.,sigmaD3=20.,H3=10.,sigmaH3=10., 
                 name2='SG',ss2=0.,sigmass2=0.,D2=-20.,sigmaD2=20.,H2=10.,sigmaH2=10.,
                 # optional: define prior distribution for each parameters (default: 'Unif')
-                # distss='Gaus',distds='Gaus',distH='Unif',distD='Unif',
+                distss='Gaus',distshort='Gaus',distH='Unif',distD='Unif',
                 ),
             # We add another flower struct. to the main one
             flower(
@@ -39,7 +39,7 @@ inv=inversion(name='SAF',
                 name1='Decol',ss1=0.,sigmass1=0.,D1=-25.,sigmaD1=20.,H1=0.,sigmaH1=0.,
                 ),
             # We add a frontal ramp 
-            #ramp(name='PHT',ss=-6.,sigmass=5.,D=-15.,sigmaD=10.,H=5.,sigmaH=5.) 
+            ramp(name='PHT',ss=-5.,sigmass=5.,D=-15.,sigmaD=10.,H=5.,sigmaH=5.) 
             ],
             # azimuth of the 2d model: azimuth of the main fault
             strike=-62.5,
@@ -50,7 +50,7 @@ inv=inversion(name='SAF',
 
 # GPS data (defined in networkopti.py)
 gpsdata=[
-        network(network='cgps_stations_km.dat',reduction='PBO',wdir=maindir+'gps/',dim=3,weight=.02,scale=1.,plotName=False),
+        network(network='cgps_stations_km.dat',reduction='PBO',wdir=maindir+'gps/',dim=3,weight=.02,scale=1.,plotName=True),
         ]
 
 # InSAR data (defined in networkopti.py)
@@ -66,8 +66,8 @@ gmtfiles=[
 
 # optionnal: add data for plots in gmt format (>)
 plotdata=[
-        #seismi(name='2002-2011 seismicity (Hauksson, 2012)',wdir=maindir+'seismicity/',filename='sc_02_11_km.xydm',color='orange',width=.5),
-        #moho(name='Moho (Tape 2012)',wdir=maindir+'gmt/',filename='cal_moho01_q02_q08_ir02_id01_km.xyz',color='red',width=2.),
+        seismi(name='2002-2011 seismicity (Hauksson, 2012)',wdir=maindir+'seismicity/',filename='sc_02_11_km.xydm',color='orange',width=.5),
+        moho(name='Moho (Tape 2012)',wdir=maindir+'gmt/',filename='cal_moho01_q02_q08_ir02_id01_km.xyz',color='red',width=2.),
      ]
 
 #topographic plot
