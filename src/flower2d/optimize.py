@@ -651,7 +651,7 @@ for j in xrange(1,inv.Mseg):
 # Compute ss total for half-infinite dislocations
 inv.fmodel[0].sst = 0
 for j in xrange(0,inv.Mseg):
-    if inv.fmodel[0].L == 660:
+    if inv.fmodel[j].L == 660:
         inv.fmodel[0].sst = inv.fmodel[0].sst + inv.fmodel[j].ss
 
 logger.debug('Saving all plaussible models for plot')
