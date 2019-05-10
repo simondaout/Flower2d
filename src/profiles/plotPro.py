@@ -167,9 +167,6 @@ for i in range(Minsar):
   facelos = m.to_rgba(insar.ulos[::samp])
   ax.scatter(insar.x[::samp],insar.y[::samp], s=1, marker = 'o',color = facelos, label = 'LOS Velocity %s'%(insar.reduction))
 
-  # save flatten map
-  # np.savetxt('{}_flat'.format(insardata[i].network), np.vstack([insar.x,insar.y,insar.ulos]).T, fmt='%.6f')
-
 for i in range(Mgps):
   gps=gpsdata[i]
   logger.info('Plot GPS data {0}'.format(gps.network))
@@ -693,6 +690,9 @@ if (flat != None) and len(insardata)==2:
     m.set_array(insar.uloscor[::samp])
     facelos = m.to_rgba(insar.uloscor[::samp])
     ax.scatter(insar.x[::samp],insar.y[::samp],s = 2,marker = 'o',color = facelos,label = 'LOS Velocity %s'%(insar.reduction))
+
+    # save flatten map
+    np.savetxt('{}_flat'.format(insardata[i].network), np.vstack([insar.x,insar.y,insar.uloscor]).T, fmt='%.6f')
 
     # plot faults
     for kk in xrange(Mfault):
