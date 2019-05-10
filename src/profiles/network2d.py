@@ -48,6 +48,7 @@ class network:
     def loadgps(self):
         gpsf=file(self.wdir+self.network)
         self.name,self.x,self.y=np.loadtxt(gpsf,comments='#',unpack=True,dtype='S4,f,f')
+
         self.Npoint=len(self.name)
         self.ux,self.uy=np.zeros(self.Npoint),np.zeros(self.Npoint)
         self.sigmax,self.sigmay=np.zeros(self.Npoint),np.zeros(self.Npoint)
@@ -73,10 +74,7 @@ class network:
         
         # ulos[np.logical_or(ulos==0.0,ulos>9990.)] = np.float('NaN')
         self.ulos=ulos*self.scale
-        self.Npoint=len(self.ulos)
-        if (self.lmin or self.lmax) is None:
-            self.lmin = np.nanpercentile(self.ulos, 1)    
-            self.lmax = np.nanpercentile(self.ulos, 99)    
+        self.Npoint=len(self.ulos)   
     
 
 
