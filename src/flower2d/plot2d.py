@@ -222,7 +222,7 @@ def plotLOS(flt,nfigure):
     ax4.set_xlabel('Distance (km)')
     
     # 3) InSAR data and model
-    colors = ['red','darkred','r']
+    colors = ['red','darkred','r','red','darkred','r','red','darkred','r']
     ymin,ymax = ax3.get_ylim()
     for i in xrange(len(insardata)):
         insar = insardata[i]
@@ -324,7 +324,7 @@ def plotMap(flt,nfigure):
         ax2 = fig.add_subplot(1,3,2) 
         ax3 = fig.add_subplot(1,3,3) 
         markers = ['^','v','/^']
-        colors = ['orange','m','yellow','red','blue']
+        colors = ['orange','m','yellow','red','blue','orange','m','yellow','red','blue']
 
         # bundary profile
         xp,yp = np.zeros((7)),np.zeros((7))
