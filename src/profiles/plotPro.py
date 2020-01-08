@@ -218,22 +218,22 @@ if 'm' in locals():
   fig.colorbar(m,shrink = 0.5, aspect = 5)
 
 # fig pro topo
-if len(profiles) > 2:
-  fig1=plt.figure(1,figsize=(7,8))
+if len(profiles) > 1:
+  fig1=plt.figure(1,figsize=(10,8))
 else:
   fig1=plt.figure(1,figsize=(10,3))
 fig1.subplots_adjust(hspace=0.0001)
 
 # fig pro insar
-if len(profiles) > 2:
-  fig2=plt.figure(4,figsize=(7,8))
+if len(profiles) > 1:
+  fig2=plt.figure(4,figsize=(10,8))
 else:
   fig2=plt.figure(4,figsize=(10,3))
 fig2.subplots_adjust(hspace=0.0001)
 
 # fig pro gps
-if len(profiles) > 2:
-  fig3=plt.figure(5,figsize=(7,8))
+if len(profiles) > 1:
+  fig3=plt.figure(5,figsize=(10,8))
 else:
   fig3=plt.figure(5,figsize=(10,3))
 fig3.subplots_adjust(hspace=0.0001)
@@ -281,8 +281,12 @@ for k in range(len(profiles)):
         index=np.nonzero((plot.xpp>xpmax)|(plot.xpp<xpmin)|(plot.ypp>ypmax)|(plot.ypp<ypmin))
         plotxpp,plotypp,plotz=np.delete(plot.xpp,index),np.delete(plot.ypp,index),np.delete(plot.z,index)
 
-        nb = np.float(l/(len(plotz)/20.))
-        logger.info('Load {0}. Create bins every {1:.3f} km'.format(plot.name, nb)) 
+        if nb is None:
+          nb = np.float(l/(len(insar.uu)/100.))
+          logger.info('Create bins every {0:.3f} km'.format(nb)) 
+        else:
+          logger.info('Set nbins to {} defined in profile class'.format(nb))
+
         bins = np.arange(-l/2,l/2, nb)
         inds = np.digitize(plotypp,bins)
         distance = []
@@ -404,7 +408,15 @@ for k in range(len(profiles)):
       np.delete(insar.y,index),np.delete(insar.xpp,index),np.delete(insar.ypp,index)
 
       logger.debug('Number of InSAR point left within profile {0}'.format(len(insar.uu))) 
-     
+       
+      # Initialise for plot in case no data for this profile
+      insar.distance = []
+      insar.moy_los = []
+      insar.std_los = []
+      insar.xperp = []
+      insar.yperp = []
+      insar.uulos =  []    
+
       if len(insar.uu) > 50:
 
         if nb is None:
@@ -415,12 +427,6 @@ for k in range(len(profiles)):
 
         bins = np.arange(-l/2-1,l/2+1,nb)
         inds = np.digitize(insar.yypp,bins)
-        insar.distance = []
-        insar.moy_los = []
-        insar.std_los = []
-        insar.xperp = []
-        insar.yperp = []
-        insar.uulos =  []
  
         for j in range(len(bins)-1):
             uu = np.flatnonzero(inds == j)
@@ -447,18 +453,21 @@ for k in range(len(profiles)):
                 logger.debug('Less than 10 points within the bin. Nothing to be plot')
 
         del _los; del _xperp; del _yperp
-        insar.distance = np.array(insar.distance)
-        insar.std_los = np.array(insar.std_los)
-        insar.moy_los = np.array(insar.moy_los)
 
         try:
           insar.xperp = np.concatenate(np.array(insar.xperp))
           insar.yperp = np.concatenate(np.array(insar.yperp))
           insar.uulos = np.concatenate(np.array(insar.uulos))
+          insar.distance = np.concatenate(np.array(insar.distance))
+          insar.std_los = np.concatenate(np.array(insar.std_los))
+          insar.moy_los = np.concatenate(np.array(insar.moy_los))
         except:
           insar.xperp = np.array(insar.xperp)
           insar.yperp = np.array(insar.yperp)
           insar.uulos = np.array(insar.uulos)
+          insar.distance = np.array(insar.distance)
+          insar.std_los = np.array(insar.std_los)
+          insar.moy_los = np.array(insar.moy_los)
 
       else:
           logger.critical('Number of InSAR points inferior to 50. Exit plot profile!') 
@@ -556,8 +565,12 @@ for k in range(len(profiles)):
         blos = a*insar2.distance**2 + b*insar2.distance + c
         insar2.moy_los = insar2.moy_los + blos
 
+        blos = a*insar2.yperp + b
+        insar2.uulos = insar2.uulos + blos
+
         blos = a*insar2.yypp**2 + b*insar2.yypp + c
         insar2.uu = insar2.uu + blos
+
         blos = a*insar2.ypp**2 + b*insar2.ypp + c
         insar2.ulos = insar2.ulos + blos
         insar2.uloscor = insar2.uloscor + blos
@@ -572,8 +585,12 @@ for k in range(len(profiles)):
         blos = a*insar2.distance**3 + b*insar2.distance**2 + c*insar2.distance + d
         insar2.moy_los = insar2.moy_los + blos
 
+        blos = a*insar2.yperp + b
+        insar2.uulos = insar2.uulos + blos
+
         blos = a*insar2.yypp**3 + b*insar2.yypp**2 + c*insar2.yypp + d
         insar2.uu = insar2.uu + blos
+
         blos = a*insar2.ypp**3 + b*insar2.ypp**2 + c*insar2.ypp + d
         insar2.ulos = insar2.ulos + blos
         insar2.uloscor = insar2.uloscor + blos
@@ -587,9 +604,13 @@ for k in range(len(profiles)):
     
         blos = a*insar2.distance + b
         insar2.moy_los = insar2.moy_los + blos
+        
+        blos = a*insar2.yperp + b
+        insar2.uulos = insar2.uulos + blos
 
         blos = a*insar2.yypp + b
         insar2.uu = insar2.uu + blos
+
         blos = a*insar2.ypp + b
         insar2.ulos = insar2.ulos + blos
         insar2.uloscor = insar2.uloscor + blos
@@ -624,47 +645,57 @@ for k in range(len(profiles)):
         insar=insardata[i]
         losmin=insar.lmin
         losmax=insar.lmax
-        
-        # PLOT
-        if typ is 'distscale':
-          logger.info('Plot InSAR with distscale option')
-          # colorscale fct of the parrallel distance to the profile
-          norm = matplotlib.colors.Normalize(vmin=xpmin, vmax=xpmax)
-          m1 = cm.ScalarMappable(norm=norm,cmap='cubehelix_r')
-          m1.set_array(insar.xperp)
-          facelos=m1.to_rgba(insar.xperp)
-          ax2.scatter(insar.yperp,insar.uulos,s = .1, marker='o',alpha=0.4,\
-             label=insardata[i].reduction,color=facelos, rasterized=True)
-        
-        elif typ is 'std':
-          logger.info('Plot InSAR with std option')
-          # plot mean and standard deviation
-          ax2.plot(insar.distance,insar.moy_los,color=insar.color,lw=3.,label=insardata[i].reduction)
-          ax2.plot(insar.distance,insar.moy_los-insar.std_los,color=insar.color,lw=.5)
-          ax2.plot(insar.distance,insar.moy_los+insar.std_los,color=insar.color,lw=.5)
 
-        elif typ is 'stdscat':
-          logger.info('Plot InSAR with stdscat option')
-          # plot mean and standard deviation
-          ax2.plot(insar.distance,insar.moy_los,color='black',lw=3.,label=insardata[i].reduction)
-          ax2.plot(insar.distance,insar.moy_los-insar.std_los,color='black',lw=.5)
-          ax2.plot(insar.distance,insar.moy_los+insar.std_los,color='black',lw=.5)
-          ax2.scatter(insar.yperp,insar.uulos,s = .1, marker='o',alpha=0.4,color=insar.color,rasterized=True)
+        if (flat != None) and len(insardata)==2:
+            logger.info('Plot InSAR with std option')
+            # plot mean and standard deviation
+            ax2.plot(insar.distance,insar.moy_los,color=insar.color,lw=2.,label=insardata[i].reduction)
+            ax2.plot(insar.distance,insar.moy_los-insar.std_los,color=insar.color,lw=.5)
+            ax2.plot(insar.distance,insar.moy_los+insar.std_los,color=insar.color,lw=.5)
+            ax2.scatter(insar.yperp,insar.uulos,s = .01, marker='o',alpha=0.1,color=insar.color,rasterized=True)
 
         else:
-          # plot scattering plot
-          logger.info('No type profile give. Plot InSAR scatter point')
-          ax2.scatter(insar.yperp,insar.uulos,s = .1, marker='o',alpha=0.4,color=insar.color,rasterized=True)
+          if len(insar.distance) >0:
+            # PLOT
+            if typ is 'distscale':
+              logger.info('Plot InSAR with distscale option')
+              # colorscale fct of the parrallel distance to the profile
+              norm = matplotlib.colors.Normalize(vmin=xpmin, vmax=xpmax)
+              m1 = cm.ScalarMappable(norm=norm,cmap='cubehelix_r')
+              m1.set_array(insar.xperp)
+              facelos=m1.to_rgba(insar.xperp)
+              ax2.scatter(insar.yperp,insar.uulos,s = .1, marker='o',alpha=0.4,\
+                 label=insardata[i].reduction,color=facelos, rasterized=True)
+            
+            elif typ is 'std':
+              logger.info('Plot InSAR with std option')
+              # plot mean and standard deviation
+              ax2.plot(insar.distance,insar.moy_los,color=insar.color,lw=2.,label=insardata[i].reduction)
+              ax2.plot(insar.distance,insar.moy_los-insar.std_los,color=insar.color,lw=.5)
+              ax2.plot(insar.distance,insar.moy_los+insar.std_los,color=insar.color,lw=.5)
 
-        cst+=1.
-      
-        # set born profile equal to map
-        if (losmin is not None) and (losmax is not None):
-          logger.debug('Set ylim InSAR profile to {0}-{1}'.format(losmin,losmax))
-          ax2.set_ylim([losmin,losmax])
+            elif typ is 'stdscat':
+              logger.info('Plot InSAR with stdscat option')
+              # plot mean and standard deviation
+              ax2.plot(insar.distance,insar.moy_los,color='black',lw=2.,label=insardata[i].reduction)
+              ax2.plot(insar.distance,insar.moy_los-insar.std_los,color='black',lw=.5)
+              ax2.plot(insar.distance,insar.moy_los+insar.std_los,color='black',lw=.5)
+              ax2.scatter(insar.yperp,insar.uulos,s = .1, marker='o',alpha=0.4,color=insar.color,rasterized=True)
 
-        for j in range(Mfault):
-          ax2.plot([fperp[j],fperp[j]],[losmax,losmin],color='red')
+            else:
+              # plot scattering plot
+              logger.info('No type profile give. Plot InSAR scatter point')
+              ax2.scatter(insar.yperp,insar.uulos,s = .1, marker='o',alpha=0.4,color=insar.color,rasterized=True)
+
+            cst+=1.
+          
+            # set born profile equal to map
+            if (losmin is not None) and (losmax is not None):
+              logger.debug('Set ylim InSAR profile to {0}-{1}'.format(losmin,losmax))
+              ax2.set_ylim([losmin,losmax])
+
+  for j in range(Mfault):
+    ax2.plot([fperp[j],fperp[j]],[losmax,losmin],color='red')
           
   if k is not len(profiles)-1:
     plt.setp(ax2.get_xticklabels(), visible=False)
@@ -698,7 +729,8 @@ if (flat != None) and len(insardata)==2:
     ax.scatter(insar.x[::samp],insar.y[::samp],s = 2,marker = 'o',color = facelos,label = 'LOS Velocity %s'%(insar.reduction))
 
     # save flatten map
-    np.savetxt('{}_flat'.format(insardata[i].network), np.vstack([insar.x,insar.y,insar.ulos]).T, fmt='%.6f')
+    if i==1:
+      np.savetxt('{}_flat'.format(insardata[i].network), np.vstack([insar.x,insar.y,insar.ulos]).T, fmt='%.6f')
 
     # plot faults
     for kk in xrange(Mfault):
