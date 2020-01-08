@@ -129,7 +129,8 @@ try:
       logger.debug('Load data {0}'.format(insar.network))
       insar.loadinsar()
       if insar.theta is True:
-        logger.warning('Convert LOS displacements to mean LOS angle assuming horizontal displacements...')
+        logger.warning('Convert LOS displacements to mean LOS angle assuming \
+          horizontal displacements...')
         logger.warning('Use option theta=False in network class to avoid that')
         insar.losm = np.mean(insar.los)
         insar.uloscor = insar.ulos * \
@@ -151,7 +152,10 @@ logger.info('Plot Map ....')
 for i in range(Minsar):
   
   insar=insardata[i]
-  samp = insar.samp
+  if insar.samp > 2:
+      samp = insar.samp
+  else:
+      samp = insar.samp*10
 
   if (insar.lmin or insar.lmax) is None:
         vmin = np.nanpercentile(insar.ulos, 1)    
@@ -680,8 +684,10 @@ if (flat != None) and len(insardata)==2:
   ax.axis('equal')
   for i in xrange(len(insardata)):
     insar=insardata[i]
-    # samp = insar.samp
-    samp = 60
+    if insar.samp > 2:
+      samp = insar.samp
+    else:
+      samp = insar.samp*10
 
     logger.info('Plot data in map view {0} between {1} and {2}'.format(insar.network, vmin, vmax))
     logger.info('Subsample data every {0} point (samp option)'.format(insar.samp))
@@ -692,7 +698,7 @@ if (flat != None) and len(insardata)==2:
     ax.scatter(insar.x[::samp],insar.y[::samp],s = 2,marker = 'o',color = facelos,label = 'LOS Velocity %s'%(insar.reduction))
 
     # save flatten map
-    np.savetxt('{}_flat'.format(insardata[i].network), np.vstack([insar.x,insar.y,insar.uloscor]).T, fmt='%.6f')
+    np.savetxt('{}_flat'.format(insardata[i].network), np.vstack([insar.x,insar.y,insar.ulos]).T, fmt='%.6f')
 
     # plot faults
     for kk in xrange(Mfault):
@@ -710,12 +716,8 @@ if (flat != None) and len(insardata)==2:
 
     if 'xmin' in locals(): 
       logger.info('Found boundaries map plot {0}-{1} and {2}-{3} in locals'.format(xmin,xmax,ymin,ymax))
-    else:
-      xmin,xmax=-200,200
-      ymin,ymax=-200,200
-      logger.info('Set boundaries map plot {0}-{1} and {2}-{3} by default'.format(xmin,xmax,ymin,ymax))
-    ax.set_xlim(xmin,xmax)
-    ax.set_ylim(ymin,ymax)
+      ax.set_xlim(xmin,xmax)
+      ax.set_ylim(ymin,ymax)
 
     for ii in xrange(len(gmtfiles)):
       name = gmtfiles[ii].name
@@ -727,9 +729,9 @@ if (flat != None) and len(insardata)==2:
       for i in xrange(len(fx)):
         ax.plot(fx[i],fy[i],color = color,lw = width)
 
-    # add colorbar los
-    if len(insardata) > 0:
-      fig.colorbar(m,shrink = 0.5, aspect = 5)
+  # add colorbar los
+  if len(insardata) > 0:
+    fig.colorbar(m,shrink = 0.5, aspect = 5)
 
   # plot profile
   ax.plot(xp[:],yp[:],color = 'black',lw = 1.)
@@ -748,10 +750,10 @@ logger.debug('Save {0} output file'.format(outdir+profiles[k].name+'prolos.pdf')
 fig2.savefig(outdir+profiles[k].name+'prolos.pdf', format='PDF',dpi=150)
 
 logger.debug('Save {0} output file'.format(outdir+profiles[k].name+'progps.eps'))
-fig3.savefig(outdir+profiles[k].name+'progps.eps', format='EPS',)
+fig3.savefig(outdir+profiles[k].name+'progps.eps', format='EPS',dpi=75)
 
 logger.debug('Save {0} output file'.format(outdir+profiles[k].name+'promap.eps'))
-fig.savefig(outdir+profiles[k].name+'promap.eps', format='EPS',)
+fig.savefig(outdir+profiles[k].name+'promap.eps', format='EPS',dpi=75)
 
 plt.show()
 

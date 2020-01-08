@@ -20,8 +20,9 @@ class network:
     lmin,lmax: min max options for plots
     """
 
-    def __init__(self,network,reduction,wdir,dim,color='black',scale=1.,theta=False,samp=1,perc=95,lmin=None,lmax=None,
-        weight=None, plotName=None):
+    def __init__(self,network,reduction,wdir,dim,color='black',scale=1.,theta=False,\
+        samp=1,perc=95,lmin=None,lmax=None,plotName=None, utm_proj=None, ref=None):
+
         self.network=network
         self.reduction=reduction
         self.wdir=wdir
@@ -45,9 +46,25 @@ class network:
         self.lmax = lmax
         self.plotName = plotName
 
+        # projection
+        self.utm_proj=utm_proj
+        self.ref=ref
+        if self.utm_proj is not None:
+            import pyproj
+            self.UTM = pyproj.Proj("+init=EPSG:{}".format(self.utm_proj))
+            if self.ref is not None:
+                self.ref_x,self.ref_y =  self.UTM(self.ref[0],self.ref[1])
+            else:
+                self.ref_x,self.ref_y = 0,0
+
     def loadgps(self):
         gpsf=file(self.wdir+self.network)
-        self.name,self.x,self.y=np.loadtxt(gpsf,comments='#',unpack=True,dtype='S4,f,f')
+        if self.utm_proj is None:
+            self.name,self.x,self.y=np.loadtxt(gpsf,comments='#',unpack=True,dtype='S4,f,f')
+        else:
+            self.name,self.lon,self.lat=np.loadtxt(gpsf,comments='#',unpack=True,dtype='S4,f,f')
+            self.x, self.y = self.UTM(self.lon, self.lat) 
+            self.x, self.y = (self.x - self.ref_x)/1e3, (self.y - self.ref_y)/1e3
 
         self.Npoint=len(self.name)
         self.ux,self.uy=np.zeros(self.Npoint),np.zeros(self.Npoint)
@@ -65,13 +82,24 @@ class network:
 
     def loadinsar(self):
         insarf=file(self.wdir+self.network)
-        if self.theta is False:
-            self.x,self.y,ulos=np.loadtxt(insarf,comments='#',unpack=True,usecols=(0,1,2),dtype='f,f,f')
-            self.x,self.y,ulos=self.x[::self.samp],self.y[::self.samp],ulos[::self.samp] 
+        if self.utm_proj is None:
+            if self.theta is False:
+                self.x,self.y,ulos=np.loadtxt(insarf,comments='#',unpack=True,usecols=(0,1,2),dtype='f,f,f')
+                self.x,self.y,ulos=self.x[::self.samp],self.y[::self.samp],ulos[::self.samp] 
+            else:
+                self.x,self.y,ulos,self.los=np.loadtxt(insarf,comments='#',usecols=(0,1,2,3),unpack=True,dtype='f,f,f,f')
+                self.x,self.y,ulos,self.los=self.x[::self.samp],self.y[::self.samp],ulos[::self.samp],self.los[::self.samp]
         else:
-            self.x,self.y,ulos,self.los=np.loadtxt(insarf,comments='#',usecols=(0,1,2,3),unpack=True,dtype='f,f,f,f')
-            self.x,self.y,ulos,self.los=self.x[::self.samp],self.y[::self.samp],ulos[::self.samp],self.los[::self.samp]
-        
+            if self.theta is False:
+                self.lon,self.lat,ulos=np.loadtxt(insarf,comments='#',unpack=True,usecols=(0,1,2),dtype='f,f,f')
+                self.lon,self.lat,ulos=self.lon[::self.samp],self.lat[::self.samp],ulos[::self.samp] 
+            else:
+                self.lon,self.lat,ulos,self.los=np.loadtxt(insarf,comments='#',usecols=(0,1,2,3),unpack=True,dtype='f,f,f,f')
+                self.lon,self.lat,ulos,self.los=self.lon[::self.samp],self.lat[::self.samp],ulos[::self.samp],self.los[::self.samp]
+                  
+            self.x, self.y = self.UTM(self.lon, self.lat)
+            self.x, self.y = (self.x - self.ref_x)/1e3, (self.y - self.ref_y)/1e3
+
         # ulos[np.logical_or(ulos==0.0,ulos>9990.)] = np.float('NaN')
         self.ulos=ulos*self.scale
         self.Npoint=len(self.ulos)   
