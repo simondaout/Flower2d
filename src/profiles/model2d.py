@@ -97,7 +97,6 @@ class topo:
             else:
                 self.ref_x,self.ref_y = 0,0
 
-
     def load(self,xlim=[-1000,1000],ylim=[-1000,1000]):
         fname=file(self.wdir+self.filename)
         if self.utm_proj is None:
@@ -105,7 +104,7 @@ class topo:
         else:
             self.lon,self.lat,z=np.loadtxt(fname,comments='#',unpack=True,dtype='f,f,f')
             x, y = self.UTM(self.lon, self.lat) 
-            x, y = (x - ref_x)/1e3, (y - ref_y)/1e3
+            x, y = (x - self.ref_x)/1e3, (y - self.ref_y)/1e3
 
         index=np.nonzero((x<xlim[0])|(x>xlim[1])|(y<ylim[0])|(y>ylim[1]))
         self.x,self.y,self.z=np.delete(x,index),np.delete(y,index),np.delete(z,index)*self.scale
