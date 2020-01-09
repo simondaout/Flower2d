@@ -71,7 +71,8 @@ class topo:
     plotminmax: option to also plot min max topo within bins
     """
 
-    def __init__(self,name,filename,wdir,color='black',scale=1,topomin=None,topomax=None,plotminmax=False, width=1.):
+    def __init__(self,name,filename,wdir,color='black',scale=1,topomin=None,topomax=None,plotminmax=False, 
+        width=1.,utm_proj=None, ref=None):
         self.name=name
         self.filename=filename
         self.wdir=wdir
@@ -85,9 +86,27 @@ class topo:
         self.yp=[]
         self.xp=[]
 
+        # projection
+        self.utm_proj=utm_proj
+        self.ref=ref
+        if self.utm_proj is not None:
+            import pyproj
+            self.UTM = pyproj.Proj("+init=EPSG:{}".format(self.utm_proj))
+            if self.ref is not None:
+                self.ref_x,self.ref_y =  self.UTM(self.ref[0],self.ref[1])
+            else:
+                self.ref_x,self.ref_y = 0,0
+
+
     def load(self,xlim=[-1000,1000],ylim=[-1000,1000]):
         fname=file(self.wdir+self.filename)
-        x,y,z=np.loadtxt(fname,comments='#',unpack=True,dtype='f,f,f')
+        if self.utm_proj is None:
+            x,y,z=np.loadtxt(fname,comments='#',unpack=True,dtype='f,f,f')
+        else:
+            self.lon,self.lat,z=np.loadtxt(fname,comments='#',unpack=True,dtype='f,f,f')
+            x, y = self.UTM(self.lon, self.lat) 
+            x, y = (x - ref_x)/1e3, (y - ref_y)/1e3
+
         index=np.nonzero((x<xlim[0])|(x>xlim[1])|(y<ylim[0])|(y>ylim[1]))
         self.x,self.y,self.z=np.delete(x,index),np.delete(y,index),np.delete(z,index)*self.scale
 
