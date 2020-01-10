@@ -282,7 +282,7 @@ for k in range(len(profiles)):
         plotxpp,plotypp,plotz=np.delete(plot.xpp,index),np.delete(plot.ypp,index),np.delete(plot.z,index)
 
         if nb is None:
-          nb = np.float(l/(len(insar.uu)/100.))
+          nb = np.float(l/(len(plotz)/100.))
           logger.info('Create bins every {0:.3f} km'.format(nb)) 
         else:
           logger.info('Set nbins to {} defined in profile class'.format(nb))
@@ -689,10 +689,10 @@ for k in range(len(profiles)):
 
             cst+=1.
           
-            # set born profile equal to map
-            if (losmin is not None) and (losmax is not None):
-              logger.debug('Set ylim InSAR profile to {0}-{1}'.format(losmin,losmax))
-              ax2.set_ylim([losmin,losmax])
+        # set born profile equal to map
+        if (losmin is not None) and (losmax is not None):
+          logger.debug('Set ylim InSAR profile to {0}-{1}'.format(losmin,losmax))
+          ax2.set_ylim([losmin,losmax])
 
   for j in range(Mfault):
     ax2.plot([fperp[j],fperp[j]],[losmax,losmin],color='red')
@@ -724,8 +724,8 @@ if (flat != None) and len(insardata)==2:
     logger.info('Subsample data every {0} point (samp option)'.format(insar.samp))
     norm = matplotlib.colors.Normalize(vmin=insar.lmin, vmax=insar.lmax)
     m = cm.ScalarMappable(norm = norm, cmap = 'rainbow')
-    m.set_array(insar.uloscor[::samp])
-    facelos = m.to_rgba(insar.uloscor[::samp])
+    m.set_array(insar.ulos[::samp])
+    facelos = m.to_rgba(insar.ulos[::samp])
     ax.scatter(insar.x[::samp],insar.y[::samp],s = 2,marker = 'o',color = facelos,label = 'LOS Velocity %s'%(insar.reduction))
 
     # save flatten map
