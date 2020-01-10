@@ -21,7 +21,7 @@ class network:
     """
 
     def __init__(self,network,reduction,wdir,dim,color='black',scale=1.,theta=False,\
-        samp=1,perc=95,lmin=None,lmax=None,plotName=None, utm_proj=None, ref=None):
+        samp=1,perc=95,lmin=None,lmax=None,plotName=None, utm_proj=None, ref=None, cst=0):
 
         self.network=network
         self.reduction=reduction
@@ -45,6 +45,8 @@ class network:
         self.lmin = lmin
         self.lmax = lmax
         self.plotName = plotName
+
+        self.cst = cst
 
         # projection
         self.utm_proj=utm_proj
@@ -101,7 +103,7 @@ class network:
             self.x, self.y = (self.x - self.ref_x)/1e3, (self.y - self.ref_y)/1e3
 
         # ulos[np.logical_or(ulos==0.0,ulos>9990.)] = np.float('NaN')
-        self.ulos=ulos*self.scale
+        self.ulos=ulos*self.scale + self.cst
         self.Npoint=len(self.ulos)   
     
 
