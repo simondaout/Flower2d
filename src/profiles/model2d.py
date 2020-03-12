@@ -72,7 +72,7 @@ class topo:
     """
 
     def __init__(self,name,filename,wdir,color='black',scale=1,topomin=None,topomax=None,plotminmax=False, 
-        width=1.,utm_proj=None, ref=None):
+        width=1.,utm_proj=None, ref=None, axis=None):
         self.name=name
         self.filename=filename
         self.wdir=wdir
@@ -82,6 +82,7 @@ class topo:
         self.topomax=topomax
         self.plotminmax=plotminmax
         self.width = width
+        self.axis = axis
         
         self.yp=[]
         self.xp=[]

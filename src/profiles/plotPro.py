@@ -100,7 +100,6 @@ except:
 
 fperp=np.zeros(Mfault)
 
-
 # Load data
 try:
   Mtopo = len(topodata)
@@ -122,25 +121,24 @@ except:
   logger.warning('No gpsdata defined')
   Mgps = 0
 
-try:
-  Minsar = len(insardata)
-  for i in range(Minsar):
-      insar = insardata[i]
-      logger.debug('Load data {0}'.format(insar.network))
-      insar.loadinsar()
-      if insar.theta is True:
-        logger.warning('Convert LOS displacements to mean LOS angle assuming \
-          horizontal displacements...')
-        logger.warning('Use option theta=False in network class to avoid that')
-        insar.losm = np.mean(insar.los)
-        insar.uloscor = insar.ulos * \
-          (np.sin(np.deg2rad(insar.losm))/np.sin(np.deg2rad(insar.los)))
-      else:
-        insar.uloscor = insar.ulos
+Minsar = len(insardata)
+for i in range(Minsar):
+    insar = insardata[i]
+    logger.debug('Load data {0}'.format(insar.network))
+    insar.loadinsar()
+    if insar.theta is True:
+      logger.warning('Convert LOS displacements to mean LOS angle assuming \
+        horizontal displacements...')
+      logger.warning('Use option theta=False in network class to avoid that')
+      insar.losm = np.mean(insar.los)
+      insar.uloscor = insar.ulos * \
+        (np.sin(np.deg2rad(insar.losm))/np.sin(np.deg2rad(insar.los)))
+    else:
+      insar.uloscor = insar.ulos
 
-except:
-  logger.warning('No insardata defined')
-  Minsar = 0
+# except:
+#   logger.warning('No insardata defined')
+#   Minsar = 0
 
 # MAP
 fig=plt.figure(0,figsize = (9,8))
@@ -152,10 +150,7 @@ logger.info('Plot Map ....')
 for i in range(Minsar):
   
   insar=insardata[i]
-  if insar.samp > 2:
-      samp = insar.samp
-  else:
-      samp = insar.samp*10
+  samp = insar.samp
 
   if (insar.lmin or insar.lmax) is None:
         vmin = np.nanpercentile(insar.ulos, 1)    
@@ -285,9 +280,9 @@ for k in range(len(profiles)):
           nb = np.float(l/(len(plotz)/100.))
           logger.info('Create bins every {0:.3f} km'.format(nb)) 
         else:
-          logger.info('Set nbins to {} defined in profile class'.format(nb))
+          logger.info('Set nbins to {}, defined in profile class'.format(nb))
 
-        bins = np.arange(-l/2,l/2, nb)
+        bins = np.arange(-l/2,l/2, nb/2.)
         inds = np.digitize(plotypp,bins)
         distance = []
         moy_topo = []
@@ -309,19 +304,23 @@ for k in range(len(profiles)):
           ax1.plot(distance,-moy_topo-std_topo,color=plot.color,lw=plot.width/2)
           ax1.plot(distance,-moy_topo+std_topo,color=plot.color,lw=plot.width/2)
         
-        if (plot.topomin is not None) and (plot.topomax is not None) :
-            logger.info('Set ylim to {} and {}'.format(plot.topomin,plot.topomax))
-            ax1.set_ylim([plot.topomin,plot.topomax])
-            for kk in range(Mfault):    
-              ax1.plot([fperp[kk],fperp[kk]],[plot.topomin,plot.topomax],color='red')
-              ax1.text(fperp[kk],0.5,fmodel[kk].name,color='red')
+        if plot.axis == 'equal':
+          ax1.axis('equal')
         else:
-            topomin,topomax= ax1.get_ylim()
-            print(topomin,topomax)
-            for kk in range(Mfault):    
-              ax1.plot([fperp[kk],fperp[kk]],[topomin,topomax],color='red')
-              ax1.text(fperp[kk],0.5,fmodel[kk].name,color='red')
-  
+          if (plot.topomin is not None) and (plot.topomax is not None) :
+              logger.info('Set ylim to {} and {}'.format(plot.topomin,plot.topomax))
+              ax1.set_ylim([plot.topomin,plot.topomax])
+              for kk in range(Mfault):    
+                ax1.plot([fperp[kk],fperp[kk]],[plot.topomin,plot.topomax],color='red')
+                ax1.text(fperp[kk],0.5,fmodel[kk].name,color='red')
+          else:
+              topomin,topomax= ax1.get_ylim()
+              print(topomin,topomax)
+              for kk in range(Mfault):    
+                ax1.plot([fperp[kk],fperp[kk]],[topomin,topomax],color='red')
+                ax1.text(fperp[kk],0.5,fmodel[kk].name,color='red')
+
+
   # LOS profile/map
   ax2=fig2.add_subplot(len(profiles),1,k+1)
   ax2.set_xlim([-l/2,l/2])
@@ -715,10 +714,7 @@ if (flat != None) and len(insardata)==2:
   ax.axis('equal')
   for i in xrange(len(insardata)):
     insar=insardata[i]
-    if insar.samp > 2:
-      samp = insar.samp
-    else:
-      samp = insar.samp*10
+    samp = insar.samp
 
     logger.info('Plot data in map view {0} between {1} and {2}'.format(insar.network, vmin, vmax))
     logger.info('Subsample data every {0} point (samp option)'.format(insar.samp))
