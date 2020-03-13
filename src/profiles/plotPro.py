@@ -163,8 +163,9 @@ for i in range(Minsar):
   norm = matplotlib.colors.Normalize(vmin=insar.lmin, vmax=insar.lmax)
   m = cm.ScalarMappable(norm = norm, cmap = 'rainbow')
   m.set_array(insar.ulos[::samp])
-  facelos = m.to_rgba(insar.ulos[::samp])
-  ax.scatter(insar.x[::samp],insar.y[::samp], s=1, marker = 'o',color = facelos, label = 'LOS Velocity %s'%(insar.reduction))
+  masked_array = np.ma.array(insar.ulos[::samp], mask=np.isnan(insar.ulos[::samp]))
+  facelos = m.to_rgba(masked_array)
+  ax.scatter(insar.x[::samp],insar.y[::samp], s=1, marker = 'o',color = facelos, rasterized=True, label = 'LOS Velocity %s'%(insar.reduction))
 
 for i in range(Mgps):
   gps=gpsdata[i]
@@ -547,15 +548,15 @@ for k in range(len(profiles)):
     _fprime = lambda x: 2*np.dot(G.T/temp_std, (np.dot(G,x)-temp_los[::])/temp_std)
     pars = opt.fmin_slsqp(_func,x0,fprime=_fprime,iter=2000,full_output=True,iprint=0)[0]
 
-    if flat is 'quad': 
-      a = pars[0]; b = pars[1]; c = pars[2]
-      blos = a*insar2.distance[kk2]**2 + b*insar2.distance[kk2] + c
-    elif flat is 'cub':
-      a = pars[0]; b = pars[1]; c = pars[2]; d =pars[3]
-      blos = a*insar2.distance[kk2]**3 + b*insar2.distance[kk2]**2 + c*insar2.distance[kk2] + d
-    else:
-      a = pars[0]; b = pars[1]
-      blos = a*insar2.distance[kk2] + b
+    # if flat is 'quad': 
+    #   a = pars[0]; b = pars[1]; c = pars[2]
+    #   blos = a*insar2.distance[kk2]**2 + b*insar2.distance[kk2] + c
+    # elif flat is 'cub':
+    #   a = pars[0]; b = pars[1]; c = pars[2]; d =pars[3]
+    #   blos = a*insar2.distance[kk2]**3 + b*insar2.distance[kk2]**2 + c*insar2.distance[kk2] + d
+    # else:
+    #   a = pars[0]; b = pars[1]
+    #   blos = a*insar2.distance[kk2] + b
     
     if flat is 'quad':
         a = pars[0]; b = pars[1]; c = pars[2]
@@ -563,6 +564,7 @@ for k in range(len(profiles)):
 
         blos = a*insar2.distance**2 + b*insar2.distance + c
         insar2.moy_los = insar2.moy_los + blos
+        diff = temp_los - blos[kk]
 
         blos = a*insar2.yperp + b
         insar2.uulos = insar2.uulos + blos
@@ -583,6 +585,7 @@ for k in range(len(profiles)):
     
         blos = a*insar2.distance**3 + b*insar2.distance**2 + c*insar2.distance + d
         insar2.moy_los = insar2.moy_los + blos
+        diff = temp_los - blos[kk]
 
         blos = a*insar2.yperp + b
         insar2.uulos = insar2.uulos + blos
@@ -603,6 +606,7 @@ for k in range(len(profiles)):
     
         blos = a*insar2.distance + b
         insar2.moy_los = insar2.moy_los + blos
+        diff = temp_los - blos[kk]
         
         blos = a*insar2.yperp + b
         insar2.uulos = insar2.uulos + blos
@@ -619,12 +623,15 @@ for k in range(len(profiles)):
 
     if len(insardata)==2:
 
-        diff = temp_los - blos[kk]
+        # diff = temp_los - blos[kk]
+        # coor1 = np.array([insardata[0].xx, insardata[0].yy])
+        # coor2 = np.array([insardata[1].xx, insardata[1].yy]) 
+        # indices = coor1 == coor2 
 
         # Plot histogram
-        fig4=plt.figure(5,figsize=(8,6))
+        fig4=plt.figure(5,figsize=(5,6))
         ax4 = fig4.add_subplot(1,1,1)
-        ax4.hist(diff,bins=30,density=True,histtype='stepfilled', \
+        ax4.hist(diff,bins=40,density=True,histtype='stepfilled', \
           color='black',alpha=0.4,label='{}-{}'.format(insardata[0].reduction,insardata[1].reduction))
         hdi_min, hdi_max = hdi(diff)
         opts = {'c':'green', 'linestyle':'--'}
@@ -676,9 +683,9 @@ for k in range(len(profiles)):
             elif typ is 'stdscat':
               logger.info('Plot InSAR with stdscat option')
               # plot mean and standard deviation
-              ax2.plot(insar.distance,insar.moy_los,color='black',lw=2.,label=insardata[i].reduction)
-              ax2.plot(insar.distance,insar.moy_los-insar.std_los,color='black',lw=.5)
-              ax2.plot(insar.distance,insar.moy_los+insar.std_los,color='black',lw=.5)
+              ax2.plot(insar.distance,insar.moy_los,color=insar.color,lw=2.,label=insardata[i].reduction)
+              ax2.plot(insar.distance,insar.moy_los-insar.std_los,color=insar.color,lw=.5)
+              ax2.plot(insar.distance,insar.moy_los+insar.std_los,color=insar.color,lw=.5)
               ax2.scatter(insar.yperp,insar.uulos,s = .1, marker='o',alpha=0.4,color=insar.color,rasterized=True)
 
             else:
@@ -721,8 +728,10 @@ if (flat != None) and len(insardata)==2:
     norm = matplotlib.colors.Normalize(vmin=insar.lmin, vmax=insar.lmax)
     m = cm.ScalarMappable(norm = norm, cmap = 'rainbow')
     m.set_array(insar.ulos[::samp])
-    facelos = m.to_rgba(insar.ulos[::samp])
-    ax.scatter(insar.x[::samp],insar.y[::samp],s = 2,marker = 'o',color = facelos,label = 'LOS Velocity %s'%(insar.reduction))
+    masked_array = np.ma.array(insar.ulos[::samp], mask=np.isnan(insar.ulos[::samp]))
+    facelos = m.to_rgba(masked_array)
+    ax.scatter(insar.x[::samp],insar.y[::samp],s = 2,marker = 'o',color = facelos,\
+      label = 'LOS Velocity %s'%(insar.reduction),rasterized=True)
 
     # save flatten map
     if i==1:
