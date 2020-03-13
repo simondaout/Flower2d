@@ -566,7 +566,7 @@ for k in range(len(profiles)):
         insar2.moy_los = insar2.moy_los + blos
         diff = temp_los - blos[kk]
 
-        blos = a*insar2.yperp + b
+        blos = a*insar2.yperp**2 + b*insar2.yperp + c
         insar2.uulos = insar2.uulos + blos
 
         blos = a*insar2.yypp**2 + b*insar2.yypp + c
@@ -587,7 +587,7 @@ for k in range(len(profiles)):
         insar2.moy_los = insar2.moy_los + blos
         diff = temp_los - blos[kk]
 
-        blos = a*insar2.yperp + b
+        blos = a*insar2.yperp**3 + b*insar2.yperp**2 + c*insar2.yperp + d
         insar2.uulos = insar2.uulos + blos
 
         blos = a*insar2.yypp**3 + b*insar2.yypp**2 + c*insar2.yypp + d
