@@ -271,7 +271,18 @@ class network(object):
             self.N = self.Npoint*self.dim
             # data vector
             self.d = np.atleast_1d(self.ulos)
-            self.sigmad = np.ones((self.Npoint))*self.wd
+            
+            if self.errorfile is not None:
+                logger.info('Load error file: {}'.format(self.errorfile))
+                errorfile=self.errorfile
+                sigmad=np.loadtxt(errorfile,comments = '#',usecols = (0,1,2), unpack = True, dtype = 'f,f,f')
+                if len(sigmad) != self.N:
+                    logger.warning('Error file not the same length than data. Exit!')
+                    sys.exit()
+                else:
+                  self.sigmad=abs(sigmad)*self.scale*self.wd 
+            else: 
+              self.sigmad = np.ones((self.Npoint))*self.wd
 
             if self.base is None:
                 logger.info('base=None, No uncertainties for ramp given')
