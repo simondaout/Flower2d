@@ -117,6 +117,7 @@ class network(object):
                     print(profile.__doc__)
                     sys.exit()
                 x,y,los,look=np.loadtxt(f,comments='#',unpack=True,dtype='f,f,f,f')
+                x,y,los,look = x[::self.samp],y[::self.samp],los[::self.samp],look[::self.samp]
 
                 logger.debug('Compute horizontal distances to the center of the profile')
                 xp=(x-self.profile.x)*self.profile.s[0]+(y-self.profile.y)*self.profile.s[1]
@@ -153,6 +154,7 @@ class network(object):
                 logger.info('heading is True, read heading angle in the 5th column of the text file for each points')
 
                 x,y,los,look,head=np.loadtxt(f,comments='#',unpack=True,dtype='f,f,f,f,f')
+                x,y,los,look,head = x[::self.samp],y[::self.samp],los[::self.samp],look[::self.samp],head[::self.samp]
 
                 logger.debug('Compute horizontal distances to the center of the profile')
                 xp=(x-self.profile.x)*self.profile.s[0]+(y-self.profile.y)*self.profile.s[1]
@@ -196,6 +198,8 @@ class network(object):
                     sys.exit()
 
                 x,y,los=np.loadtxt(f,comments='#',unpack=True,dtype='f,f,f')
+                x,y,los = x[::self.samp],y[::self.samp],los[::self.samp]
+                
                 xp=(x-self.profile.x)*self.profile.s[0]+(y-self.profile.y)*self.profile.s[1]
                 yp=(x-self.profile.x)*self.profile.n[0]+(y-self.profile.y)*self.profile.n[1]
                 index=np.nonzero((xp>self.profile.xpmax)|(xp<self.profile.xpmin)|(yp>self.profile.ypmax)|(yp<self.profile.ypmin))
