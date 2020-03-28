@@ -111,15 +111,14 @@ except:
   logger.warning('No topodata defined')
   Mtopo = 0
 
-try:
-  Mgps = len(gpsdata)
-  for i in range(Mgps):
+Mgps = len(gpsdata)
+for i in range(Mgps):
       gps = gpsdata[i]
       logger.debug('Load data {0}'.format(gps.network))
-      gps.loadgps()
-except:
-  logger.warning('No gpsdata defined')
-  Mgps = 0
+      gps.loadgps()      
+# else
+#       logger.warning('No gpsdata defined')
+#       Mgps = 0
 
 Minsar = len(insardata)
 for i in range(Minsar):
@@ -150,7 +149,7 @@ logger.info('Plot Map ....')
 for i in range(Minsar):
   
   insar=insardata[i]
-  samp = insar.samp
+  samp = insar.samp*4
 
   if (insar.lmin or insar.lmax) is None:
         vmin = np.nanpercentile(insar.ulos, 1)    
@@ -629,16 +628,19 @@ for k in range(len(profiles)):
         # indices = coor1 == coor2 
 
         # Plot histogram
-        fig4=plt.figure(5,figsize=(5,6))
+        fig4=plt.figure(5,figsize=(9,6))
         ax4 = fig4.add_subplot(1,1,1)
         ax4.hist(diff,bins=40,density=True,histtype='stepfilled', \
-          color='black',alpha=0.4,label='{}-{}'.format(insardata[0].reduction,insardata[1].reduction))
+          color='grey',alpha=0.4,label='{}-{}'.format(insardata[0].reduction,insardata[1].reduction))
         hdi_min, hdi_max = hdi(diff)
         opts = {'c':'green', 'linestyle':'--'}
         ax4.axvline(x=hdi_min, **opts)
         ax4.axvline(x=hdi_max, **opts)
         ax4.set_xlabel("Mean: {:0.3f}\n95% HDI: {:0.3f} - {:0.3f}".format(\
           diff.mean(), hdi_min, hdi_max))
+        print("Compute Difference")
+        print("Mean: {:0.3f}95% HDI: {:0.3f} - {:0.3f}".format(diff.mean(), hdi_min, hdi_max))
+        print("Std: {:0.3f}".format(diff.std()))
         ax4.legend(loc='best')
         ax4.set_xlim(math.floor(np.nanmin(diff)),math.ceil(np.nanmax(diff)))
         logger.debug('Save {0} output file'.format(outdir+profiles[0].name+'_'+flat+'_histo.eps'))
@@ -721,7 +723,7 @@ if (flat != None) and len(insardata)==2:
   ax.axis('equal')
   for i in xrange(len(insardata)):
     insar=insardata[i]
-    samp = insar.samp
+    samp = insar.samp*4
 
     logger.info('Plot data in map view {0} between {1} and {2}'.format(insar.network, vmin, vmax))
     logger.info('Subsample data every {0} point (samp option)'.format(insar.samp))
