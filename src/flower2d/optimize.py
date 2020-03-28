@@ -18,9 +18,9 @@ import pymc
 
 from modelopti import *
 from flatten import *
+from plot2d import *
 from networkopti import *
 from readgmt import *
-from plot2d import *
 
 import warnings
 warnings.filterwarnings("ignore", category=FutureWarning)
