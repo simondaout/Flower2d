@@ -379,7 +379,7 @@ if (inv.fullcov == 'yes') or (inv.fullcov == True):
     if inv.rampcov is None:
         logger.debug('Did not find rampcov parameter. Set to linear')
         rampcov = 'lin'
-    if inv.maskcxov is None:
+    if inv.maskcov is None:
         logger.debug('Did not find maskcov parameter. No mask for covariance computation')
         maskcov = None
 
@@ -457,6 +457,9 @@ for j in xrange(inv.Mseg):
 
 logger.debug('Initialise traces for each segments')
 inv.nsample=niter-nburn
+if inv.nsample < 0:
+    logger.warning("niter must be higher than nburn. Exit !")
+
 inv.fmodel[0].traceD = inv.fmodel[0].D*np.ones((inv.nsample))
 inv.fmodel[0].traceH = inv.fmodel[0].H*np.ones((inv.nsample))
 inv.fmodel[0].tracew = inv.fmodel[0].w*np.ones((inv.nsample))
