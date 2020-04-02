@@ -101,13 +101,14 @@ except:
 fperp=np.zeros(Mfault)
 
 # Load data
-try:
-  Mtopo = len(topodata)
-  for i in range(Mtopo):
-      plot=topodata[i]
-      logger.debug('Load data {0}'.format(plot.name))
-      plot.load()
-except:
+Mtopo = len(topodata)
+for i in range(Mtopo):
+  plot=topodata[i]
+  logger.debug('Load data {0}'.format(plot.name))
+  plot.load()
+  if len(plot.z) < 1:
+        logger.debug('Empty data file...')
+if Mtopo == 0: 
   logger.warning('No topodata defined')
   Mtopo = 0
 
@@ -275,7 +276,6 @@ for k in range(len(profiles)):
 
         index=np.nonzero((plot.xpp>xpmax)|(plot.xpp<xpmin)|(plot.ypp>ypmax)|(plot.ypp<ypmin))
         plotxpp,plotypp,plotz=np.delete(plot.xpp,index),np.delete(plot.ypp,index),np.delete(plot.z,index)
-
         if nb is None:
           nb = np.float(l/(len(plotz)/100.))
           logger.info('Create bins every {0:.3f} km'.format(nb)) 
