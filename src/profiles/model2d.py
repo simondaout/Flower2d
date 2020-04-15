@@ -106,7 +106,5 @@ class topo:
             self.lon,self.lat,z=np.loadtxt(fname,comments='#',unpack=True,dtype='f,f,f')
             x, y = self.UTM(self.lon, self.lat) 
         index=np.nonzero((x<xlim[0])|(x>xlim[1])|(y<ylim[0])|(y>ylim[1]))
-        print(len(z))
         self.x,self.y,self.z=x,y,z*self.scale
-        print(len(self.z))
     
