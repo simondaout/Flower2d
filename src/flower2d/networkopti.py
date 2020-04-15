@@ -117,7 +117,19 @@ class network(object):
                     print(profile.__doc__)
                     sys.exit()
                 x,y,los,look=np.loadtxt(f,comments='#',unpack=True,dtype='f,f,f,f')
-                x,y,los,look = x[::self.samp],y[::self.samp],los[::self.samp],look[::self.samp]
+
+                if self.errorfile is not None:
+                  logger.info('Load error file: {}'.format(self.errorfile))
+                  errorfile=self.errorfile
+                  bid,bid2,sigmad=np.loadtxt(errorfile,comments = '#',usecols = (0,1,2), unpack = True, dtype = 'f,f,f')
+                  if len(sigmad) != len(los):
+                    logger.warning('Error file not the same length than data. Exit!')
+                    sys.exit()
+                  else:
+                    sigmad=abs(sigmad)*self.wd 
+                else: 
+                    sigmad = np.ones(len(los))*self.wd
+                x,y,los,look,sigmad = x[::self.samp],y[::self.samp],los[::self.samp],look[::self.samp],sigmad[::self.samp]
 
                 logger.debug('Compute horizontal distances to the center of the profile')
                 xp=(x-self.profile.x)*self.profile.s[0]+(y-self.profile.y)*self.profile.s[1]
@@ -125,9 +137,12 @@ class network(object):
 
                 logger.debug('Only keep points within profile')
                 index=np.nonzero((xp>self.profile.xpmax)|(xp<self.profile.xpmin)|(yp>self.profile.ypmax)|(yp<self.profile.ypmin))
-                ulos,self.x,self.y,self.xp,self.yp,look=np.delete(los,index),np.delete(x,index),np.delete(y,index),np.delete(xp,index),np.delete(yp,index),np.delete(look,index)
+                ulos,self.x,self.y,self.xp,self.yp,look,sigmad=np.delete(los,index),np.delete(x,index),np.delete(y,index),np.delete(xp,index),np.delete(yp,index),np.delete(look,index),np.delete(sigmad,index)
+
                 ulos[np.logical_or(ulos==0.0,ulos>9990.)] = np.float('NaN')
+                sigmad[np.logical_or(ulos==0.0,ulos>9990.)] = np.float('NaN')
                 self.ulos=ulos*self.scale
+                self.sigmad=sigmad*self.scale
 
                 logger.debug('Defined projection to east, north, up for each points')
                 self.phi = np.deg2rad(-90-self.phim*np.ones(len(look)))
@@ -154,7 +169,19 @@ class network(object):
                 logger.info('heading is True, read heading angle in the 5th column of the text file for each points')
 
                 x,y,los,look,head=np.loadtxt(f,comments='#',unpack=True,dtype='f,f,f,f,f')
-                x,y,los,look,head = x[::self.samp],y[::self.samp],los[::self.samp],look[::self.samp],head[::self.samp]
+                if self.errorfile is not None:
+                  logger.info('Load error file: {}'.format(self.errorfile))
+                  errorfile=self.errorfile
+                  bid,bid2,sigmad=np.loadtxt(errorfile,comments = '#',usecols = (0,1,2), unpack = True, dtype = 'f,f,f')
+                  if len(sigmad) != len(los):
+                    logger.warning('Error file not the same length than data. Exit!')
+                    sys.exit()
+                  else:
+                    sigmad=abs(sigmad)*self.wd 
+                else: 
+                    sigmad = np.ones(len(los))*self.wd
+
+                x,y,los,look,head,sigmad = x[::self.samp],y[::self.samp],los[::self.samp],look[::self.samp],head[::self.samp],sigmad[::self.samp]
 
                 logger.debug('Compute horizontal distances to the center of the profile')
                 xp=(x-self.profile.x)*self.profile.s[0]+(y-self.profile.y)*self.profile.s[1]
@@ -162,9 +189,11 @@ class network(object):
 
                 logger.debug('Only keep points within profile')
                 index=np.nonzero((xp>self.profile.xpmax)|(xp<self.profile.xpmin)|(yp>self.profile.ypmax)|(yp<self.profile.ypmin))
-                ulos,self.x,self.y,self.xp,self.yp,look,self.head=np.delete(los,index),np.delete(x,index),np.delete(y,index),np.delete(xp,index),np.delete(yp,index),np.delete(look,index),np.delete(head,index)
+                ulos,self.x,self.y,self.xp,self.yp,look,self.head,sigmad=np.delete(los,index),np.delete(x,index),np.delete(y,index),np.delete(xp,index),np.delete(yp,index),np.delete(look,index),np.delete(head,index),np.delete(sigmad,index)
                 ulos[np.logical_or(ulos==0.0,ulos>9990.)] = np.float('NaN')
+                sigmad[np.logical_or(ulos==0.0,ulos>9990.)] =  np.float('NaN')
                 self.ulos=ulos*self.scale
+                self.sigmad=sigmad*self.scale
 
                 logger.debug('Defined projection to east, north, up for each points')
                 self.phi = np.deg2rad(-90-self.head)
@@ -198,21 +227,34 @@ class network(object):
                     sys.exit()
 
                 x,y,los=np.loadtxt(f,comments='#',unpack=True,dtype='f,f,f')
-                x,y,los = x[::self.samp],y[::self.samp],los[::self.samp]
+                if self.errorfile is not None:
+                  logger.info('Load error file: {}'.format(self.errorfile))
+                  errorfile=self.errorfile
+                  bid,bid2,sigmad=np.loadtxt(errorfile,comments = '#',usecols = (0,1,2), unpack = True, dtype = 'f,f,f')
+                  if len(sigmad) != len(los):
+                    logger.warning('Error file not the same length than data. Exit!')
+                    sys.exit()
+                  else:
+                    sigmad=abs(sigmad)*self.wd 
+                else: 
+                    sigmad = np.ones(len(los))*self.wd
+
+                x,y,los,sigmad = x[::self.samp],y[::self.samp],los[::self.samp],sigmad[::self.samp]
                 
                 xp=(x-self.profile.x)*self.profile.s[0]+(y-self.profile.y)*self.profile.s[1]
                 yp=(x-self.profile.x)*self.profile.n[0]+(y-self.profile.y)*self.profile.n[1]
                 index=np.nonzero((xp>self.profile.xpmax)|(xp<self.profile.xpmin)|(yp>self.profile.ypmax)|(yp<self.profile.ypmin))
-                ulos,self.x,self.y,self.xp,self.yp=np.delete(los,index),np.delete(x,index),np.delete(y,index),np.delete(xp,index),np.delete(yp,index)
+                ulos,self.x,self.y,self.xp,self.yp,sigmad=np.delete(los,index),np.delete(x,index),np.delete(y,index),np.delete(xp,index),np.delete(yp,index),np.delete(sigmad,index)
                 ulos[np.logical_or(ulos==0.0,ulos>9990.)] = np.float('NaN')
+                sigmad[np.logical_or(ulos==0.0,ulos>9990.)] = np.float('NaN')
                 self.ulos=ulos*self.scale
+                self.sigmad = sigmad*self.scale
 
                 if self.profile.proj is not None:
                     self.proj= self.profile.proj
                     self.projm= self.profile.proj
                     logger.info('Read average LOS projection to east, north, up defined in Profile: {0:.5f} {1:.5f} {2:.5f}'.format(self.projm[0],self.projm[1],self.projm[2]))
                 else:
-                    
                     self.phim = np.deg2rad(-90-self.phim)
                     self.thetam = np.deg2rad(90.-self.lookm)
                     logger.info('Average angle vertical between horizontal and LOS:{0:.1f}, Average horizontal angle between East and LOS:{1:.1f}'.format(np.rad2deg(self.thetam),np.rad2deg(self.phim)))
@@ -231,6 +273,7 @@ class network(object):
                 self.x = self.x[uu]
                 self.y = self.y[uu]
                 self.ulos = self.ulos[uu]
+                self.sigmad = self.sigmad[uu]
 
             if self.perc < 100:
               # print inds
@@ -265,6 +308,7 @@ class network(object):
               self.x = self.x[uu]
               self.y = self.y[uu]
               self.ulos = self.ulos[uu]
+              self.sigmad = self.sigmad[uu]
 
               if self.los is not None:
                 self.proj[0],self.proj[1],self.proj[2] = \
@@ -276,18 +320,6 @@ class network(object):
             # data vector
             self.d = np.atleast_1d(self.ulos)
             
-            if self.errorfile is not None:
-                logger.info('Load error file: {}'.format(self.errorfile))
-                errorfile=self.errorfile
-                sigmad=np.loadtxt(errorfile,comments = '#',usecols = (0,1,2), unpack = True, dtype = 'f,f,f')
-                if len(sigmad) != self.N:
-                    logger.warning('Error file not the same length than data. Exit!')
-                    sys.exit()
-                else:
-                  self.sigmad=abs(sigmad)*self.scale*self.wd 
-            else: 
-              self.sigmad = np.ones((self.Npoint))*self.wd
-
             if self.base is None:
                 logger.info('base=None, No uncertainties for ramp given')
                 logger.info('Set uncertainties for cst and linear term of the ramp to 10 and 0.1')
