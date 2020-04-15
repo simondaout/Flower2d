@@ -317,6 +317,40 @@ class ramp:
         # print('ramp:{}, gamma:{}, alpha:{}, ds:{}, vh:{}:'.format(self.segments[0].name, np.rad2deg(self.gamma), np.rad2deg(self.alpha), self.segments[0].ds, self.segments[0].vh))
         # sys.exit()
 
+# creeping segment
+class creeping:
+    def __init__(self,name,ss,sigmass,L,sigmaL,D,sigmaD,\
+        distss='Unif',distL='Unif',distD='Unif'):
+        
+        self.segments = [
+                second(name = name,ss = ss,sigmass = sigmass,D = D,
+                    sigmaD = sigmaD, H = 0,sigmaH = sigmaL, 
+                    distss=distss, distH=distH, distD=distD),    
+                ]
+
+        self.Mseg = len(self.segments)
+        self.segments[0].fperp = self.segments[0].D 
+        self.Mker = sum(map((lambda x: getattr(x,'Mker')),self.segments))
+    
+    def conservation(self,seg,decol):
+
+        # postision relative to main segment
+        self.segments[0].fperp = self.segments[0].D  + decol.fperp
+
+        # eplore directly the length, depth is zero
+        self.segments[0].w = 0
+        self.segments[0].L = self.segments[0].L
+        # vertical distance is depth main segment - lenght creep
+        self.segments[0].H = decol.w - self.segments[0].L
+
+        # fix vertical segment
+        self.segments[0].dipr = math.pi/2
+        self.segments[0].dip = 90
+
+        # fix the ds on the creeping seg to be zero  
+        self.segments[0].ds = decol.ds/10e14
+        self.segments[0].vh = decol.ds/10e14
+
 # flower structure as first structure
 class mainflower:
     def __init__(self,name,ss,sigmass,short,sigmashort,w,sigmaw,dip,\
@@ -519,30 +553,6 @@ class popup:
         #print 'v3h:', self.segments[1].vh 
         #print 'v2h:', self.segments[0].vh
         #sys.exit()
-
-# creeping segment: problem bc half-infinite segment
-class creeping:
-    def __init__(self,name,ss,sigmass,H,sigmaH,D,sigmaD,\
-        distss='Unif',distH='Unif',distD='Unif'):
-
-        self.segments = [
-                    second(name = name,ss = ss,sigmass = sigmass,D = D,sigmaD = sigmaD,H = H,sigmaH = sigmaH, distss=distss,distH=distH, distD=distD)
-                    ]
-        self.Mseg = len(self.segments)
-        self.segments[0].fperp = self.segments[0].D 
-        self.Mker = sum(map((lambda x: getattr(x,'Mker')),self.segments))
-    
-    def conservation(self,seg,decol):
-        w0 = decol.w
-
-        self.segments[0].fperp = self.segments[0].D 
-        self.segments[0].w = w0 - self.segments[0].H
-        self.segments[0].L = self.segments[0].H
-        self.segments[0].dipr = math.pi/2
-        self.segments[0].dip = 90
-        # fix the ds on the creeping seg to be zero  
-        self.segments[0].ds = decol.ds/10e14
-        self.segments[0].vh = decol.ds/10e14
 
 class bookshelf:
     def __init__(self,name,ds,sigmads,D,sigmaD,distshort='Unif',distD='Unif'):
