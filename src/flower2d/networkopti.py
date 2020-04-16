@@ -762,12 +762,15 @@ class network(object):
                 ramp = self.struc[j].segments[k]
                 
                 # control on locking depths: depth cannot be negatif
-                if (ramp.w < 0) : # !!!! put after conservation
+                if (ramp.w < 0.) : # !!!! put after conservation
 	               return np.ones((self.N,))*1e14
+                # add a condition that ss ramp can not be sup than ss main seg
+                if (ramp.ss > self.fmodel[0].ss) :
+	               return np.ones((self.N,))*1e14
+
                 u = u + self.fmodel[Mtemp+k].displacement(self.yp)
 
             Mtemp += self.struc[j].Mseg
-            #start = start + self.struc[j].Mker 
             
         # loop on volumic deformation structures
         for j in xrange(self.Mvol):

@@ -325,12 +325,13 @@ class creeping:
         self.segments = [
                 second(name = name,ss = ss,sigmass = sigmass,D = D,
                     sigmaD = sigmaD, H = 0,sigmaH = sigmaL, 
-                    distss=distss, distH=distH, distD=distD),    
+                    distss=distss, distH=distL, distD=distD),    
                 ]
 
         self.Mseg = len(self.segments)
         self.segments[0].fperp = self.segments[0].D 
         self.Mker = sum(map((lambda x: getattr(x,'Mker')),self.segments))
+        self.segments[0].L = L
     
     def conservation(self,seg,decol):
 
@@ -338,10 +339,9 @@ class creeping:
         self.segments[0].fperp = self.segments[0].D  + decol.fperp
 
         # eplore directly the length, depth is zero
-        self.segments[0].w = 0
-        self.segments[0].L = self.segments[0].L
+        self.segments[0].w = 1./10e14 # attention: if 0, model not accepted
         # vertical distance is depth main segment - lenght creep
-        self.segments[0].H = decol.w - self.segments[0].L
+        self.segments[0].L = decol.w - self.segments[0].H
 
         # fix vertical segment
         self.segments[0].dipr = math.pi/2
