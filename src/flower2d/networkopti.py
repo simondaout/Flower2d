@@ -765,7 +765,7 @@ class network(object):
                 if (ramp.w < 0.) : # !!!! put after conservation
 	               return np.ones((self.N,))*1e14
                 # add a condition that ss ramp can not be sup than ss main seg
-                if (ramp.ss > self.fmodel[0].ss) :
+                if (abs(ramp.ss) > abs(self.fmodel[0].ss)) :
 	               return np.ones((self.N,))*1e14
 
                 u = u + self.fmodel[Mtemp+k].displacement(self.yp)
