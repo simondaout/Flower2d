@@ -48,6 +48,6 @@ class gmt:
                     xt, yt = (xt-self.ref_x)/1e3,(yt-self.ref_y)/1e3
                 if (xt>xlim[0]) and (xt<xlim[1]) and (yt>ylim[0]) and (yt<ylim[1]):
                     x[i].append(xt)
-                    y[i].append(xt)
+                    y[i].append(yt)
 
         return x,y

@@ -89,7 +89,7 @@ if 'xmin' in locals():
   logger.info('Found boundaries map plot {0}-{1} and {2}-{3} in locals'.format(xmin,xmax,ymin,ymax))
   xlim=[xmin,xmax];ylim=[ymin,ymax]
 else:
-  logger.info('Did not found  boundaries map in input file, set xmin,xmax,ymin,ynax to -1000,1000')
+  logger.info('Did not found  boundaries map in input file, set xmin,xmax,ymin,ymax to -1000,1000')
   xlim=[-1000,1000];ylim=[-1000,1000]
 
 if not os.path.exists(outdir):
@@ -101,10 +101,8 @@ if not os.path.exists(outdir):
 try:
   Mfault=len(fmodel)
 except:
-  logger.warning('No fmodel defined')
   Mfault=0
   fmodel=[]
-
 fperp=np.zeros(Mfault)
 
 # Load data
@@ -209,7 +207,6 @@ for ii in range(len(gmtfiles)):
   width = gmtfiles[ii].width
   fx,fy = gmtfiles[ii].load(xlim=xlim,ylim=ylim)
   for i in range(len(fx)):
-    print(fx[i],fy[i])
     ax.plot(fx[i],fy[i],color = color,lw = width)
 
 if 'xmin' in locals(): 
@@ -474,7 +471,7 @@ for k in range(len(profiles)):
           insar.moy_los = np.array(insar.moy_los)
 
       else:
-          logger.critical('Number of InSAR points inferior to 50. Exit plot profile!') 
+          logger.critical('Number of InSAR points inferior to 50 for track {}. Exit plot profile!'.format(insar.reduction)) 
 
   # FLATEN
   if (flat != None):
