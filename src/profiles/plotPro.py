@@ -85,6 +85,13 @@ if len(sys.argv)>1:
     print(fault2d.__doc__)
     sys.exit()
 
+if 'xmin' in locals():
+  logger.info('Found boundaries map plot {0}-{1} and {2}-{3} in locals'.format(xmin,xmax,ymin,ymax))
+  xlim=[xmin,xmax];ylim=[ymin,ymax]
+else:
+  logger.info('Did not found  boundaries map in input file, set xmin,xmax,ymin,ynax to -1000,1000')
+  xlim=[-1000,1000];ylim=[-1000,1000]
+
 if not os.path.exists(outdir):
     logger.info('Creating output directory {0}'.format(outdir))
     os.makedirs(outdir)
@@ -105,7 +112,7 @@ Mtopo = len(topodata)
 for i in range(Mtopo):
   plot=topodata[i]
   logger.debug('Load data {0}'.format(plot.name))
-  plot.load()
+  plot.load(xlim=xlim,ylim=ylim)
   if len(plot.z) < 1:
         logger.debug('Empty data file...')
 if Mtopo == 0: 
@@ -200,12 +207,12 @@ for ii in range(len(gmtfiles)):
   filename = gmtfiles[ii].filename
   color = gmtfiles[ii].color
   width = gmtfiles[ii].width
-  fx,fy = gmtfiles[ii].load()
+  fx,fy = gmtfiles[ii].load(xlim=xlim,ylim=ylim)
   for i in range(len(fx)):
+    print(fx[i],fy[i])
     ax.plot(fx[i],fy[i],color = color,lw = width)
 
 if 'xmin' in locals(): 
-  logger.info('Found boundaries map plot {0}-{1} and {2}-{3} in locals'.format(xmin,xmax,ymin,ymax))
   ax.set_xlim(xmin,xmax)
   ax.set_ylim(ymin,ymax)
 
@@ -298,11 +305,11 @@ for k in range(len(profiles)):
         std_topo = np.array(std_topo)
         moy_topo = np.array(moy_topo)
 
-        ax1.plot(distance,-moy_topo,label=plot.name,color=plot.color,lw=plot.width)
+        ax1.plot(distance,moy_topo,label=plot.name,color=plot.color,lw=plot.width)
         if plot.plotminmax == True:
           logger.debug('plotminmax set to True')
-          ax1.plot(distance,-moy_topo-std_topo,color=plot.color,lw=plot.width/2)
-          ax1.plot(distance,-moy_topo+std_topo,color=plot.color,lw=plot.width/2)
+          ax1.plot(distance,moy_topo-std_topo,color=plot.color,lw=plot.width/2)
+          ax1.plot(distance,moy_topo+std_topo,color=plot.color,lw=plot.width/2)
         
         if plot.axis == 'equal':
           ax1.axis('equal')
@@ -315,11 +322,9 @@ for k in range(len(profiles)):
                 ax1.text(fperp[kk],0.5,fmodel[kk].name,color='red')
           else:
               topomin,topomax= ax1.get_ylim()
-              print(topomin,topomax)
               for kk in range(Mfault):    
                 ax1.plot([fperp[kk],fperp[kk]],[topomin,topomax],color='red')
                 ax1.text(fperp[kk],0.5,fmodel[kk].name,color='red')
-
 
   # LOS profile/map
   ax2=fig2.add_subplot(len(profiles),1,k+1)
@@ -686,9 +691,9 @@ for k in range(len(profiles)):
               logger.info('Plot InSAR with stdscat option')
               # plot mean and standard deviation
               ax2.plot(insar.distance,insar.moy_los,color=insar.color,lw=2.,label=insardata[i].reduction)
-              ax2.plot(insar.distance,insar.moy_los-insar.std_los,color=insar.color,lw=.5)
-              ax2.plot(insar.distance,insar.moy_los+insar.std_los,color=insar.color,lw=.5)
-              ax2.scatter(insar.yperp,insar.uulos,s = .1, marker='o',alpha=0.4,color=insar.color,rasterized=True)
+              ax2.scatter(insar.yperp,insar.uulos,s = .1, marker='o',alpha=0.1,color=insar.color,rasterized=True)
+              ax2.plot(insar.distance,insar.moy_los-insar.std_los,color='black',lw=.5)
+              ax2.plot(insar.distance,insar.moy_los+insar.std_los,color='black',lw=.5)
 
             else:
               # plot scattering plot
@@ -754,7 +759,6 @@ if (flat != None) and len(insardata)==2:
       ax.plot(xf[:],yf[:],'--',color = 'black',lw = 1.)
 
     if 'xmin' in locals(): 
-      logger.info('Found boundaries map plot {0}-{1} and {2}-{3} in locals'.format(xmin,xmax,ymin,ymax))
       ax.set_xlim(xmin,xmax)
       ax.set_ylim(ymin,ymax)
 

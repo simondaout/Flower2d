@@ -102,9 +102,12 @@ class topo:
         fname=file(self.wdir+self.filename)
         if self.utm_proj is None:
             x,y,z=np.loadtxt(fname,comments='#',unpack=True,dtype='f,f,f')
+            self.x,self.y,self.z = x,y,z*self.scale
         else:
             self.lon,self.lat,z=np.loadtxt(fname,comments='#',unpack=True,dtype='f,f,f')
             x, y = self.UTM(self.lon, self.lat) 
-        index=np.nonzero((x<xlim[0])|(x>xlim[1])|(y<ylim[0])|(y>ylim[1]))
-        self.x,self.y,self.z=x,y,z*self.scale
-    
+            self.x,self.y,self.z=(x-self.ref_x)/1e3,(y-self.ref_y)/1e3,z*self.scale
+        
+        # remove data outside map
+        index=np.nonzero((self.x<xlim[0])|(self.x>xlim[1])|(self.y<ylim[0])|(self.y>ylim[1]))
+        self.x,self.y,self.z = np.delete(self.x,index),np.delete(self.y,index),np.delete(self.z,index)
