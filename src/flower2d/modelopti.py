@@ -173,6 +173,7 @@ class main(segment):
         self.sigmadip = sigmadip
         self.distdip = distdip
         self.dipr = np.deg2rad(self.dip)
+        self.type=None
 
         self.Mker = 6
         if math.cos(self.dipr) >= 0:
@@ -226,6 +227,7 @@ class second(segment):
         self.Mker = 3
         self.sigmadip=0
         self.sigmaL=0
+        self.type=None
 
     def info(self):
         print(self.name)
@@ -319,22 +321,25 @@ class ramp:
 
 # creeping segment
 class creeping:
-    def __init__(self,name,ss,sigmass,L,sigmaL,D,sigmaD,\
+    def __init__(self,name,ss,sigmass,H,sigmaH,D,sigmaD,\
         distss='Unif',distL='Unif',distD='Unif'):
         
         self.segments = [
                 second(name = name,ss = ss,sigmass = sigmass,D = D,
-                    sigmaD = sigmaD, H = 0,sigmaH = sigmaL, 
+                    sigmaD = sigmaD, H = H, sigmaH = sigmaH, 
                     distss=distss, distH=distL, distD=distD),    
                 ]
 
         self.Mseg = len(self.segments)
         self.segments[0].fperp = self.segments[0].D 
         self.Mker = sum(map((lambda x: getattr(x,'Mker')),self.segments))
-        self.segments[0].L = L
-    
+        self.segments[0].L = 0
+        self.segments[0].w = 1./10e14
+        self.segments[0].type = "creep"
+
     def conservation(self,seg,decol):
 
+        self.quadrant = decol.quadrant 
         # postision relative to main segment
         self.segments[0].fperp = self.segments[0].D  + decol.fperp
 
@@ -343,9 +348,11 @@ class creeping:
         # vertical distance is depth main segment - lenght creep
         self.segments[0].L = decol.w - self.segments[0].H
 
-        # fix vertical segment
-        self.segments[0].dipr = math.pi/2
-        self.segments[0].dip = 90
+        # compute dip creeping fault
+        self.segments[0].dipr = math.atan2(decol.w,-self.segments[0].D)
+        self.segments[0].dip = np.rad2deg(self.segments[0].dipr)
+        #self.segments[0].dipr = math.pi/2
+        #self.segments[0].dip = 90
 
         # fix the ds on the creeping seg to be zero  
         self.segments[0].ds = decol.ds/10e14
@@ -593,10 +600,13 @@ class topo:
     color
     topomin,topomax
     plotminmax: option to also plot min max topo within bins
+    utm_proj: EPSG UTM projection. If not None, project data from WGS84 to EPSG.
+    ref: [lon, lat] reference point (default: None).
     """
 
     def __init__(self,name,wdir,filename,color='black',width=1.,
-        scale=1,topomin=None,topomax=None,plotminmax=False):
+        scale=1,topomin=None,topomax=None,plotminmax=False,
+        utm_proj=None, ref=None):
 
         self.name = name
         self.wdir = wdir
@@ -608,6 +618,17 @@ class topo:
         self.topomax = topomax
         self.width = width
 
+        # projection
+        self.utm_proj=utm_proj
+        self.ref=ref
+        if self.utm_proj is not None:
+            import pyproj
+            self.UTM = pyproj.Proj("+init=EPSG:{}".format(self.utm_proj))
+            if self.ref is not None:
+                self.ref_x,self.ref_y =  self.UTM(self.ref[0],self.ref[1])
+            else:
+                self.ref_x,self.ref_y = 0,0
+
 
     def load(self,flt):
         logger = flt.logger
@@ -616,6 +637,10 @@ class topo:
             profile = flt.profile
             fname = file(self.wdir+self.filename)
             x,y,z = np.loadtxt(fname,comments = '#',unpack = True,dtype = 'f,f,f')
+            if self.utm_proj is not None:
+                  x, y = self.UTM(x, y)
+                  x, y = (x - self.ref_x)/1e3, (y - self.ref_y)/1e3
+            
             xp = (x-profile.x)*profile.s[0]+(y-profile.y)*profile.s[1]
             yp = (x-profile.x)*profile.n[0]+(y-profile.y)*profile.n[1]
             index = np.nonzero((xp>profile.xpmax)|(xp<profile.xpmin)|(yp>profile.ypmax)|(yp<profile.ypmin))
@@ -636,15 +661,28 @@ class seismi:
     wdir: path input file
     scale: scale values
     color, width: plot options
+    utm_proj: EPSG UTM projection. If not None, project data from WGS84 to EPSG.
+    ref: [lon, lat] reference point (default: None).
     """
 
-    def __init__(self,name,wdir,filename,width, color='orange',scale=1):
+    def __init__(self,name,wdir,filename,width, color='orange',scale=1,utm_proj=None, ref=None):
         self.name = name
         self.wdir = wdir
         self.filename = filename
         self.color = color
         self.width = width
         self.scale=scale
+
+        # projection
+        self.utm_proj=utm_proj
+        self.ref=ref
+        if self.utm_proj is not None:
+            import pyproj
+            self.UTM = pyproj.Proj("+init=EPSG:{}".format(self.utm_proj))
+            if self.ref is not None:
+                self.ref_x,self.ref_y =  self.UTM(self.ref[0],self.ref[1])
+            else:
+                self.ref_x,self.ref_y = 0,0
 
     def load(self,flt):
         logger = flt.logger
@@ -653,6 +691,10 @@ class seismi:
             profile = flt.profile
             fname = file(self.wdir+self.filename)
             x,y,z,mw = np.loadtxt(fname,comments = '#',unpack = True,dtype = 'f,f,f,f')
+            if self.utm_proj is not None:
+                  x, y = self.UTM(x, y)
+                  x, y = (x - self.ref_x)/1e3, (y - self.ref_y)/1e3
+
             xp = (x-profile.x)*profile.s[0]+(y-profile.y)*profile.s[1]
             yp = (x-profile.x)*profile.n[0]+(y-profile.y)*profile.n[1]
             index = np.nonzero((xp>profile.xpmax)|(xp<profile.xpmin)|(yp>profile.ypmax)|(yp<profile.ypmin))
@@ -671,15 +713,27 @@ class moho:
     wdir: path input file
     scale: scale values
     color, width: plot options
+    utm_proj: EPSG UTM projection. If not None, project data from WGS84 to EPSG.
+    ref: [lon, lat] reference point (default: None).
     """
 
-    def __init__(self,name,wdir,filename,width,color='red',scale=1):
+    def __init__(self,name,wdir,filename,width,color='red',scale=1,utm_proj=None, ref=None):
         self.name = name
         self.wdir = wdir
         self.filename = filename
         self.color = color
         self.width = width
         self.scale=scale
+        # projection
+        self.utm_proj=utm_proj
+        self.ref=ref
+        if self.utm_proj is not None:
+            import pyproj
+            self.UTM = pyproj.Proj("+init=EPSG:{}".format(self.utm_proj))
+            if self.ref is not None:
+                self.ref_x,self.ref_y =  self.UTM(self.ref[0],self.ref[1])
+            else:
+                self.ref_x,self.ref_y = 0,0
         
     def load(self,flt):
         logger = flt.logger
@@ -688,6 +742,10 @@ class moho:
             profile = flt.profile
             fname = file(self.wdir+self.filename)
             x,y,z = np.loadtxt(fname,comments = '#',unpack = True,dtype = 'f,f,f')
+            if self.utm_proj is not None:
+                  x, y = self.UTM(x, y)
+                  x, y = (x - self.ref_x)/1e3, (y - self.ref_y)/1e3
+
             xp = (x-profile.x)*profile.s[0]+(y-profile.y)*profile.s[1]
             yp = (x-profile.x)*profile.n[0]+(y-profile.y)*profile.n[1]
             index = np.nonzero((xp>profile.xpmax)|(xp<profile.xpmin)|(yp>profile.ypmax)|(yp<profile.ypmin))
@@ -696,18 +754,3 @@ class moho:
             logger.critical(e)
             print(moho.__doc__)
             sys.exit()
-
-class fault2d:
-    """ 
-    fault2d class: Load 2D fault for plot only
-    help to position fault for futher modeling
-    Parameters: 
-    name: name fault
-    x,y: position east, north
-    """
-
-    def __init__(self,name,x,y,strike=None):
-        self.name=name
-        self.x=x
-        self.y=y
-        self.strike=strike

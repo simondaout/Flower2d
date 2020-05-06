@@ -39,12 +39,15 @@ class network(object):
     perc: cleaning outliers option (default: 100)
     lmin,lmax: min max options for plots
     width: size scatter point for plots (default: 3.)
+    utm_proj: EPSG UTM projection. If not None, project data from WGS84 to EPSG.
+    ref: [lon, lat] reference point (default: None).
     """
     
     def __init__(self,network,reduction,wdir,dim,weight=1.,scale=1.,errorfile=None,perc=100,\
         los=False,head=False,av_heading=None,av_los=None,\
         mask=None, cov=None,base=None,\
-        color='black',samp=1,lmin=None,lmax=None,plotName=True,width=3.):
+        color='black',samp=1,lmin=None,lmax=None,plotName=True,width=.5,
+        utm_proj=None, ref=None):
         
         # network name
         self.network = network
@@ -57,6 +60,17 @@ class network(object):
         self.scale = scale
         # number of stations
         self.Npoint = 0 
+
+        # projection
+        self.utm_proj=utm_proj
+        self.ref=ref
+        if self.utm_proj is not None:
+            import pyproj
+            self.UTM = pyproj.Proj("+init=EPSG:{}".format(self.utm_proj))
+            if self.ref is not None:
+                self.ref_x,self.ref_y =  self.UTM(self.ref[0],self.ref[1])
+            else:
+                self.ref_x,self.ref_y = 0,0
         
         # number of displacement components
         self.dim = dim
@@ -117,6 +131,9 @@ class network(object):
                     print(profile.__doc__)
                     sys.exit()
                 x,y,los,look=np.loadtxt(f,comments='#',unpack=True,dtype='f,f,f,f')
+                if self.utm_proj is not None:
+                  x, y = self.UTM(x, y)
+                  x, y = (x - self.ref_x)/1e3, (y - self.ref_y)/1e3
 
                 if self.errorfile is not None:
                   logger.info('Load error file: {}'.format(self.errorfile))
@@ -169,6 +186,9 @@ class network(object):
                 logger.info('heading is True, read heading angle in the 5th column of the text file for each points')
 
                 x,y,los,look,head=np.loadtxt(f,comments='#',unpack=True,dtype='f,f,f,f,f')
+                if self.utm_proj is not None:
+                  x, y = self.UTM(x, y)
+                  x, y = (x - self.ref_x)/1e3, (y - self.ref_y)/1e3
                 if self.errorfile is not None:
                   logger.info('Load error file: {}'.format(self.errorfile))
                   errorfile=self.errorfile
@@ -227,6 +247,10 @@ class network(object):
                     sys.exit()
 
                 x,y,los=np.loadtxt(f,comments='#',unpack=True,dtype='f,f,f')
+                if self.utm_proj is not None:  
+                  xt, yt = self.UTM(x, y)
+                  x, y = (xt - self.ref_x)/1e3, (yt - self.ref_y)/1e3
+                
                 if self.errorfile is not None:
                   logger.info('Load error file: {}'.format(self.errorfile))
                   errorfile=self.errorfile
@@ -240,9 +264,9 @@ class network(object):
                     sigmad = np.ones(len(los))*self.wd
 
                 x,y,los,sigmad = x[::self.samp],y[::self.samp],los[::self.samp],sigmad[::self.samp]
-                
                 xp=(x-self.profile.x)*self.profile.s[0]+(y-self.profile.y)*self.profile.s[1]
                 yp=(x-self.profile.x)*self.profile.n[0]+(y-self.profile.y)*self.profile.n[1]
+
                 index=np.nonzero((xp>self.profile.xpmax)|(xp<self.profile.xpmin)|(yp>self.profile.ypmax)|(yp<self.profile.ypmin))
                 ulos,self.x,self.y,self.xp,self.yp,sigmad=np.delete(los,index),np.delete(x,index),np.delete(y,index),np.delete(xp,index),np.delete(yp,index),np.delete(sigmad,index)
                 ulos[np.logical_or(ulos==0.0,ulos>9990.)] = np.float('NaN')
@@ -266,6 +290,7 @@ class network(object):
                     logger.debug('Set profile proj attribute')
                     self.profile.proj = self.projm
 
+
             if self.mask is not None:
                 uu = np.flatnonzero(np.logical_or(self.yp<=self.mask[0], self.yp>=self.mask[1]))
                 self.yp = self.yp[uu]
@@ -275,7 +300,8 @@ class network(object):
                 self.ulos = self.ulos[uu]
                 self.sigmad = self.sigmad[uu]
 
-            if self.perc < 100:
+            # clean
+            if (self.perc < 100) or (np.isnan(np.sum(self.ulos))):
               # print inds
               distance = []
               ypt = []
@@ -290,8 +316,11 @@ class network(object):
                 uu = np.flatnonzero(inds == j)
                 if len(uu)>0:
                     distance.append(bins[j] + (bins[j+1] - bins[j])/2.)
-                    indice = np.flatnonzero(np.logical_and(self.ulos[uu]>=np.percentile(\
-                      self.ulos[uu],100-self.perc),self.ulos[uu]<=np.percentile(self.ulos[uu],self.perc)))
+                    indice = np.flatnonzero(
+                           np.logical_and(~np.isnan(self.ulos[uu]),\
+                                   np.logical_and(self.ulos[uu]>=np.nanpercentile(\
+                      self.ulos[uu],100-self.perc),self.ulos[uu]\
+                      <=np.nanpercentile(self.ulos[uu],self.perc))))
                     ypt.append(self.yp[uu][indice])
                     xpt.append(self.xp[uu][indice])
                     yt.append(self.y[uu][indice])
@@ -310,7 +339,7 @@ class network(object):
               self.ulos = self.ulos[uu]
               self.sigmad = self.sigmad[uu]
 
-              if self.los is not None:
+              if self.los is True:
                 self.proj[0],self.proj[1],self.proj[2] = \
                 self.proj[0][uu],self.proj[1][uu],self.proj[2][uu]
 
@@ -329,6 +358,9 @@ class network(object):
             logger.debug('Dim = 2, Load East, North GPS')
 
             name,x,y = np.loadtxt(f,comments = '#',unpack = True,dtype = 'S4,f,f')
+            if self.utm_proj is not None:
+                  x, y = self.UTM(x, y)
+                  x, y = (x - self.ref_x)/1e3, (y - self.ref_y)/1e3
             yp = (x-self.profile.x)*self.profile.n[0]+(y-self.profile.y)*self.profile.n[1]
             xp = (x-self.profile.x)*self.profile.s[0]+(y-self.profile.y)*self.profile.s[1]
             logger.debug('Only keep points within profile')
@@ -398,6 +430,9 @@ class network(object):
 
             logger.debug('Dim = 3, Load East, North, Up GPS')
             name,x,y = np.loadtxt(f,comments = '#',unpack = True,dtype = 'S4,f,f')
+            if self.utm_proj is not None:
+                  x, y = self.UTM(x, y)
+                  x, y = (x - self.ref_x)/1e3, (y - self.ref_y)/1e3
             yp = (x-self.profile.x)*self.profile.n[0]+(y-self.profile.y)*self.profile.n[1]
             xp = (x-self.profile.x)*self.profile.s[0]+(y-self.profile.y)*self.profile.s[1]
             logger.debug('Only keep points within profile')
@@ -766,6 +801,9 @@ class network(object):
 	               return np.ones((self.N,))*1e14
                 # add a condition that ss ramp can not be sup than ss main seg
                 if (abs(ramp.ss) > abs(self.fmodel[0].ss)) :
+	               return np.ones((self.N,))*1e14
+                # length cannot be negative
+                if ramp.L < 0 :
 	               return np.ones((self.N,))*1e14
 
                 u = u + self.fmodel[Mtemp+k].displacement(self.yp)
