@@ -666,12 +666,12 @@ Mtemp = inv.structures[0].Mseg
 for j in xrange(1,inv.Mstruc):
     for k in xrange(inv.structures[j].Mseg):
         # if creeping fault, position relative to main segment
-        if abs(inv.fmodel[Mtemp+k].dip) != 90:
+        if inv.fmodel[Mtemp+k].type != "creep":
           inv.fmodel[Mtemp+k].tracew = inv.fmodel[Mtemp-1].tracew - inv.fmodel[Mtemp+k].H
           inv.fmodel[Mtemp+k].traceF = inv.fmodel[Mtemp-1].traceF + inv.fmodel[Mtemp+k].D
           #print(inv.fmodel[Mtemp-1].traceF[0],inv.fmodel[Mtemp+k].D)
         else:
-          inv.fmodel[Mtemp+k].tracew = inv.fmodel[0].tracew - inv.fmodel[Mtemp+k].H
+          inv.fmodel[Mtemp+k].tracew = np.zeros((inv.nsample))
           inv.fmodel[Mtemp+k].traceF = inv.fmodel[0].traceF +  inv.fmodel[Mtemp+k].D*np.ones((inv.nsample))
     Mtemp += inv.structures[j].Mseg
 
