@@ -121,23 +121,30 @@ def plotLOS(flt,nfigure):
 
     # plot ramp and kink 
     for k in xrange(1,flt.structures[0].Mseg):
-        ax2.scatter(fmodel[k].fperp,-fmodel[k].w, s = 30,marker = 'x',color = 'blue')
+        ax2.scatter(fmodel[k].fperp,-fmodel[k].w, s = 30,marker = 'x',color = 'royalblue')
         ax2.text(fmodel[k].fperp+3,-fmodel[k].w,fmodel[k].name,color = 'black',style='italic',size='xx-small')
         ax2.text(fmodel[k].fperp+3,-(fmodel[k].w+3),'SS: %4.1f mm'%((fmodel[k].ss)),style='italic',size='xx-small') 
         ax2.text(fmodel[k].fperp+3,-(fmodel[k].w+6),'DS: %4.1f mm'%((fmodel[k].ds)),style='italic',size='xx-small') 
         for i in xrange(0,len(fmodel[0].tracew),nb):
-            ax2.plot([ fmodel[0].traceF[i], fmodel[k].traceF[i] ],[ -fmodel[0].tracew[i], -fmodel[k].tracew[i] ], '-' ,lw= .01, color='blue')
+            ax2.plot([ fmodel[0].traceF[i], fmodel[k].traceF[i] ],[ -fmodel[0].tracew[i], -fmodel[k].tracew[i] ], '-' ,lw= .01, color='royalblue')
    
     Mtemp = flt.structures[0].Mseg
     for j in xrange(1,Mstruc):
         for k in xrange(flt.structures[j].Mseg):
-            # kink
-            ax2.scatter(fmodel[Mtemp+k].fperp,-fmodel[Mtemp+k].w, s = 30,marker = 'x',color = 'blue')
+            if fmodel[Mtemp+k].type !=  "creep":
+              ax2.scatter(fmodel[Mtemp+k].fperp,-fmodel[Mtemp+k].w, s = 30,marker = 'x',color = 'royalblue')
+            else:
+                ax2.scatter(fmodel[Mtemp+k].fperp,-fmodel[Mtemp+k].w, s = 30,marker = 'x',color = 'cyan')
             ax2.text(fmodel[Mtemp+k].fperp+3,-fmodel[Mtemp+k].w,fmodel[Mtemp+k].name,color = 'black',style='italic',size='xx-small')
             ax2.text(fmodel[Mtemp+k].fperp+3,-(fmodel[Mtemp+k].w+3),'SS: %4.1f mm'%(fmodel[Mtemp+k].ss),style='italic',size='xx-small') 
             ax2.text(fmodel[Mtemp+k].fperp+3,-(fmodel[Mtemp+k].w+6),'DS: %4.1f mm'%(fmodel[Mtemp+k].ds),style='italic',size='xx-small') 
             for i in xrange(0,len(fmodel[0].tracew),nb):
-                ax2.plot([ fmodel[Mtemp-1].traceF[i], fmodel[Mtemp+k].traceF[i] ],[ -fmodel[Mtemp-1].tracew[i], -fmodel[Mtemp+k].tracew[i] ], '-' ,lw= .01, color='blue')
+                if fmodel[Mtemp+k].type !=  "creep":
+                  ax2.plot([ fmodel[Mtemp+k].traceF[i] - fmodel[Mtemp+k].traceD[i] , fmodel[Mtemp+k].traceF[i] ],[ -(fmodel[Mtemp+k].tracew[i] + fmodel[Mtemp+k].traceH[i]), -fmodel[Mtemp+k].tracew[i] ], '-' ,lw= .01, color='royalblue')
+                else:
+                  ax2.plot([ fmodel[Mtemp+k].traceF[i] - fmodel[Mtemp+k].traceD[i] , fmodel[Mtemp+k].traceF[i] ],[ -(fmodel[0].tracew[i] - fmodel[Mtemp+k].traceH[i]), -fmodel[Mtemp+k].tracew[i] ], '-' ,lw= .01, color='cyan')  
+                    
+
         Mtemp += flt.structures[j].Mseg
 
     for i in xrange(len(plotdata)):
