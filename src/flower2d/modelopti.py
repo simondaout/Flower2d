@@ -358,6 +358,42 @@ class creeping:
         self.segments[0].ds = decol.ds/10e14
         self.segments[0].vh = decol.ds/10e14
 
+# vertical segment
+class vertical:
+    def __init__(self,name,ss,sigmass,H,sigmaH,\
+        distss='Unif',distL='Unif'):
+        
+        self.segments = [
+                second(name = name,ss = ss,sigmass = sigmass,D = 0,
+                    sigmaD = 0, H = H, sigmaH = sigmaH, 
+                    distss=distss, distH=distL, distD='Unif'),    
+                ]
+
+        self.Mseg = len(self.segments)
+        self.segments[0].fperp = self.segments[0].D 
+        self.Mker = sum(map((lambda x: getattr(x,'Mker')),self.segments))
+        self.segments[0].L = H
+        self.segments[0].w = 1./10e14
+
+    def conservation(self,seg,decol):
+
+        self.quadrant = decol.quadrant 
+        # postision relative to main segment
+        self.segments[0].fperp = self.segments[0].D  + decol.fperp
+
+        # length is equal to the vertical distance
+        self.segments[0].L = self.segments[0].H 
+        # depth is the depth main segment minus vertical distance
+        self.segments[0].w = decol.w - self.segments[0].H
+
+        #  dip fault is pi/2
+        self.segments[0].dipr = math.pi/2
+        self.segments[0].dip = 90
+
+        # fix the ds on the creeping seg to be zero  
+        self.segments[0].ds = decol.ds/10e14
+        self.segments[0].vh = decol.ds/10e14
+
 # flower structure as first structure
 class mainflower:
     def __init__(self,name,ss,sigmass,short,sigmashort,w,sigmaw,dip,\
