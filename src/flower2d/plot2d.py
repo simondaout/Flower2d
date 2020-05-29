@@ -20,8 +20,7 @@ import math,sys,getopt
 from os import path
 
 def plotLOS(flt,nfigure):
-    #fig = plt.figure(nfigure,figsize = (14,15))
-    fig = plt.figure(nfigure,figsize = (12,8))
+    fig = plt.figure(nfigure,figsize = (10,8))
     fig.subplots_adjust(hspace = 0.1)
 
     logger = flt.logger
@@ -51,7 +50,7 @@ def plotLOS(flt,nfigure):
     proj = profile.proj
 
     fig.subplots_adjust(hspace = 0.7)
-    ax1 = fig.add_subplot(4,1,1)
+    ax1 = fig.add_subplot(3+len(insardata),1,1)
     
     ax1.set_xlim([-l/2,l/2])
     tmin, tmax = 0, 0
@@ -100,7 +99,7 @@ def plotLOS(flt,nfigure):
 
     nb = int(flt.nsample/500) + 1
     
-    ax2 = fig.add_subplot(4,1,2)
+    ax2 = fig.add_subplot(3+len(insardata),1,2)
     #ax2.axis('equal')
     ax2.set_xlim([-l/2,l/2])
     
@@ -126,25 +125,25 @@ def plotLOS(flt,nfigure):
         ax2.text(fmodel[k].fperp+3,-(fmodel[k].w+3),'SS: %4.1f mm'%((fmodel[k].ss)),style='italic',size='xx-small') 
         ax2.text(fmodel[k].fperp+3,-(fmodel[k].w+6),'DS: %4.1f mm'%((fmodel[k].ds)),style='italic',size='xx-small') 
         for i in xrange(0,len(fmodel[0].tracew),nb):
-            ax2.plot([ fmodel[0].traceF[i], fmodel[k].traceF[i] ],[ -fmodel[0].tracew[i], -fmodel[k].tracew[i] ], '-' ,lw= .01, color='royalblue')
+            ax2.plot([ fmodel[0].traceF[i], fmodel[k].traceF[i] ],[ -fmodel[0].tracew[i], -fmodel[k].tracew[i] ], '-' ,lw= .02, color='royalblue')
    
     Mtemp = flt.structures[0].Mseg
     for j in xrange(1,Mstruc):
         for k in xrange(flt.structures[j].Mseg):
-            if fmodel[Mtemp+k].type !=  "creep":
-              ax2.scatter(fmodel[Mtemp+k].fperp,-fmodel[Mtemp+k].w, s = 30,marker = 'x',color = 'royalblue')
+            if fmodel[Mtemp+k].type != "creep" and fmodel[Mtemp+k].type != "vertical":
+                ax2.scatter(fmodel[Mtemp+k].fperp,-fmodel[Mtemp+k].w, s = 30,marker = 'x',color = 'royalblue')
             else:
                 ax2.scatter(fmodel[Mtemp+k].fperp,-fmodel[Mtemp+k].w, s = 30,marker = 'x',color = 'cyan')
             ax2.text(fmodel[Mtemp+k].fperp+3,-fmodel[Mtemp+k].w,fmodel[Mtemp+k].name,color = 'black',style='italic',size='xx-small')
             ax2.text(fmodel[Mtemp+k].fperp+3,-(fmodel[Mtemp+k].w+3),'SS: %4.1f mm'%(fmodel[Mtemp+k].ss),style='italic',size='xx-small') 
             ax2.text(fmodel[Mtemp+k].fperp+3,-(fmodel[Mtemp+k].w+6),'DS: %4.1f mm'%(fmodel[Mtemp+k].ds),style='italic',size='xx-small') 
             for i in xrange(0,len(fmodel[0].tracew),nb):
-                if fmodel[Mtemp+k].type !=  "creep":
-                  ax2.plot([ fmodel[Mtemp+k].traceF[i] - fmodel[Mtemp+k].traceD[i] , fmodel[Mtemp+k].traceF[i] ],[ -(fmodel[Mtemp+k].tracew[i] + fmodel[Mtemp+k].traceH[i]), -fmodel[Mtemp+k].tracew[i] ], '-' ,lw= .01, color='royalblue')
+                if fmodel[Mtemp+k].type ==  "creep":
+                  ax2.plot([ fmodel[Mtemp+k].traceF[i] - fmodel[Mtemp+k].traceD[i] , fmodel[Mtemp+k].traceF[i] ],[ -(fmodel[0].tracew[i] - fmodel[Mtemp+k].traceH[i]), -fmodel[Mtemp+k].tracew[i] ], '-' ,lw= .02, color='cyan')  
+                elif fmodel[Mtemp+k].type ==  "vertical":
+                    ax2.plot([ fmodel[0].traceF[i] , fmodel[Mtemp+k].traceF[i] ],[ -fmodel[0].tracew[i], -fmodel[Mtemp+k].tracew[i] ], '-' ,lw= .02, color='cyan')
                 else:
-                  ax2.plot([ fmodel[Mtemp+k].traceF[i] - fmodel[Mtemp+k].traceD[i] , fmodel[Mtemp+k].traceF[i] ],[ -(fmodel[0].tracew[i] - fmodel[Mtemp+k].traceH[i]), -fmodel[Mtemp+k].tracew[i] ], '-' ,lw= .01, color='cyan')  
-                    
-
+                  ax2.plot([ fmodel[Mtemp+k].traceF[i] - fmodel[Mtemp+k].traceD[i] , fmodel[Mtemp+k].traceF[i] ],[ -(fmodel[Mtemp+k].tracew[i] + fmodel[Mtemp+k].traceH[i]), -fmodel[Mtemp+k].tracew[i] ], '-' ,lw= .02, color='royalblue')
         Mtemp += flt.structures[j].Mseg
 
     for i in xrange(len(plotdata)):
@@ -211,14 +210,8 @@ def plotLOS(flt,nfigure):
     # 2) Plot 
     markers = ['+','d','x','v']
 
-    # los component
-    ax3 = fig.add_subplot(4,1,3)
-    ax3.set_xlim([-l/2,l/2])
-    plt.setp( ax3.get_xticklabels(), visible = False)
-    ax3.set_ylabel('LOS')
-    ax3.yaxis.set_major_locator(tic.MaxNLocator(3)) 
     # fault parrallele
-    ax4 = fig.add_subplot(4,1,4)
+    ax4 = fig.add_subplot(3+len(insardata),1,3+len(insardata))
     ax4.set_xlim([-l/2,l/2])
     ax4.plot(ysp,uspar,'-',lw = 2.,color = 'blue',label='modeled fault-parallel displacements')
     # fault perpendicular
@@ -230,22 +223,27 @@ def plotLOS(flt,nfigure):
     
     # 3) InSAR data and model
     colors = ['red','darkred','r','red','darkred','r','red','darkred','r']
-    ymin,ymax = ax3.get_ylim()
     for i in xrange(len(insardata)):
+        ax3 = fig.add_subplot(3+len(insardata),1,3+i)
+        ax3.set_xlim([-l/2,l/2])
+        plt.setp( ax3.get_xticklabels(), visible = False)
+        ax3.set_ylabel('LOS')
+        ax3.yaxis.set_major_locator(tic.MaxNLocator(3)) 
+        
         insar = insardata[i]
 
         # Create Baseline component
         binsarlos = insar.a+insar.b*insar.yp
         ilos = insar.ulos-binsarlos
 
-        ax3.scatter(insar.yp,insar.ulos-binsarlos,s = insar.width ,marker = 'o',label = insardata[i].reduction,color = insardata[i].color, alpha=.5)
+        ax3.scatter(insar.yp,insar.ulos-binsarlos,s = insar.width ,marker = 'o',label = insardata[i].reduction,color = insardata[i].color, alpha=.3)
         # problem if several insar with differents weight...
         
-        ymean = np.mean(ilos)
-        tempmax = ymean + 2.5*np.std(ilos)
-        tempmin = ymean - 2.5*np.std(ilos)
-        ymax = np.max([ymax,tempmax])
-        ymin = np.min([ymin,tempmin])
+        #ymean = np.mean(ilos)
+        #tempmax = ymean + 2.5*np.std(ilos)
+        #tempmin = ymean - 2.5*np.std(ilos)
+        #ymax = np.max([ymax,tempmax])
+        #ymin = np.min([ymin,tempmin])
 
         if (insar.lmin != None) and (insar.lmax != None):
             ax3.set_ylim([insar.lmin,insar.lmax])
@@ -253,6 +251,9 @@ def plotLOS(flt,nfigure):
         uslos = usx*insar.projm[0]+usy*insar.projm[1]+usz*insar.projm[2]
         ax3.plot(ysp,uslos,'-',color=colors[i], label = 'modeled {} LOS displacements'.format(insar.reduction),lw = 2.)
         # sigmalos =  insar.sigmad[0]*np.ones(len(uslos))
+        
+        # plot legend
+        ax3.legend(bbox_to_anchor = (0.,1.02,1.,0.102),loc = 3,ncol = 2,mode = 'expand',borderaxespad = 0.,fontsize = 'x-small')
   
     # 4) GPS data and model
     for i in xrange(len(gpsdata)):
@@ -297,8 +298,6 @@ def plotLOS(flt,nfigure):
             ax3.set_ylim([gps.lmin,gps.lmax])
 
     # Plot fault and legend    
-    ax3.legend(bbox_to_anchor = (0.,1.02,1.,0.102),loc = 3,ncol = 2,mode = 'expand',borderaxespad = 0.,fontsize = 'x-small')
-    #ax3.legend(loc = 'best')
     ymin,ymax = ax3.get_ylim()
     for j in xrange(Mseg):
         ax3.plot([fmodel[j].fperp,fmodel[j].fperp],[ymin,ymax],'--',lw=1,color = 'black')
@@ -307,7 +306,8 @@ def plotLOS(flt,nfigure):
     ymin,ymax = ax4.get_ylim()
     for j in xrange(Mseg):
         ax4.plot([fmodel[j].fperp,fmodel[j].fperp],[ymin,ymax],'--',lw=1,color = 'black')
-    
+   
+    plt.tight_layout()
     fig.savefig(outdir+'/profile/'+name+'_LOS.eps', format = 'EPS')
     
 def plotMap(flt,nfigure):
