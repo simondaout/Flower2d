@@ -372,8 +372,9 @@ class vertical:
         self.Mseg = len(self.segments)
         self.segments[0].fperp = self.segments[0].D 
         self.Mker = sum(map((lambda x: getattr(x,'Mker')),self.segments))
-        self.segments[0].L = H
+        self.segments[0].L = 660
         self.segments[0].w = 1./10e14
+        self.segments[0].type = "vertical"
 
     def conservation(self,seg,decol):
 
@@ -382,7 +383,8 @@ class vertical:
         self.segments[0].fperp = self.segments[0].D  + decol.fperp
 
         # length is equal to the vertical distance
-        self.segments[0].L = self.segments[0].H 
+        #self.segments[0].L = self.segments[0].H 
+        self.segments[0].L = 660 # fix L to half-infinite 
         # depth is the depth main segment minus vertical distance
         self.segments[0].w = decol.w - self.segments[0].H
 
