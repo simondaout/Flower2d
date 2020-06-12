@@ -54,6 +54,7 @@ def plotLOS(flt,nfigure):
     
     ax1.set_xlim([-l/2,l/2])
     tmin, tmax = 0, 0
+    
     for j in xrange(len(topodata)):
         plot = topodata[j] 
         
