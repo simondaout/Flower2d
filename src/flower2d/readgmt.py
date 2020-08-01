@@ -28,7 +28,7 @@ class gmt:
         self.yp=[]
 
     #load gmt segments
-    def load(self,delimiter=' ',xlim=[-1000,1000],ylim=[-1000,1000]):
+    def load(self,delimiter=' ',xlim=[-10000,10000],ylim=[-10000,10000]):
         x=[[]]
         y=[[]]
         i=0

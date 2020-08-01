@@ -18,6 +18,8 @@ class network:
     samp: subsample option, default:1 
     perc: cleaning outliers option within bins profile, default: percentile=95
     lmin,lmax: min max options for plots
+    utm_proj: EPSG UTM projection. If not None, project data from WGS84 to EPSG.
+    ref: [lon, lat] reference point (default: None). 
     """
 
     def __init__(self,network,reduction,wdir,dim,color='black',scale=1.,theta=False,\
@@ -78,9 +80,9 @@ class network:
             self.ux[j],self.uy[j]=east*self.scale,north*self.scale
             self.sigmax[j],self.sigmay[j]=esigma*self.scale,nsigma*self.scale
         
-        if (self.lmin or self.lmax) is None:
-           self.lmin = np.nanpercentile(np.array([self.ux,self.uy]), 8)
-           self.lmax = np.nanpercentile(np.array([self.ux,self.uy]), 92)
+        if ((self.lmin or self.lmax) is None):
+             self.lmin = np.min(np.array([self.ux,self.uy])) - 1
+             self.lmax = np.max(np.array([self.ux,self.uy])) + 1
 
     def loadinsar(self):
         insarf=file(self.wdir+self.network)
@@ -98,7 +100,7 @@ class network:
             else:
                 self.lon,self.lat,ulos,self.los=np.loadtxt(insarf,comments='#',usecols=(0,1,2,3),unpack=True,dtype='f,f,f,f')
                 self.lon,self.lat,ulos,self.los=self.lon[::self.samp],self.lat[::self.samp],ulos[::self.samp],self.los[::self.samp]
-                  
+            
             self.x, self.y = self.UTM(self.lon, self.lat)
             self.x, self.y = (self.x - self.ref_x)/1e3, (self.y - self.ref_y)/1e3
 
