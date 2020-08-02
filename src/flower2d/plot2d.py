@@ -368,13 +368,16 @@ def plotMap(flt,nfigure):
         
         name = insar.reduction
         orb = insar.a+insar.b*insar.yp
-        vmax = np.mean((insar.ulos)) + np.percentile(abs(insar.ulos-orb),98)
-        vmin = np.mean((insar.ulos)) - np.percentile(abs(insar.ulos-orb),98)
-
-        if i==0:
-            # cannot have different color scales
-            norm = matplotlib.colors.Normalize(vmin = vmin, vmax = vmax)
-            m = cm.ScalarMappable(norm = norm, cmap = cm.jet)
+        
+        if insar.lmin is None:
+            vmax = np.mean((insar.ulos)) + np.percentile(abs(insar.ulos-orb),98)
+            vmin = np.mean((insar.ulos)) - np.percentile(abs(insar.ulos-orb),98)
+        else:
+            vmax = insar.lmax; vmin = insar.lmin 
+        
+        # cannot have different color scales
+        norm = matplotlib.colors.Normalize(vmin = vmin, vmax = vmax)
+        m = cm.ScalarMappable(norm = norm, cmap = cm.jet)
         
         index = np.nonzero((insar.xp>xpmax)|(insar.xp<xpmin)|(insar.yp>ypmax)|(insar.yp<ypmin))
         insarx,insary,los,model = np.delete(insar.x,index),np.delete(insar.y,index),np.delete(insar.ulos,index),np.delete(insar.mlos+orb,index)
