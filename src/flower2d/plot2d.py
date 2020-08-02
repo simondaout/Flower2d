@@ -50,7 +50,8 @@ def plotLOS(flt,nfigure):
     proj = profile.proj
 
     fig.subplots_adjust(hspace = 0.7)
-    ax1 = fig.add_subplot(3+len(insardata),1,1)
+    #ax1 = fig.add_subplot(3+len(insardata),1,1)
+    ax1 = fig.add_subplot(2,1,1)
     
     ax1.set_xlim([-l/2,l/2])
     tmin, tmax = 0, 0
@@ -100,7 +101,8 @@ def plotLOS(flt,nfigure):
 
     nb = int(flt.nsample/500) + 1
     
-    ax2 = fig.add_subplot(3+len(insardata),1,2)
+    #ax2 = fig.add_subplot(3+len(insardata),1,2)
+    ax2 = fig.add_subplot(2,1,2)
     #ax2.axis('equal')
     ax2.set_xlim([-l/2,l/2])
     
@@ -211,8 +213,12 @@ def plotLOS(flt,nfigure):
     # 2) Plot 
     markers = ['+','d','x','v']
 
+    fig = plt.figure(nfigure+1,figsize = (10,8))
+    fig.subplots_adjust(hspace = 0.1) 
+    
     # fault parrallele
-    ax4 = fig.add_subplot(3+len(insardata),1,3+len(insardata))
+    ax4 = fig.add_subplot(1+len(insardata),1,1+len(insardata))
+
     ax4.set_xlim([-l/2,l/2])
     ax4.plot(ysp,uspar,'-',lw = 2.,color = 'blue',label='modeled fault-parallel displacements')
     # fault perpendicular
@@ -225,7 +231,7 @@ def plotLOS(flt,nfigure):
     # 3) InSAR data and model
     colors = ['red','darkred','r','red','darkred','r','red','darkred','r']
     for i in xrange(len(insardata)):
-        ax3 = fig.add_subplot(3+len(insardata),1,3+i)
+        ax3 = fig.add_subplot(1+len(insardata),1,1+i)
         ax3.set_xlim([-l/2,l/2])
         plt.setp( ax3.get_xticklabels(), visible = False)
         ax3.set_ylabel('LOS')
@@ -369,11 +375,8 @@ def plotMap(flt,nfigure):
         name = insar.reduction
         orb = insar.a+insar.b*insar.yp
         
-        if insar.lmin is None:
-            vmax = np.mean((insar.ulos)) + np.percentile(abs(insar.ulos-orb),98)
-            vmin = np.mean((insar.ulos)) - np.percentile(abs(insar.ulos-orb),98)
-        else:
-            vmax = insar.lmax; vmin = insar.lmin 
+        vmax = np.mean((insar.ulos)) + np.percentile(abs(insar.ulos-orb),98)
+        vmin = np.mean((insar.ulos)) - np.percentile(abs(insar.ulos-orb),98)
         
         # cannot have different color scales
         norm = matplotlib.colors.Normalize(vmin = vmin, vmax = vmax)
