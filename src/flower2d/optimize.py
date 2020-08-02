@@ -851,7 +851,7 @@ fig2.savefig(outdir+profile.name+'foward.eps', format='EPS')
 
 logger.info('Plot and save Profile plot')
 plotLOS(inv,nfigures)
-nfigures +=  1
+nfigures +=  2
 logger.info('Plot and save Map plot')
 plotMap(inv,nfigures)
 nfigures +=  len(inv.insardata)
