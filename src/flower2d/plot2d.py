@@ -20,7 +20,7 @@ import math,sys,getopt
 from os import path
 
 def plotLOS(flt,nfigure):
-    fig = plt.figure(nfigure,figsize = (10,8))
+    fig = plt.figure(nfigure,figsize = (8,6))
     fig.subplots_adjust(hspace = 0.1)
 
     logger = flt.logger
@@ -212,6 +212,9 @@ def plotLOS(flt,nfigure):
 
     # 2) Plot 
     markers = ['+','d','x','v']
+
+    plt.tight_layout()
+    fig.savefig(outdir+'/profile/'+name+'_topo.eps', format = 'EPS')
 
     fig = plt.figure(nfigure+1,figsize = (10,8))
     fig.subplots_adjust(hspace = 0.1) 
