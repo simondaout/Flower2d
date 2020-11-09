@@ -681,7 +681,7 @@ class topo:
             
             xp = (x-profile.x)*profile.s[0]+(y-profile.y)*profile.s[1]
             yp = (x-profile.x)*profile.n[0]+(y-profile.y)*profile.n[1]
-            index = np.nonzero((xp>profile.xpmax)|(xp<profile.xpmin)|(yp>profile.ypmax)|(yp<profile.ypmin))
+            index = np.nonzero(np.isnan(z)|(xp>profile.xpmax)|(xp<profile.xpmin)|(yp>profile.ypmax)|(yp<profile.ypmin))
             self.x,self.y,self.z = np.delete(x,index),np.delete(y,index),np.delete(z,index)*self.scale
             # print(np.nanmin(self.z),np.nanmax(self.z))
             # sys.exit()
