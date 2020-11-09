@@ -91,7 +91,7 @@ def plotLOS(flt,nfigure):
             logger.info('Set ylim topography to {} and {}'.format(plot.topomin,plot.topomax))
             ax1.set_ylim([plot.topomin,plot.topomax])
         else:
-            ax1.set_ylim([np.min(tmin)-0.5,np.max(tmax)+0.5])
+            ax1.set_ylim([np.nanmin(tmin)-0.5,np.nanmax(tmax)+0.5])
 
         plt.setp( ax1.get_xticklabels(), visible = False)
         ax1.set_ylabel('Elevation (km)')
