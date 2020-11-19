@@ -374,13 +374,16 @@ for k in range(len(profiles)):
       logger.debug('Number of GPS left within profile {0}'.format(len(gpsyp))) 
 
       if 3 == gps.dim:
-          gpsuv,gpssigmav = np.delete(gps.uv,index), np.delete(gps.sigmav,index)
+          gpsuv,gpssigmav,gpsulos,gpssigmalos = np.delete(gps.uv,index), np.delete(gps.sigmav,index),np.delete(gps.ulos,index),np.delete(gps.sigmalos,index)
 
-          # plot gps los
-          ax2.plot(gpsyp,gpsulos,'+',color='black',mew=5.,label='%s GPS LOS'%gpsdata[i].reduction)
-          
           ax3.plot(gpsyp,gpsuv,markers[i],color = 'red',mew = 1.,label = '%s vertical velocities'%gpsdata[i].reduction)
           ax3.errorbar(gpsyp,gpsuv,yerr = gpssigmav,ecolor = 'red',fmt = "none")          
+          
+          if gps.proj is not None:
+            # plot gps los
+            ax2.plot(gpsyp,gpsulos,'+',color='red',mew=5.,label='%s GPS LOS'%gpsdata[i].reduction)
+            ax2.errorbar(gpsyp,gpsulos,yerr = gpssigmalos,ecolor = 'red',fmt = "none")          
+          
 
       for j in range(Mfault):
           ax3.plot([fperp[j],fperp[j]],[gpsmax,gpsmin],color='red')

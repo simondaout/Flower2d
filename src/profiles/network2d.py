@@ -20,10 +20,11 @@ class network:
     lmin,lmax: min max options for plots
     utm_proj: EPSG UTM projection. If not None, project data from WGS84 to EPSG.
     ref: [lon, lat] reference point (default: None). 
+    prof=[east, north, up] optional projection into average LOS vector
     """
 
     def __init__(self,network,reduction,wdir,dim,color='black',scale=1.,theta=False,\
-        samp=1,perc=95,lmin=None,lmax=None,plotName=None, utm_proj=None, ref=None, cst=0):
+        samp=1,perc=95,lmin=None,lmax=None,plotName=None, utm_proj=None, ref=None, cst=0, proj=None):
 
         self.network=network
         self.reduction=reduction
@@ -61,6 +62,9 @@ class network:
             else:
                 self.ref_x,self.ref_y = 0,0
 
+        # projection to LOS
+        self.proj = proj
+
     def loadgps(self):
         gpsf=file(self.wdir+self.network)
         if self.utm_proj is None:
@@ -71,15 +75,33 @@ class network:
             self.x, self.y = (self.x - self.ref_x)/1e3, (self.y - self.ref_y)/1e3
 
         self.Npoint=len(self.name)
-        self.ux,self.uy=np.zeros(self.Npoint),np.zeros(self.Npoint)
-        self.sigmax,self.sigmay=np.zeros(self.Npoint),np.zeros(self.Npoint)
-        #self.d=np.zeros(self.Npoint*self.dim)
-        for j in xrange(self.Npoint):
-            station=self.wdir+self.reduction+'/'+self.name[j]
-            dated,east,north,esigma,nsigma=np.loadtxt(station,comments='#',usecols=(0,1,2,3,4),unpack=True,dtype='f,f,f,f,f')
-            self.ux[j],self.uy[j]=east*self.scale,north*self.scale
-            self.sigmax[j],self.sigmay[j]=esigma*self.scale,nsigma*self.scale
         
+        if self.dim == 2:
+            self.ux,self.uy=np.zeros(self.Npoint),np.zeros(self.Npoint)
+            self.sigmax,self.sigmay=np.zeros(self.Npoint),np.zeros(self.Npoint)
+            #self.d=np.zeros(self.Npoint*self.dim)
+            for j in xrange(self.Npoint):
+                station=self.wdir+self.reduction+'/'+self.name[j]
+                dated,east,north,esigma,nsigma=np.loadtxt(station,comments='#',usecols=(0,1,2,3,4),unpack=True,dtype='f,f,f,f,f')
+                self.ux[j],self.uy[j]=east*self.scale,north*self.scale
+                self.sigmax[j],self.sigmay[j]=esigma*self.scale,nsigma*self.scale
+        elif self.dim == 3:
+            self.ux,self.uy, self.uv=np.zeros(self.Npoint),np.zeros(self.Npoint),np.zeros(self.Npoint)
+            self.sigmax,self.sigmay,self.sigmav=np.zeros(self.Npoint),np.zeros(self.Npoint),np.zeros(self.Npoint)
+            self.ulos,self.sigmalos = np.zeros(self.Npoint),np.zeros(self.Npoint)
+            for j in xrange(self.Npoint):
+                station=self.wdir+self.reduction+'/'+self.name[j]
+                dated,east,north,up,esigma,nsigma,upsigma=np.loadtxt(station,comments='#',usecols=(0,1,2,3,4,5,6),unpack=True,dtype='f,f,f,f,f,f,f')
+                self.ux[j],self.uy[j],self.uv[j]=east*self.scale,north*self.scale,up*self.scale
+                self.sigmax[j],self.sigmay[j],self.sigmav[j]=esigma*self.scale,nsigma*self.scale,upsigma*self.scale
+                if self.proj is not None:
+                    self.ulos[j] = self.ux[j]*self.proj[0]+self.uy[j]*self.proj[1]+self.uv[j]*self.proj[2]
+                    self.sigmalos[j] = self.sigmax[j]*self.proj[0]+self.sigmay[j]*self.proj[1]+self.sigmav[j]*self.proj[2]
+
+        else:
+            print('Error: GNSS dimension is not 2 or 3! Exit')
+            sys.exit()
+
         if ((self.lmin or self.lmax) is None):
              self.lmin = np.min(np.array([self.ux,self.uy])) - 1
              self.lmax = np.max(np.array([self.ux,self.uy])) + 1
