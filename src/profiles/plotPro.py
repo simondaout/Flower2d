@@ -172,10 +172,11 @@ for i in range(Minsar):
   facelos = m.to_rgba(masked_array)
   ax.scatter(insar.x[::samp],insar.y[::samp], s=1, marker = 'o',color = facelos, rasterized=True, label = 'LOS Velocity %s'%(insar.reduction))
 
+gpscolor = ['coral','red','darkorange','orangered']
 for i in range(Mgps):
   gps=gpsdata[i]
   logger.info('Plot GPS data {0}'.format(gps.network))
-  ax.quiver(gps.x,gps.y,gps.ux,gps.uy,scale = 100, width = 0.005, color = 'red')
+  ax.quiver(gps.x,gps.y,gps.ux,gps.uy,scale = 150, width = 0.003, color = gpscolor[i%4])
 
   if gps.plotName is True:
       for kk in xrange(len(gps.name)):

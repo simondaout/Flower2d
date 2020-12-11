@@ -2,6 +2,8 @@
 
 import numpy as np
 import math
+import pyproj
+import sys
 
 class fault2d:
     """ 
@@ -39,8 +41,8 @@ class profile:
     loc_ramp: location ramp estimation. Can be positive (for postive distances along profile) or negative. Default: None
     """
 
-    def __init__(self,name,x,y,l,w,strike,type=None,
-        flat=None,lbins=None,loc_ramp=None):
+    def __init__(self,name,l,w,strike,type=None,
+        flat=None,lbins=None,loc_ramp=None,x=None,y=None,lat=None,lon=None,utm_proj=None, ref=None):
         self.name=name
         self.x=x
         self.y=y
@@ -58,6 +60,26 @@ class profile:
         self.typ=type
         # lmin,lmax needs to be an attribute of network because different plots for both
 
+        # projection
+        self.utm_proj=utm_proj
+        self.ref=ref
+        if self.utm_proj is not None:
+            self.UTM = pyproj.Proj("+init=EPSG:{}".format(self.utm_proj))
+            if self.ref is not None:
+                self.ref_x,self.ref_y =  self.UTM(self.ref[0],self.ref[1])
+            else:
+                self.ref_x,self.ref_y = 0,0
+        
+        if self.utm_proj is None:
+            self.x,self.y = x,y 
+            if (x is None) or (y is None):
+                print('utm_proj is not defined, you must defined ref points (x,y) in UTM. Exit!')
+                sys.exit()
+        else:
+            print('Read reference point profile in lat/lon')
+            x, y = self.UTM(lon, lat) 
+            self.x,self.y=(x-self.ref_x)/1e3,(y-self.ref_y)/1e3
+    
 class topo:
     """ 
     topo class: Load topographic file 
@@ -91,7 +113,6 @@ class topo:
         self.utm_proj=utm_proj
         self.ref=ref
         if self.utm_proj is not None:
-            import pyproj
             self.UTM = pyproj.Proj("+init=EPSG:{}".format(self.utm_proj))
             if self.ref is not None:
                 self.ref_x,self.ref_y =  self.UTM(self.ref[0],self.ref[1])
