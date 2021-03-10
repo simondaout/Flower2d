@@ -6,6 +6,7 @@ import scipy.optimize as opt
 import scipy.linalg as lst
 
 import gdal
+import pandas
 import geopandas as gpd
 import shapely.speedups
 
@@ -117,6 +118,9 @@ if 'plot_basemap' not in locals():
     plot_basemap = False
 
 # Load data
+if 'topodata' not in globals():
+    topodata = []
+    logger.warning('No topodata list defined')
 Mtopo = len(topodata)
 for i in range(Mtopo):
   plot=topodata[i]
@@ -128,6 +132,9 @@ if Mtopo == 0:
   logger.warning('No topodata defined')
   Mtopo = 0
 
+if 'gpsdata' not in globals():
+    gpsdata = []
+    logger.warning('No gpsdata list defined')
 Mgps = len(gpsdata)
 for i in range(Mgps):
       gps = gpsdata[i]
@@ -135,19 +142,26 @@ for i in range(Mgps):
       gps.loadgps()
       crs = gps.utm_proj       
 
-
-try:
-    gmtfiles
-except:
+if 'gmtfiles' not in globals():
     gmtfiles = []
     logger.warning('No gmtfiles list defined')
 
-try:
-    shapefiles
-except:
+if 'seismifiles' not in globals():
+    seismifiles = []
+    logger.warning('No seismifiles list defined')
+Mseismi=len(seismifiles)
+for i in range(Mseismi):
+    seismi = seismifiles[i]
+    logger.debug('Load data {0}'.format(seismi.filename))
+    seismi.load(xlim=xlim,ylim=ylim)
+
+if 'shapefiles' not in globals():
     shapefiles = []
     logger.warning('No shapefiles list defined')
 
+if 'insardata' not in globals():
+    insardata = []
+    logger.warning('No insardata list defined')
 Minsar = len(insardata)
 for i in range(Minsar):
     insar = insardata[i]
@@ -195,18 +209,26 @@ for ii in range(len(gmtfiles)):
 
 for ii in range(len(shapefiles)):
   name = shapefiles[ii].name
+  fname = shapefiles[ii].filename
   wdir = shapefiles[ii].wdir
   color = shapefiles[ii].color
   edgecolor = shapefiles[ii].edgecolor
   linewidth = shapefiles[ii].linewidth
   crs = shapefiles[ii].crs
-  shape = gpd.read_file(wdir + name)
+  shape = gpd.read_file(wdir + fname)
   if crs is not None:
     shape = shape.to_crs("EPSG:{}".format(crs))
-  shape.plot(ax=ax,facecolor='none', color=color,edgecolor=edgecolor,linewidth=linewidth)
+  shape.plot(ax=ax,facecolor='none', color=color,edgecolor=edgecolor,linewidth=linewidth,label=name)
+
+for ii in range(len(seismifiles)):
+  name = seismifiles[ii].name
+  x,y = seismifiles[ii].x, seismifiles[ii].y
+  wdir = seismifiles[ii].wdir
+  color = seismifiles[ii].color
+  width = (seismifiles[ii].mag - 4)*seismifiles[ii].width*10
+  ax.scatter(x,y,c=color,marker='o',s=width,linewidths=1, edgecolor='black',alpha=0.5,label=seismifiles[ii].name) 
 
 for i in range(Minsar):
-  
   insar=insardata[i]
   samp = insar.samp*4
 
@@ -259,6 +281,9 @@ if 'xmin' in locals():
 # add colorbar los
 if 'm' in locals():
   fig.colorbar(m,shrink = 0.5, aspect = 5)
+
+# plot legend
+ax.legend(loc = 'best',fontsize='x-small')
 
 # fig pro topo
 if len(profiles) > 1:
