@@ -1,15 +1,20 @@
-#!/usr/bin/env python2.7 
+#!/usr/bin/env python3 
 
-from __future__ import print_function
+#from __future__ import print_function
 import numpy as np
-from readgmt import *
+import scipy.optimize as opt
+import scipy.linalg as lst
+
+import gdal
+import geopandas as gpd
+import shapely.speedups
+
 from matplotlib import pyplot as plt
 #from matplotlib import mpl
 import matplotlib
 import matplotlib.cm as cm
-import scipy.optimize as opt
-import scipy.linalg as lst
 
+from readgmt import *
 from network2d import *
 from model2d import *
 from readgmt import *
@@ -19,7 +24,6 @@ import getopt
 import os, math
 from os import path
 import logging
-
 
 def hdi(trace, cred_mass=0.95):
     hdi_min, hdi_max = np.nanpercentile(trace,2.), np.nanpercentile(trace,98.)  
@@ -33,7 +37,7 @@ def usage():
 #load input file 
 try:
     opts,args = getopt.getopt(sys.argv[1:], "h", ["help"])
-except getopt.GetoptError, err:
+except:
     print(str(err))
     print("for help use --help")
     sys.exit()
@@ -73,7 +77,8 @@ if len(sys.argv)>1:
       sys.path.append(path.dirname(path.abspath(fname)))
       exec ("from "+path.basename(fname)+" import *")
     except:
-      execfile(path.abspath(fname))
+      exec(open(fname).read())
+      #execfile(path.abspath(fname))
   
   except Exception as e: 
     logger.critical('Problem in input file')
@@ -86,11 +91,13 @@ if len(sys.argv)>1:
     sys.exit()
 
 if 'xmin' in locals():
-  logger.info('Found boundaries map plot {0}-{1} and {2}-{3} in locals'.format(xmin,xmax,ymin,ymax))
+  logger.info('Found boundaries map plot {0:.2e} - {1:.2e} and {2:.2e} - {3:.2e} in locals'.format(xmin,xmax,ymin,ymax))
   xlim=[xmin,xmax];ylim=[ymin,ymax]
+  extent = (xmin, xmax, ymin, ymax)
 else:
-  logger.info('Did not found  boundaries map in input file, set xmin,xmax,ymin,ymax to -1000,1000')
-  xlim=[-1000,1000];ylim=[-1000,1000]
+  logger.info('Did not found  boundaries map in input file, set xmin,xmax,ymin,ymax')
+  xlim=None;ylim=None
+  extent = None
 
 if not os.path.exists(outdir):
     logger.info('Creating output directory {0}'.format(outdir))
@@ -104,6 +111,10 @@ except:
   Mfault=0
   fmodel=[]
 fperp=np.zeros(Mfault)
+
+# Info basemap
+if 'plot_basemap' not in locals():
+    plot_basemap = False
 
 # Load data
 Mtopo = len(topodata)
@@ -121,10 +132,21 @@ Mgps = len(gpsdata)
 for i in range(Mgps):
       gps = gpsdata[i]
       logger.debug('Load data {0}'.format(gps.network))
-      gps.loadgps()      
-# else
-#       logger.warning('No gpsdata defined')
-#       Mgps = 0
+      gps.loadgps()
+      crs = gps.utm_proj       
+
+
+try:
+    gmtfiles
+except:
+    gmtfiles = []
+    logger.warning('No gmtfiles list defined')
+
+try:
+    shapefiles
+except:
+    shapefiles = []
+    logger.warning('No shapefiles list defined')
 
 Minsar = len(insardata)
 for i in range(Minsar):
@@ -140,6 +162,7 @@ for i in range(Minsar):
         (np.sin(np.deg2rad(insar.losm))/np.sin(np.deg2rad(insar.los)))
     else:
       insar.uloscor = insar.ulos
+    crs = insar.utm_proj
 
 # except:
 #   logger.warning('No insardata defined')
@@ -151,6 +174,36 @@ ax = fig.add_subplot(1,1,1)
 ax.axis('equal')
 
 logger.info('Plot Map ....') 
+
+if plot_basemap is True: 
+    import contextily as ctx
+    if extent is not None:
+       ax.axis(extent)
+    ctx.add_basemap(ax,crs="EPSG:{}".format(crs), source=ctx.providers.OpenTopoMap,alpha=0.5)
+else:
+    print('plot_basemap variable is not defined or is not True. Skip backgroup topography plot')
+
+for ii in range(len(gmtfiles)):
+  name = gmtfiles[ii].name
+  wdir = gmtfiles[ii].wdir
+  filename = gmtfiles[ii].filename
+  color = gmtfiles[ii].color
+  width = gmtfiles[ii].width
+  fx,fy = gmtfiles[ii].load(xlim=xlim,ylim=ylim)
+  for i in range(len(fx)):
+    ax.plot(fx[i],fy[i],color = color,lw = width)
+
+for ii in range(len(shapefiles)):
+  name = shapefiles[ii].name
+  wdir = shapefiles[ii].wdir
+  color = shapefiles[ii].color
+  edgecolor = shapefiles[ii].edgecolor
+  linewidth = shapefiles[ii].linewidth
+  crs = shapefiles[ii].crs
+  shape = gpd.read_file(wdir + name)
+  if crs is not None:
+    shape = shape.to_crs("EPSG:{}".format(crs))
+  shape.plot(ax=ax,facecolor='none', color=color,edgecolor=edgecolor,linewidth=linewidth)
 
 for i in range(Minsar):
   
@@ -172,16 +225,15 @@ for i in range(Minsar):
   facelos = m.to_rgba(masked_array)
   ax.scatter(insar.x[::samp],insar.y[::samp], s=1, marker = 'o',color = facelos, rasterized=True, label = 'LOS Velocity %s'%(insar.reduction))
 
-gpscolor = ['coral','red','darkorange','orangered']
+gpscolor = ['black','coral','red','darkorange']
 for i in range(Mgps):
   gps=gpsdata[i]
   logger.info('Plot GPS data {0}'.format(gps.network))
   ax.quiver(gps.x,gps.y,gps.ux,gps.uy,scale = 150, width = 0.003, color = gpscolor[i%4])
 
   if gps.plotName is True:
-      for kk in xrange(len(gps.name)):
+      for kk in range(len(gps.name)):
             ax.text(gps.x[kk], gps.y[kk], gps.name[kk], color ='black')
-
 # plot faults
 for kk in range(Mfault):
   xf,yf = np.zeros((2)),np.zeros((2))
@@ -200,16 +252,6 @@ for kk in range(Mfault):
   # plot fault
   ax.plot(xf[:],yf[:],'--',color = 'black',lw = 1.)
 
-for ii in range(len(gmtfiles)):
-  name = gmtfiles[ii].name
-  wdir = gmtfiles[ii].wdir
-  filename = gmtfiles[ii].filename
-  color = gmtfiles[ii].color
-  width = gmtfiles[ii].width
-  fx,fy = gmtfiles[ii].load(xlim=xlim,ylim=ylim)
-  for i in range(len(fx)):
-    ax.plot(fx[i],fy[i],color = color,lw = width)
-
 if 'xmin' in locals(): 
   ax.set_xlim(xmin,xmax)
   ax.set_ylim(ymin,ymax)
@@ -226,18 +268,20 @@ else:
 fig1.subplots_adjust(hspace=0.0001)
 
 # fig pro insar
-if len(profiles) > 1:
-  fig2=plt.figure(4,figsize=(10,8))
-else:
-  fig2=plt.figure(4,figsize=(10,3))
-fig2.subplots_adjust(hspace=0.0001)
+if Minsar>0:
+  if len(profiles) > 1:
+    fig2=plt.figure(4,figsize=(10,8))
+  else:
+    fig2=plt.figure(4,figsize=(10,3))
+    fig2.subplots_adjust(hspace=0.0001)
 
 # fig pro gps
-if len(profiles) > 1:
-  fig3=plt.figure(5,figsize=(10,8))
-else:
-  fig3=plt.figure(5,figsize=(10,3))
-fig3.subplots_adjust(hspace=0.0001)
+if Mgps>0:
+  if len(profiles) > 1:
+    fig3=plt.figure(5,figsize=(10,8))
+  else:
+    fig3=plt.figure(5,figsize=(10,3))
+    fig3.subplots_adjust(hspace=0.0001)
 
 logger.info('Plot Profiles ....')
 
@@ -325,12 +369,14 @@ for k in range(len(profiles)):
                 ax1.text(fperp[kk],0.5,fmodel[kk].name,color='red')
 
   # LOS profile/map
-  ax2=fig2.add_subplot(len(profiles),1,k+1)
-  ax2.set_xlim([-l/2,l/2])
+  if Minsar>0:
+    ax2=fig2.add_subplot(len(profiles),1,k+1)
+    ax2.set_xlim([-l/2,l/2])
 
   # LOS profile/map
-  ax3=fig3.add_subplot(len(profiles),1,k+1)
-  ax3.set_xlim([-l/2,l/2])
+  if Mgps>0:
+    ax3=fig3.add_subplot(len(profiles),1,k+1)
+    ax3.set_xlim([-l/2,l/2])
   
   # plot profiles
   xp,yp = np.zeros((7)),np.zeros((7))
@@ -359,26 +405,26 @@ for k in range(len(profiles)):
       ,np.delete(gps.sigmax,index),np.delete(gps.sigmay,index),np.delete(gps.x,index),np.delete(gps.y,index),\
       np.delete(gps.xpp,index),np.delete(gps.ypp,index)
 
-      # co;pute fault parallel and perpendicular for each profiles
+      # compute fault parallel and perpendicular for each profiles
       gpsupar = gpsux*profiles[k].s[0]+gpsuy*profiles[k].s[1]
       gpsuperp = gpsux*profiles[k].n[0]+gpsuy*profiles[k].n[1]
       gpssigmaperp=((gpssigmax*np.cos(profiles[k].str))**2 + (gpssigmay*np.sin(profiles[k].str))**2)**0.5
       gpssigmapar=((gpssigmax*np.sin(profiles[k].str))**2 + (gpssigmay*np.cos(profiles[k].str))**2)**0.5
 
-      ax3.plot(gpsyp,gpsupar,markers[i],color = 'blue',mew = 1.,label =\
+      ax3.plot(gpsyp,gpsupar,markers[i],color = 'blue',mew = 1.5,label =\
        '%s fault-parallel velocities'%gpsdata[i].reduction )
-      ax3.errorbar(gpsyp,gpsupar,yerr = gpssigmapar,ecolor = 'blue',barsabove = 'True',fmt = "none")
-      ax3.plot(gpsyp,gpsuperp,markers[i],color = 'green',mew = 1.,\
+      ax3.errorbar(gpsyp,gpsupar,yerr = gpssigmapar,ecolor = 'blue',barsabove = 'True',fmt = "none",alpha=.5)
+      ax3.plot(gpsyp,gpsuperp,markers[i],color = 'green',mew = 1.5,\
         label = '%s fault-perpendicular velocities'%gpsdata[i].reduction)
-      ax3.errorbar(gpsyp,gpsuperp,yerr = gpssigmaperp,ecolor = 'green',fmt = "none")
+      ax3.errorbar(gpsyp,gpsuperp,yerr = gpssigmaperp,ecolor = 'green',fmt = "none",alpha=.5)
 
       logger.debug('Number of GPS left within profile {0}'.format(len(gpsyp))) 
 
       if 3 == gps.dim:
           gpsuv,gpssigmav,gpsulos,gpssigmalos = np.delete(gps.uv,index), np.delete(gps.sigmav,index),np.delete(gps.ulos,index),np.delete(gps.sigmalos,index)
 
-          ax3.plot(gpsyp,gpsuv,markers[i],color = 'red',mew = 1.,label = '%s vertical velocities'%gpsdata[i].reduction)
-          ax3.errorbar(gpsyp,gpsuv,yerr = gpssigmav,ecolor = 'red',fmt = "none")          
+          ax3.plot(gpsyp,gpsuv,markers[i],color = 'red',mew = 1.5,label = '%s vertical velocities'%gpsdata[i].reduction)
+          ax3.errorbar(gpsyp,gpsuv,yerr = gpssigmav,ecolor = 'red',fmt = "none",alpha=.5)          
           
           if gps.proj is not None:
             # plot gps los
@@ -388,12 +434,16 @@ for k in range(len(profiles)):
 
       for j in range(Mfault):
           ax3.plot([fperp[j],fperp[j]],[gpsmax,gpsmin],color='red')
+     
+      # plot vertical lines
+      ax3.hlines(np.linspace(gpsmin,gpsmax,6),xmin=-l/2,xmax=l/2,ls='--',color='black',lw=.5)
 
       # set born profile equal to map
       logger.debug('Set ylim GPS profile to {0}-{1}'.format(gpsmin,gpsmax))
       ax3.set_ylim([gpsmin,gpsmax])
 
-  ax3.legend(loc = 'best',fontsize='x-small')
+  if Mgps>0:
+    ax3.legend(loc = 'best',fontsize='x-small')
 
   cst=0
   for i in range(Minsar):
@@ -708,14 +758,12 @@ for k in range(len(profiles)):
           logger.debug('Set ylim InSAR profile to {0}-{1}'.format(losmin,losmax))
           ax2.set_ylim([losmin,losmax])
 
-  for j in range(Mfault):
-    ax2.plot([fperp[j],fperp[j]],[losmax,losmin],color='red')
-          
-  if k is not len(profiles)-1:
-    plt.setp(ax2.get_xticklabels(), visible=False)
-    plt.setp(ax1.get_xticklabels(), visible=False)
-
-  if Minsar > 0:  
+  if Minsar>0:
+    for j in range(Mfault):
+      ax2.plot([fperp[j],fperp[j]],[losmax,losmin],color='red')
+    if k is not len(profiles)-1:
+      plt.setp(ax2.get_xticklabels(), visible=False)
+      plt.setp(ax1.get_xticklabels(), visible=False)
     if typ is 'distscale':
       fig2.colorbar(m1,shrink=0.5, aspect=5)
     else:
@@ -727,7 +775,7 @@ if (flat != None) and len(insardata)==2:
   fig=plt.figure(6,figsize = (9,7))
   ax = fig.add_subplot(1,1,1)
   ax.axis('equal')
-  for i in xrange(len(insardata)):
+  for i in range(len(insardata)):
     insar=insardata[i]
     samp = insar.samp*4
 
@@ -746,7 +794,7 @@ if (flat != None) and len(insardata)==2:
       np.savetxt('{}_flat'.format(insardata[i].network), np.vstack([insar.x,insar.y,insar.ulos]).T, fmt='%.6f')
 
     # plot faults
-    for kk in xrange(Mfault):
+    for kk in range(Mfault):
       xf,yf = np.zeros((2)),np.zeros((2))
       strike=fmodel[kk].strike
       str=(strike*math.pi)/180
@@ -763,14 +811,14 @@ if (flat != None) and len(insardata)==2:
       ax.set_xlim(xmin,xmax)
       ax.set_ylim(ymin,ymax)
 
-    for ii in xrange(len(gmtfiles)):
+    for ii in range(len(gmtfiles)):
       name = gmtfiles[ii].name
       wdir = gmtfiles[ii].wdir
       filename = gmtfiles[ii].filename
       color = gmtfiles[ii].color
       width = gmtfiles[ii].width
       fx,fy = gmtfiles[ii].load()
-      for i in xrange(len(fx)):
+      for i in range(len(fx)):
         ax.plot(fx[i],fy[i],color = color,lw = width)
 
   # add colorbar los
@@ -784,21 +832,23 @@ if (flat != None) and len(insardata)==2:
 ax1.set_xlabel('Distance (km)')
 ax1.set_ylabel('Elevation (km)')
 
-ax2.set_xlabel('Distance (km)')
-ax2.set_ylabel('LOS velocity (mm)')
+plt.show()
+
+if Minsar>0:
+  ax2.set_xlabel('Distance (km)')
+  ax2.set_ylabel('LOS velocity (mm)')
+  logger.debug('Save {0} output file'.format(outdir+profiles[k].name+'prolos.pdf'))
+  fig2.savefig(outdir+profiles[k].name+'prolos.pdf', format='PDF',dpi=150)
 
 logger.debug('Save {0} output file'.format(outdir+profiles[k].name+'protopo.eps'))
-fig1.savefig(outdir+profiles[k].name+'protopo.eps', format='EPS', dpi=150)
+fig1.savefig(outdir+profiles[k].name+'protopo.pdf', format='PDF', dpi=150)
 
-logger.debug('Save {0} output file'.format(outdir+profiles[k].name+'prolos.pdf'))
-fig2.savefig(outdir+profiles[k].name+'prolos.pdf', format='PDF',dpi=150)
-
-logger.debug('Save {0} output file'.format(outdir+profiles[k].name+'progps.eps'))
-fig3.savefig(outdir+profiles[k].name+'progps.eps', format='EPS',dpi=75)
+if Mgps>0:
+  logger.debug('Save {0} output file'.format(outdir+profiles[k].name+'progps.eps'))
+  fig3.savefig(outdir+profiles[k].name+'progps.pdf', format='PDF',dpi=75)
 
 logger.debug('Save {0} output file'.format(outdir+profiles[k].name+'promap.eps'))
-fig.savefig(outdir+profiles[k].name+'promap.eps', format='EPS',dpi=75)
+fig.savefig(outdir+profiles[k].name+'promap.pdf', format='PDF')
 
-plt.show()
 
 

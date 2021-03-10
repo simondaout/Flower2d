@@ -56,7 +56,7 @@ class network:
         self.ref=ref
         if self.utm_proj is not None:
             import pyproj
-            self.UTM = pyproj.Proj("+init=EPSG:{}".format(self.utm_proj))
+            self.UTM = pyproj.Proj("EPSG:{}".format(self.utm_proj))
             if self.ref is not None:
                 self.ref_x,self.ref_y =  self.UTM(self.ref[0],self.ref[1])
             else:
@@ -66,13 +66,13 @@ class network:
         self.proj = proj
 
     def loadgps(self):
-        gpsf=file(self.wdir+self.network)
+        gpsf=self.wdir+self.network
         if self.utm_proj is None:
             self.name,self.x,self.y=np.loadtxt(gpsf,comments='#',unpack=True,dtype='S4,f,f')
         else:
             self.name,self.lon,self.lat=np.loadtxt(gpsf,comments='#',unpack=True,dtype='S4,f,f')
             self.x, self.y = self.UTM(self.lon, self.lat) 
-            self.x, self.y = (self.x - self.ref_x)/1e3, (self.y - self.ref_y)/1e3
+            self.x, self.y = (self.x - self.ref_x), (self.y - self.ref_y)
 
         self.Npoint=len(self.name)
         
@@ -80,8 +80,8 @@ class network:
             self.ux,self.uy=np.zeros(self.Npoint),np.zeros(self.Npoint)
             self.sigmax,self.sigmay=np.zeros(self.Npoint),np.zeros(self.Npoint)
             #self.d=np.zeros(self.Npoint*self.dim)
-            for j in xrange(self.Npoint):
-                station=self.wdir+self.reduction+'/'+self.name[j]
+            for j in range(self.Npoint):
+                station=self.wdir+self.reduction+'/'+str(self.name[j])
                 dated,east,north,esigma,nsigma=np.loadtxt(station,comments='#',usecols=(0,1,2,3,4),unpack=True,dtype='f,f,f,f,f')
                 self.ux[j],self.uy[j]=east*self.scale,north*self.scale
                 self.sigmax[j],self.sigmay[j]=esigma*self.scale,nsigma*self.scale
@@ -89,8 +89,8 @@ class network:
             self.ux,self.uy, self.uv=np.zeros(self.Npoint),np.zeros(self.Npoint),np.zeros(self.Npoint)
             self.sigmax,self.sigmay,self.sigmav=np.zeros(self.Npoint),np.zeros(self.Npoint),np.zeros(self.Npoint)
             self.ulos,self.sigmalos = np.zeros(self.Npoint),np.zeros(self.Npoint)
-            for j in xrange(self.Npoint):
-                station=self.wdir+self.reduction+'/'+self.name[j]
+            for j in range(self.Npoint):
+                station=self.wdir+self.reduction+'/'+self.name[j].decode('utf-8')
                 dated,east,north,up,esigma,nsigma,upsigma=np.loadtxt(station,comments='#',usecols=(0,1,2,3,4,5,6),unpack=True,dtype='f,f,f,f,f,f,f')
                 self.ux[j],self.uy[j],self.uv[j]=east*self.scale,north*self.scale,up*self.scale
                 self.sigmax[j],self.sigmay[j],self.sigmav[j]=esigma*self.scale,nsigma*self.scale,upsigma*self.scale
@@ -107,7 +107,7 @@ class network:
              self.lmax = np.max(np.array([self.ux,self.uy])) + 1
 
     def loadinsar(self):
-        insarf=file(self.wdir+self.network)
+        insarf=self.wdir+self.network
         if self.utm_proj is None:
             if self.theta is False:
                 self.x,self.y,ulos=np.loadtxt(insarf,comments='#',unpack=True,usecols=(0,1,2),dtype='f,f,f')
@@ -124,7 +124,7 @@ class network:
                 self.lon,self.lat,ulos,self.los=self.lon[::self.samp],self.lat[::self.samp],ulos[::self.samp],self.los[::self.samp]
             
             self.x, self.y = self.UTM(self.lon, self.lat)
-            self.x, self.y = (self.x - self.ref_x)/1e3, (self.y - self.ref_y)/1e3
+            self.x, self.y = (self.x - self.ref_x), (self.y - self.ref_y)
 
         # ulos[np.logical_or(ulos==0.0,ulos>9990.)] = np.float('NaN')
         self.ulos=ulos*self.scale + self.cst

@@ -46,8 +46,8 @@ class profile:
         self.name=name
         self.x=x
         self.y=y
-        self.l=l
-        self.w=w
+        self.l=l*1e3
+        self.w=w*1e3
         self.flat=flat
         self.lbins=lbins
         self.loc_ramp=loc_ramp
@@ -64,7 +64,7 @@ class profile:
         self.utm_proj=utm_proj
         self.ref=ref
         if self.utm_proj is not None:
-            self.UTM = pyproj.Proj("+init=EPSG:{}".format(self.utm_proj))
+            self.UTM = pyproj.Proj("EPSG:{}".format(self.utm_proj))
             if self.ref is not None:
                 self.ref_x,self.ref_y =  self.UTM(self.ref[0],self.ref[1])
             else:
@@ -78,7 +78,7 @@ class profile:
         else:
             print('Read reference point profile in lat/lon')
             x, y = self.UTM(lon, lat) 
-            self.x,self.y=(x-self.ref_x)/1e3,(y-self.ref_y)/1e3
+            self.x,self.y=(x-self.ref_x),(y-self.ref_y)
     
 class topo:
     """ 
@@ -113,22 +113,47 @@ class topo:
         self.utm_proj=utm_proj
         self.ref=ref
         if self.utm_proj is not None:
-            self.UTM = pyproj.Proj("+init=EPSG:{}".format(self.utm_proj))
+            self.UTM = pyproj.Proj("EPSG:{}".format(self.utm_proj))
             if self.ref is not None:
                 self.ref_x,self.ref_y =  self.UTM(self.ref[0],self.ref[1])
             else:
                 self.ref_x,self.ref_y = 0,0
 
-    def load(self,xlim=[-1000,1000],ylim=[-1000,1000]):
-        fname=file(self.wdir+self.filename)
+    def load(self,xlim=None,ylim=None):
+        fname=self.wdir+self.filename
         if self.utm_proj is None:
             x,y,z=np.loadtxt(fname,comments='#',unpack=True,dtype='f,f,f')
             self.x,self.y,self.z = x,y,z*self.scale
         else:
             self.lon,self.lat,z=np.loadtxt(fname,comments='#',unpack=True,dtype='f,f,f')
             x, y = self.UTM(self.lon, self.lat) 
-            self.x,self.y,self.z=(x-self.ref_x)/1e3,(y-self.ref_y)/1e3,z*self.scale
+            self.x,self.y,self.z=(x-self.ref_x),(y-self.ref_y),z*self.scale
         
         # remove data outside map
-        index=np.nonzero((self.x<xlim[0])|(self.x>xlim[1])|(self.y<ylim[0])|(self.y>ylim[1]))
-        self.x,self.y,self.z = np.delete(self.x,index),np.delete(self.y,index),np.delete(self.z,index)
+        if (xlim is not None) and (ylim is not None):
+          index=np.nonzero((self.x<xlim[0])|(self.x>xlim[1])|(self.y<ylim[0])|(self.y>ylim[1]))
+          self.x,self.y,self.z = np.delete(self.x,index),np.delete(self.y,index),np.delete(self.z,index)
+
+class shapefile:
+    """
+    shapefiel class
+    Parameters:
+    name: name input file
+    wdir: path input file
+    color, width: plot option
+    utm_proj: EPSG UTM projection. If not None, project data from to EPSG.
+    """
+    
+    def __init__(self,name,wdir,color='black',edgecolor='black',linewidth=2.,utm_proj=None):
+        self.name=name
+        self.wdir=wdir
+        self.color=color
+        self.edgecolor=edgecolor
+        self.linewidth=linewidth
+        self.crs=utm_proj
+
+    
+    
+
+
+
