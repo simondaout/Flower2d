@@ -14,6 +14,7 @@ from matplotlib import pyplot as plt
 #from matplotlib import mpl
 import matplotlib
 import matplotlib.cm as cm
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 from readgmt import *
 from network2d import *
@@ -183,9 +184,22 @@ for i in range(Minsar):
 #   Minsar = 0
 
 # MAP
-fig=plt.figure(0,figsize = (9,8))
-ax = fig.add_subplot(1,1,1)
-ax.axis('equal')
+# check if vertical for GPS
+vertical_map = False
+for i in range(Mgps):
+  if gpsdata[i].dim == 3:
+    vertical_map = True
+if vertical_map:
+  fig=plt.figure(0,figsize = (14,6))
+  ax = fig.add_subplot(1,2,1)
+  ax.axis('equal')
+  ax12 = fig.add_subplot(1,2,2)
+  ax.axis('equal')
+  ax12.axis('equal')
+else:
+  fig=plt.figure(0,figsize = (9,8))
+  ax = fig.add_subplot(1,1,1)
+  ax.axis('equal')
 
 logger.info('Plot Map ....') 
 
@@ -193,7 +207,11 @@ if plot_basemap is True:
     import contextily as ctx
     if extent is not None:
        ax.axis(extent)
-    ctx.add_basemap(ax,crs="EPSG:{}".format(crs), source=ctx.providers.OpenTopoMap,alpha=0.5)
+       if vertical_map:
+         ax12.axis(extent)
+    ctx.add_basemap(ax,crs="EPSG:{}".format(crs), source=ctx.providers.OpenTopoMap,alpha=0.5,zorder=0)
+    if vertical_map:
+      ctx.add_basemap(ax12,crs="EPSG:{}".format(crs), source=ctx.providers.OpenTopoMap,alpha=0.5,zorder=0)
 else:
     print('plot_basemap variable is not defined or is not True. Skip backgroup topography plot')
 
@@ -205,7 +223,9 @@ for ii in range(len(gmtfiles)):
   width = gmtfiles[ii].width
   fx,fy = gmtfiles[ii].load(xlim=xlim,ylim=ylim)
   for i in range(len(fx)):
-    ax.plot(fx[i],fy[i],color = color,lw = width)
+    ax.plot(fx[i],fy[i],color = color,lw = width,zorder=1)
+  if vertical_map:
+    ax12.plot(fx[i],fy[i],color = color,lw = width,zorder=1)
 
 for ii in range(len(shapefiles)):
   name = shapefiles[ii].name
@@ -218,7 +238,9 @@ for ii in range(len(shapefiles)):
   shape = gpd.read_file(wdir + fname)
   if crs is not None:
     shape = shape.to_crs("EPSG:{}".format(crs))
-  shape.plot(ax=ax,facecolor='none', color=color,edgecolor=edgecolor,linewidth=linewidth,label=name)
+  shape.plot(ax=ax,facecolor='none', color=color,edgecolor=edgecolor,linewidth=linewidth,label=name,zorder=1)
+  if vertical_map:
+    shape.plot(ax=ax12,facecolor='none', color=color,edgecolor=edgecolor,linewidth=linewidth,label=name,zorder=1)
 
 for ii in range(len(seismifiles)):
   name = seismifiles[ii].name
@@ -226,7 +248,15 @@ for ii in range(len(seismifiles)):
   wdir = seismifiles[ii].wdir
   color = seismifiles[ii].color
   width = (seismifiles[ii].mag - 4)*seismifiles[ii].width*10
-  ax.scatter(x,y,c=color,marker='o',s=width,linewidths=1, edgecolor='black',alpha=0.5,label=seismifiles[ii].name) 
+  ax.scatter(x,y,c=color,marker='o',s=width,linewidths=1, edgecolor='black',alpha=0.5,label=seismifiles[ii].name,zorder=2) 
+
+try:
+  from matplotlib.colors import LinearSegmentedColormap
+  cm_locs = os.environ["Flower2d"] + '/contrib/colormaps/'
+  cmap = LinearSegmentedColormap.from_list('roma', np.loadtxt(cm_locs+"roma.txt"))
+  cmap = cmap.reversed()
+except:
+  cmap = cm.rainbow
 
 for i in range(Minsar):
   insar=insardata[i]
@@ -241,49 +271,55 @@ for i in range(Minsar):
   logger.info('Plot data in map view {0} between {1} and {2}'.format(insar.network, vmin, vmax))
   logger.info('Subsample data every {0} point (samp option)'.format(insar.samp))
   norm = matplotlib.colors.Normalize(vmin=insar.lmin, vmax=insar.lmax)
-  m = cm.ScalarMappable(norm = norm, cmap = 'rainbow')
+  m = cm.ScalarMappable(norm = norm, cmap = cmap)
   m.set_array(insar.ulos[::samp])
   masked_array = np.ma.array(insar.ulos[::samp], mask=np.isnan(insar.ulos[::samp]))
   facelos = m.to_rgba(masked_array)
-  ax.scatter(insar.x[::samp],insar.y[::samp], s=1, marker = 'o',color = facelos, rasterized=True, label = 'LOS Velocity %s'%(insar.reduction))
+  ax.scatter(insar.x[::samp],insar.y[::samp], s=1, marker = 'o',color = facelos, rasterized=True, label = 'LOS Velocity {}'.format(insar.reduction),zorder=3)
 
 gpscolor = ['black','coral','red','darkorange']
 for i in range(Mgps):
   gps=gpsdata[i]
   logger.info('Plot GPS data {0}'.format(gps.network))
-  ax.quiver(gps.x,gps.y,gps.ux,gps.uy,scale = 150, width = 0.003, color = gpscolor[i%4])
+  ax.quiver(gps.x,gps.y,gps.ux,gps.uy,scale = 150, width = 0.003, color = gpscolor[i%4],zorder=4)
+  if vertical_map:
+    norm = matplotlib.colors.Normalize(vmin=np.nanpercentile(gps.uv,5), vmax=np.nanpercentile(gps.uv,95))
+    mv = cm.ScalarMappable(norm = norm, cmap = cmap)
+    mv.set_array(gps.uv)
+    facev = mv.to_rgba(gps.uv)
+    ax12.scatter(gps.x,gps.y,c=facev,marker='o',s=40,linewidths=1, edgecolor='black',alpha=0.8,label='Vertical velocities network {}'.format(gps.reduction),zorder=2)    
 
   if gps.plotName is True:
       for kk in range(len(gps.name)):
             ax.text(gps.x[kk], gps.y[kk], gps.name[kk], color ='black')
-# plot faults
-for kk in range(Mfault):
-  xf,yf = np.zeros((2)),np.zeros((2))
-  if fmodel[kk].strike is not None:
-      strike = fmodel[kk].strike
-  else:
-      strike = profiles[0].strike
-  
-  str=(strike*math.pi)/180
-  s=[math.sin(str),math.cos(str),0]
-  n=[math.cos(str),-math.sin(str),0]
-  xf[0] = fmodel[kk].x+2*-150*s[0]
-  xf[1] = fmodel[kk].x+2*150*s[0]
-  yf[0] = fmodel[kk].y+2*-150*s[1]
-  yf[1] = fmodel[kk].y+2*150*s[1]
-  # plot fault
-  ax.plot(xf[:],yf[:],'--',color = 'black',lw = 1.)
 
 if 'xmin' in locals(): 
   ax.set_xlim(xmin,xmax)
-  ax.set_ylim(ymin,ymax)
+  #ax.set_ylim(ymin,ymax)
+  if vertical_map:
+    ax12.set_xlim(xmin,xmax)
+    #ax12.set_ylim(ymin,ymax)
 
 # add colorbar los
-if 'm' in locals():
-  fig.colorbar(m,shrink = 0.5, aspect = 5)
+if 'facelos' in locals():
+  divider = make_axes_locatable(ax)
+  c = divider.append_axes("right", size="5%", pad=0.05)
+  plt.colorbar(m, cax=c) 
+
+# add colorbar vertical
+if 'facev' in locals():
+  divider = make_axes_locatable(ax)
+  c = divider.append_axes("right", size="5%", pad=0.05)
+  plt.colorbar(mv, cax=c) 
+  divider = make_axes_locatable(ax12)
+  c = divider.append_axes("right", size="5%", pad=0.05)
+  plt.colorbar(mv, cax=c) 
 
 # plot legend
-ax.legend(loc = 'best',fontsize='x-small')
+ax.legend(loc = 'upper right',fontsize='x-small')
+if vertical_map:
+  ax12.legend(loc = 'upper right',fontsize='x-small')
+plt.tight_layout()  
 
 # fig pro topo
 if len(profiles) > 1:
@@ -410,7 +446,10 @@ for k in range(len(profiles)):
   yp[:] = y0-w/2*profiles[k].s[1]-l/2*profiles[k].n[1],y0+w/2*\
   profiles[k].s[1]-l/2*profiles[k].n[1],y0+w/2*profiles[k].s[1]+l/2*profiles[k].n[1],y0-w/2*profiles[k].s[1]+l/2*profiles[k].n[1],y0-w/2*profiles[k].s[1]-l/2*profiles[k].n[1],y0-l/2*profiles[k].n[1],y0+l/2*profiles[k].n[1]
 
+  # plot in map view  
   ax.plot(xp[:],yp[:],color = 'black',lw = 1.)
+  if vertical_map:
+    ax12.plot(xp[:],yp[:],color = 'black',lw = 1.)
 
   # GPS plot
   markers = ['+','d','x','v']
