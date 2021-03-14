@@ -1,0 +1,8 @@
+#%Module
+set prefix ~/dev/Flower2d
+set exec_prefix ${prefix}
+
+setenv Flower2d           $prefix
+
+append-path PATH  $prefix/src/profiles
+append-path PATH  $prefix/src/flower2d
