@@ -192,16 +192,22 @@ for i in range(Mgps):
 if vertical_map:
   fig=plt.figure(0,figsize = (14,6))
   ax = fig.add_subplot(1,2,1)
-  #ax.axis('equal')
+  ax.axis('equal')
   ax12 = fig.add_subplot(1,2,2)
-  #ax.axis('equal')
-  #ax12.axis('equal')
+  ax.axis('equal')
+  ax12.axis('equal')
 else:
   fig=plt.figure(0,figsize = (9,8))
   ax = fig.add_subplot(1,1,1)
-  #ax.axis('equal')
+  ax.axis('equal')
 
 logger.info('Plot Map ....') 
+if 'xmin' in locals(): 
+  ax.set_xlim(xmin,xmax)
+  ax.set_ylim(ymin,ymax)
+  if vertical_map:
+    ax12.set_xlim(xmin,xmax)
+    ax12.set_ylim(ymin,ymax)
 
 if plot_basemap == True: 
     import contextily as ctx
@@ -209,14 +215,11 @@ if plot_basemap == True:
        ax.axis(extent)
        if vertical_map:
          ax12.axis(extent)
-    #ctx.add_basemap(ax,crs="EPSG:{}".format(crs), source=ctx.providers.OpenTopoMap,alpha=0.5,zorder=0)
+    ctx.add_basemap(ax,crs="EPSG:{}".format(crs), source=ctx.providers.OpenTopoMap,alpha=0.5,zorder=0)
     if vertical_map:
       ctx.add_basemap(ax12,crs="EPSG:{}".format(crs), source=ctx.providers.OpenTopoMap,alpha=0.5,zorder=0)
 else:
     print('plot_basemap variable is not defined or is not True. Skip backgroup topography plot')
-
-plt.show()
-sys.exit()
 
 for ii in range(len(gmtfiles)):
   name = gmtfiles[ii].name
@@ -250,7 +253,8 @@ for ii in range(len(seismifiles)):
   x,y = seismifiles[ii].x, seismifiles[ii].y
   wdir = seismifiles[ii].wdir
   color = seismifiles[ii].color
-  width = (seismifiles[ii].mag - 4)*seismifiles[ii].width*10
+  smin = np.nanmin(seismifiles[ii].mag)
+  width = (seismifiles[ii].mag - smin)*seismifiles[ii].width*5
   ax.scatter(x,y,c=color,marker='o',s=width,linewidths=1, edgecolor='black',alpha=0.5,label=seismifiles[ii].name,zorder=2) 
 
 try:
@@ -296,13 +300,6 @@ for i in range(Mgps):
       for kk in range(len(gps.name)):
             ax.text(gps.x[kk], gps.y[kk], gps.name[kk], color ='black')
 
-if 'xmin' in locals(): 
-  ax.set_xlim(xmin,xmax)
-  ax.set_ylim(ymin,ymax)
-  if vertical_map:
-    ax12.set_xlim(xmin,xmax)
-    ax12.set_ylim(ymin,ymax)
-
 # add colorbar los
 if 'facelos' in locals():
   divider = make_axes_locatable(ax)
@@ -323,8 +320,6 @@ ax.legend(loc = 'upper right',fontsize='x-small')
 if vertical_map:
   ax12.legend(loc = 'upper right',fontsize='x-small')
 plt.tight_layout()  
-plt.show()
-sys.exit()
 
 # fig pro topo
 if len(profiles) > 1:
@@ -454,25 +449,25 @@ for k in range(len(profiles)):
   # depth profile
   if len(seismifiles)>0:
      ax4=fig4.add_subplot(len(profiles),1,k+1)
-     ax3.set_xlim([-l/2,l/2])
-     ax4.axis.('equal')
+     ax4.axis('equal')
+     ax4.set_xlim([-l/2,l/2])
       
   for ii in range(len(seismifiles)):
     name = seismifiles[ii].name
     x,y = seismifiles[ii].x, seismifiles[ii].y
     wdir = seismifiles[ii].wdir
     color = seismifiles[ii].color
-    width = (seismifiles[ii].mag - 4)*seismifiles[ii].width*10
-    depth = seismifiles[ii].depth
 
     # project in profile
     seismi.ypp=(x-profiles[k].x)*profiles[k].n[0]+(y-profiles[k].y)*profiles[k].n[1]
     seismi.xpp=(x-profiles[k].x)*profiles[k].s[0]+(y-profiles[k].y)*profiles[k].s[1]
     # select data within profile
     index=np.nonzero((seismi.xpp>xpmax)|(seismi.xpp<xpmin)|(seismi.ypp>ypmax)|(seismi.ypp<ypmin))
-    seismi.xp,seismi.yp=np.delete(seismi.xpp,index),np.delete(seismi.ypp,index)
+    seismi.xp,seismi.yp,depth,size=np.delete(seismi.xpp,index),np.delete(seismi.ypp,index),np.delete(seismifiles[ii].depth,index),np.delete(seismifiles[ii].mag,index)
+    smin = np.nanmin(size)
+    size = (size - smin)* np.float(seismifiles[ii].width)*5
     # plot
-    ax4.scatter(seismi.xp,seismi.yp,c=color,marker='o',s=width,linewidths=1, edgecolor='black',alpha=0.5,label=seismifiles[ii].name,zorder=2) 
+    ax4.scatter(seismi.yp,-depth,s=size,c=color,marker='o',linewidths=1, edgecolor='black',alpha=0.5,label=seismifiles[ii].name,zorder=2) 
 
   # plot profiles
   xp,yp = np.zeros((7)),np.zeros((7))
@@ -934,9 +929,7 @@ ax1.set_ylabel('Elevation (km)')
 
 if len(seismifiles)>0:
   ax4.set_xlabel('Distance (km)')
-  ax4.set_ylabel('Depth (m)')
-  logger.debug('Save {0} output file'.format(outdir+profiles[k].name+'pro-depth.eps'))
-  fig4.savefig(outdir+profiles[k].name+'pro-depth.pdf', format='PDF', dpi=150)
+  ax4.set_ylabel('Elevation (m)')
 
 plt.show()
 
@@ -952,6 +945,10 @@ fig1.savefig(outdir+profiles[k].name+'pro-topo.pdf', format='PDF', dpi=150)
 if Mgps>0:
   logger.debug('Save {0} output file'.format(outdir+profiles[k].name+'progps.eps'))
   fig3.savefig(outdir+profiles[k].name+'pro-gps.pdf', format='PDF',dpi=75)
+
+if len(seismifiles)>0 : 
+  logger.debug('Save {0} output file'.format(outdir+profiles[k].name+'pro-depth.eps'))
+  fig4.savefig(outdir+profiles[k].name+'pro-depth.pdf', format='PDF', dpi=150)
 
 logger.debug('Save {0} output file'.format(outdir+profiles[k].name+'promap.eps'))
 fig.savefig(outdir+profiles[k].name+'pro-map.pdf', format='PDF', dpi=150)
