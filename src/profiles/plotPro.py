@@ -5,7 +5,7 @@ import numpy as np
 import scipy.optimize as opt
 import scipy.linalg as lst
 
-import gdal
+from osgeo import gdal
 import pandas
 import geopandas as gpd
 import shapely.speedups
@@ -168,7 +168,7 @@ for i in range(Minsar):
     insar = insardata[i]
     logger.debug('Load data {0}'.format(insar.network))
     insar.loadinsar()
-    if insar.theta is True:
+    if insar.theta == True:
       logger.warning('Convert LOS displacements to mean LOS angle assuming \
         horizontal displacements...')
       logger.warning('Use option theta=False in network class to avoid that')
@@ -192,28 +192,31 @@ for i in range(Mgps):
 if vertical_map:
   fig=plt.figure(0,figsize = (14,6))
   ax = fig.add_subplot(1,2,1)
-  ax.axis('equal')
+  #ax.axis('equal')
   ax12 = fig.add_subplot(1,2,2)
-  ax.axis('equal')
-  ax12.axis('equal')
+  #ax.axis('equal')
+  #ax12.axis('equal')
 else:
   fig=plt.figure(0,figsize = (9,8))
   ax = fig.add_subplot(1,1,1)
-  ax.axis('equal')
+  #ax.axis('equal')
 
 logger.info('Plot Map ....') 
 
-if plot_basemap is True: 
+if plot_basemap == True: 
     import contextily as ctx
-    if extent is not None:
+    if extent == None:
        ax.axis(extent)
        if vertical_map:
          ax12.axis(extent)
-    ctx.add_basemap(ax,crs="EPSG:{}".format(crs), source=ctx.providers.OpenTopoMap,alpha=0.5,zorder=0)
+    #ctx.add_basemap(ax,crs="EPSG:{}".format(crs), source=ctx.providers.OpenTopoMap,alpha=0.5,zorder=0)
     if vertical_map:
       ctx.add_basemap(ax12,crs="EPSG:{}".format(crs), source=ctx.providers.OpenTopoMap,alpha=0.5,zorder=0)
 else:
     print('plot_basemap variable is not defined or is not True. Skip backgroup topography plot')
+
+plt.show()
+sys.exit()
 
 for ii in range(len(gmtfiles)):
   name = gmtfiles[ii].name
@@ -236,7 +239,7 @@ for ii in range(len(shapefiles)):
   linewidth = shapefiles[ii].linewidth
   crs = shapefiles[ii].crs
   shape = gpd.read_file(wdir + fname)
-  if crs is not None:
+  if crs != None:
     shape = shape.to_crs("EPSG:{}".format(crs))
   shape.plot(ax=ax,facecolor='none', color=color,edgecolor=edgecolor,linewidth=linewidth,label=name,zorder=1)
   if vertical_map:
@@ -262,9 +265,9 @@ for i in range(Minsar):
   insar=insardata[i]
   samp = insar.samp*4
 
-  if (insar.lmin or insar.lmax) is None:
-        vmin = np.nanpercentile(insar.ulos, 1)    
-        vmax = np.nanpercentile(insar.ulos, 99)
+  if (insar.lmin or insar.lmax) == None:
+       vmin = np.nanpercentile(insar.ulos, 1)    
+       vmax = np.nanpercentile(insar.ulos, 99)
   else:
        vmin, vmax = insar.lmin, insar.lmax
 
@@ -289,16 +292,16 @@ for i in range(Mgps):
     facev = mv.to_rgba(gps.uv)
     ax12.scatter(gps.x,gps.y,c=facev,marker='o',s=40,linewidths=1, edgecolor='black',alpha=0.8,label='Vertical velocities network {}'.format(gps.reduction),zorder=2)    
 
-  if gps.plotName is True:
+  if gps.plotName == True:
       for kk in range(len(gps.name)):
             ax.text(gps.x[kk], gps.y[kk], gps.name[kk], color ='black')
 
 if 'xmin' in locals(): 
   ax.set_xlim(xmin,xmax)
-  #ax.set_ylim(ymin,ymax)
+  ax.set_ylim(ymin,ymax)
   if vertical_map:
     ax12.set_xlim(xmin,xmax)
-    #ax12.set_ylim(ymin,ymax)
+    ax12.set_ylim(ymin,ymax)
 
 # add colorbar los
 if 'facelos' in locals():
@@ -320,6 +323,8 @@ ax.legend(loc = 'upper right',fontsize='x-small')
 if vertical_map:
   ax12.legend(loc = 'upper right',fontsize='x-small')
 plt.tight_layout()  
+plt.show()
+sys.exit()
 
 # fig pro topo
 if len(profiles) > 1:
@@ -343,6 +348,13 @@ if Mgps>0:
   else:
     fig3=plt.figure(5,figsize=(10,3))
     fig3.subplots_adjust(hspace=0.0001)
+
+if len(seismifiles)>0:
+  if len(profiles) > 1:
+    fig4=plt.figure(6,figsize=(10,8))
+  else:
+    fig4=plt.figure(6,figsize=(10,3))
+    fig4.subplots_adjust(hspace=0.0001)
 
 logger.info('Plot Profiles ....')
 
@@ -386,7 +398,7 @@ for k in range(len(profiles)):
 
         index=np.nonzero((plot.xpp>xpmax)|(plot.xpp<xpmin)|(plot.ypp>ypmax)|(plot.ypp<ypmin))
         plotxpp,plotypp,plotz=np.delete(plot.xpp,index),np.delete(plot.ypp,index),np.delete(plot.z,index)
-        if nb is None:
+        if nb == None:
           nb = np.float(l/(len(plotz)/100.))
           logger.info('Create bins every {0:.3f} km'.format(nb)) 
         else:
@@ -417,7 +429,7 @@ for k in range(len(profiles)):
         if plot.axis == 'equal':
           ax1.axis('equal')
         else:
-          if (plot.topomin is not None) and (plot.topomax is not None) :
+          if (plot.topomin != None) and (plot.topomax != None) :
               logger.info('Set ylim to {} and {}'.format(plot.topomin,plot.topomax))
               ax1.set_ylim([plot.topomin,plot.topomax])
               for kk in range(Mfault):    
@@ -438,7 +450,30 @@ for k in range(len(profiles)):
   if Mgps>0:
     ax3=fig3.add_subplot(len(profiles),1,k+1)
     ax3.set_xlim([-l/2,l/2])
-  
+
+  # depth profile
+  if len(seismifiles)>0:
+     ax4=fig4.add_subplot(len(profiles),1,k+1)
+     ax3.set_xlim([-l/2,l/2])
+     ax4.axis.('equal')
+      
+  for ii in range(len(seismifiles)):
+    name = seismifiles[ii].name
+    x,y = seismifiles[ii].x, seismifiles[ii].y
+    wdir = seismifiles[ii].wdir
+    color = seismifiles[ii].color
+    width = (seismifiles[ii].mag - 4)*seismifiles[ii].width*10
+    depth = seismifiles[ii].depth
+
+    # project in profile
+    seismi.ypp=(x-profiles[k].x)*profiles[k].n[0]+(y-profiles[k].y)*profiles[k].n[1]
+    seismi.xpp=(x-profiles[k].x)*profiles[k].s[0]+(y-profiles[k].y)*profiles[k].s[1]
+    # select data within profile
+    index=np.nonzero((seismi.xpp>xpmax)|(seismi.xpp<xpmin)|(seismi.ypp>ypmax)|(seismi.ypp<ypmin))
+    seismi.xp,seismi.yp=np.delete(seismi.xpp,index),np.delete(seismi.ypp,index)
+    # plot
+    ax4.scatter(seismi.xp,seismi.yp,c=color,marker='o',s=width,linewidths=1, edgecolor='black',alpha=0.5,label=seismifiles[ii].name,zorder=2) 
+
   # plot profiles
   xp,yp = np.zeros((7)),np.zeros((7))
   xp[:] = x0-w/2*profiles[k].s[0]-l/2*profiles[k].n[0],x0+w/2*\
@@ -490,11 +525,10 @@ for k in range(len(profiles)):
           ax3.plot(gpsyp,gpsuv,markers[i],color = 'red',mew = 1.5,label = '%s vertical velocities'%gpsdata[i].reduction)
           ax3.errorbar(gpsyp,gpsuv,yerr = gpssigmav,ecolor = 'red',fmt = "none",alpha=.5)          
           
-          if gps.proj is not None:
+          if gps.proj != None:
             # plot gps los
             ax2.plot(gpsyp,gpsulos,'+',color='red',mew=5.,label='%s GPS LOS'%gpsdata[i].reduction)
             ax2.errorbar(gpsyp,gpsulos,yerr = gpssigmalos,ecolor = 'red',fmt = "none")          
-          
 
       for j in range(Mfault):
           ax3.plot([fperp[j],fperp[j]],[gpsmax,gpsmin],color='red')
@@ -508,7 +542,9 @@ for k in range(len(profiles)):
 
   if Mgps>0:
     ax3.legend(loc = 'best',fontsize='x-small')
-
+  if len(seismifiles)>0:
+    ax4.legend(loc = 'best',fontsize='x-small')
+          
   cst=0
   for i in range(Minsar):
       insar=insardata[i]
@@ -538,7 +574,7 @@ for k in range(len(profiles)):
 
       if len(insar.uu) > 50:
 
-        if nb is None:
+        if nb == None:
           nb = np.float(l/(len(insar.uu)/100.))
           logger.info('Create bins every {0:.3f} km'.format(nb)) 
         else:
@@ -640,12 +676,12 @@ for k in range(len(profiles)):
     kk = np.flatnonzero(~np.isnan(temp_los))
     temp_los,temp_yp,temp_std = temp_los[kk],temp_yp[kk],temp_std[kk]
    
-    if flat is 'quad': 
+    if flat == 'quad': 
         G = np.zeros((len(temp_los),3))
         G[:,0] = temp_yp**2
         G[:,1] = temp_yp
         G[:,2] = 1
-    elif flat is 'cub':
+    elif flat == 'cub':
         G = np.zeros((len(temp_los),4))
         G[:,0] = temp_yp**3
         G[:,1] = temp_yp**2
@@ -667,17 +703,17 @@ for k in range(len(profiles)):
     _fprime = lambda x: 2*np.dot(G.T/temp_std, (np.dot(G,x)-temp_los[::])/temp_std)
     pars = opt.fmin_slsqp(_func,x0,fprime=_fprime,iter=2000,full_output=True,iprint=0)[0]
 
-    # if flat is 'quad': 
+    # if flat == 'quad': 
     #   a = pars[0]; b = pars[1]; c = pars[2]
     #   blos = a*insar2.distance[kk2]**2 + b*insar2.distance[kk2] + c
-    # elif flat is 'cub':
+    # elif flat == 'cub':
     #   a = pars[0]; b = pars[1]; c = pars[2]; d =pars[3]
     #   blos = a*insar2.distance[kk2]**3 + b*insar2.distance[kk2]**2 + c*insar2.distance[kk2] + d
     # else:
     #   a = pars[0]; b = pars[1]
     #   blos = a*insar2.distance[kk2] + b
     
-    if flat is 'quad':
+    if flat == 'quad':
         a = pars[0]; b = pars[1]; c = pars[2]
         logger.info('Remove ramp: {0} yperp**2  + {1} yperp  + {2}'.format(a,b,c))
 
@@ -698,7 +734,7 @@ for k in range(len(profiles)):
         x = np.arange(kmin,kmax,1)
         ysp = a*x**2 + b*x + c
 
-    elif flat is 'cub':
+    elif flat == 'cub':
         a = pars[0]; b = pars[1]; c = pars[2]; d =pars[3]
         logger.info('Remove ramp: {0} yperp**3 + {1} yperp**2  + {2} yperp  + {3}'.format(a,b,c,d))
     
@@ -785,7 +821,7 @@ for k in range(len(profiles)):
         else:
           if len(insar.distance) >0:
             # PLOT
-            if typ is 'distscale':
+            if typ == 'distscale':
               logger.info('Plot InSAR with distscale option')
               # colorscale fct of the parrallel distance to the profile
               norm = matplotlib.colors.Normalize(vmin=xpmin, vmax=xpmax)
@@ -795,14 +831,14 @@ for k in range(len(profiles)):
               ax2.scatter(insar.yperp,insar.uulos,s = .1, marker='o',alpha=0.4,\
                  label=insardata[i].reduction,color=facelos, rasterized=True)
             
-            elif typ is 'std':
+            elif typ == 'std':
               logger.info('Plot InSAR with std option')
               # plot mean and standard deviation
               ax2.plot(insar.distance,insar.moy_los,color=insar.color,lw=2.,label=insardata[i].reduction)
               ax2.plot(insar.distance,insar.moy_los-insar.std_los,color=insar.color,lw=.5)
               ax2.plot(insar.distance,insar.moy_los+insar.std_los,color=insar.color,lw=.5)
 
-            elif typ is 'stdscat':
+            elif typ == 'stdscat':
               logger.info('Plot InSAR with stdscat option')
               # plot mean and standard deviation
               ax2.plot(insar.distance,insar.moy_los,color=insar.color,lw=2.,label=insardata[i].reduction)
@@ -818,17 +854,17 @@ for k in range(len(profiles)):
             cst+=1.
           
         # set born profile equal to map
-        if (losmin is not None) and (losmax is not None):
+        if (losmin != None) and (losmax != None):
           logger.debug('Set ylim InSAR profile to {0}-{1}'.format(losmin,losmax))
           ax2.set_ylim([losmin,losmax])
 
   if Minsar>0:
     for j in range(Mfault):
       ax2.plot([fperp[j],fperp[j]],[losmax,losmin],color='red')
-    if k is not len(profiles)-1:
+    if k != len(profiles)-1:
       plt.setp(ax2.get_xticklabels(), visible=False)
       plt.setp(ax1.get_xticklabels(), visible=False)
-    if typ is 'distscale':
+    if typ == 'distscale':
       fig2.colorbar(m1,shrink=0.5, aspect=5)
     else:
       ax2.legend(loc='best')
@@ -896,23 +932,29 @@ if (flat != None) and len(insardata)==2:
 ax1.set_xlabel('Distance (km)')
 ax1.set_ylabel('Elevation (km)')
 
+if len(seismifiles)>0:
+  ax4.set_xlabel('Distance (km)')
+  ax4.set_ylabel('Depth (m)')
+  logger.debug('Save {0} output file'.format(outdir+profiles[k].name+'pro-depth.eps'))
+  fig4.savefig(outdir+profiles[k].name+'pro-depth.pdf', format='PDF', dpi=150)
+
 plt.show()
 
 if Minsar>0:
   ax2.set_xlabel('Distance (km)')
   ax2.set_ylabel('LOS velocity (mm)')
-  logger.debug('Save {0} output file'.format(outdir+profiles[k].name+'prolos.pdf'))
-  fig2.savefig(outdir+profiles[k].name+'prolos.pdf', format='PDF',dpi=150)
+  logger.debug('Save {0} output file'.format(outdir+profiles[k].name+'pro-los.pdf'))
+  fig2.savefig(outdir+profiles[k].name+'pro-los.pdf', format='PDF',dpi=150)
 
 logger.debug('Save {0} output file'.format(outdir+profiles[k].name+'protopo.eps'))
-fig1.savefig(outdir+profiles[k].name+'protopo.pdf', format='PDF', dpi=150)
+fig1.savefig(outdir+profiles[k].name+'pro-topo.pdf', format='PDF', dpi=150)
 
 if Mgps>0:
   logger.debug('Save {0} output file'.format(outdir+profiles[k].name+'progps.eps'))
-  fig3.savefig(outdir+profiles[k].name+'progps.pdf', format='PDF',dpi=75)
+  fig3.savefig(outdir+profiles[k].name+'pro-gps.pdf', format='PDF',dpi=75)
 
 logger.debug('Save {0} output file'.format(outdir+profiles[k].name+'promap.eps'))
-fig.savefig(outdir+profiles[k].name+'promap.pdf', format='PDF')
+fig.savefig(outdir+profiles[k].name+'pro-map.pdf', format='PDF', dpi=150)
 
 
 

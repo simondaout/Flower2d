@@ -192,6 +192,11 @@ class seismicity:
         else:
             x, y = self.UTM(lon, lat)
             self.x,self.y,self.z,self.mag=(x-self.ref_x),(y-self.ref_y),depth,mag
+        if np.nanmean(depth) < 100:
+           self.depth = depth*1000
+        else:
+           self.depth = depth
+           
 
 
 
