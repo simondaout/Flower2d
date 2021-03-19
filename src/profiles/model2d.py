@@ -1,5 +1,3 @@
-#!/opt/local/bin/python2.7
-
 import numpy as np
 import math
 import pyproj
@@ -157,15 +155,18 @@ class shapefile:
 class seismicity:
     """
     seismicity class: read usgs csv files
-    Column attributes: time,latitude,longitude,depth,mag,magType,nst,gap,dmin,rms,net,id,updated,place,type,horizontalError,depthError,magError,magNst,status,locationSource,magSource
     Parameters:
     name, filename : give name, fiel name 
     wdir: path input file
     color, width: plot option
     utm_proj: EPSG UTM projection. If not None, project data from to EPSG.
+    if fmt = 'csv':
+    Column attributes: time,latitude,longitude,depth,mag,magType,nst,gap,dmin,rms,net,id,updated,place,type,horizontalError,depthError,magError,magNst,status,locationSource,magSource
+    if fmt = 'txt':
+    Column attributes: latitude,longitude,depth,mag
     """    
     
-    def __init__(self,name,wdir,filename,color='black',width=2.,utm_proj=None,ref=None):
+    def __init__(self,name,wdir,filename,color='black',width=2.,utm_proj=None,ref=None,fmt='csv'):
         self.name=name
         self.filename=filename
         self.wdir=wdir
@@ -184,18 +185,22 @@ class seismicity:
 
     def load(self,xlim=None,ylim=None):
         fname=self.wdir+self.filename
-        #lat,lon,depth,mag=np.genfromtxt(fname,comments='#',skip_header=1,unpack=True,delimiter=',',usecols=(1,2,3,4),dtype='f,f,f,f')
-        df = pandas.read_csv(fname)
-        lat,lon,depth,mag=df['latitude'][:].to_numpy(),df['longitude'][:].to_numpy(),df['depth'][:].to_numpy(),df['mag'][:].to_numpy() 
-        if self.utm_proj is None:
+        if self.fmt == 'csv':
+          df = pandas.read_csv(fname)
+          lat,lon,depth,mag=df['latitude'][:].to_numpy(),df['longitude'][:].to_numpy(),df['depth'][:].to_numpy(),df['mag'][:].to_numpy() 
+          if self.utm_proj is None:
             self.x,self.y,self.z,self.mag = lon,lat,depth,mag
-        else:
+          else:
             x, y = self.UTM(lon, lat)
             self.x,self.y,self.z,self.mag=(x-self.ref_x),(y-self.ref_y),depth,mag
-        if np.nanmean(depth) < 100:
-           self.depth = depth*1000
-        else:
-           self.depth = depth
+        elif  self.fmt == 'txt':
+          x,y,depth,self.mag = np.loadtxt(fname,comments = '#',unpack = True,dtype = 'f,f,f,f')
+          if self.utm_proj is not None:
+             x, y = self.UTM(x, y)
+             x, y = (x - self.ref_x)/1e3, (y - self.ref_y)/1e3 
+        
+        if np.nanmean(abs(depth)) < 100:
+            self.depth = depth*1000
            
 
 

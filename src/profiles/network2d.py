@@ -1,5 +1,3 @@
-#!/opt/local/bin/python2.7
-
 import numpy as np
 import math
 
@@ -81,7 +79,7 @@ class network:
             self.sigmax,self.sigmay=np.zeros(self.Npoint),np.zeros(self.Npoint)
             #self.d=np.zeros(self.Npoint*self.dim)
             for j in range(self.Npoint):
-                station=self.wdir+self.reduction+'/'+str(self.name[j])
+                station=self.wdir+self.reduction+'/'+self.name[j].decode('utf-8')
                 dated,east,north,esigma,nsigma=np.loadtxt(station,comments='#',usecols=(0,1,2,3,4),unpack=True,dtype='f,f,f,f,f')
                 self.ux[j],self.uy[j]=east*self.scale,north*self.scale
                 self.sigmax[j],self.sigmay[j]=esigma*self.scale,nsigma*self.scale

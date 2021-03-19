@@ -40,7 +40,6 @@ def usage():
 try:
     opts,args = getopt.getopt(sys.argv[1:], "h", ["help"])
 except:
-    print(str(err))
     print("for help use --help")
     sys.exit()
 
