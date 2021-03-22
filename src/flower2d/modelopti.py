@@ -17,7 +17,7 @@ class profile:
     stdscat - plot scatter + standar deviation. 
     """
 
-    def __init__(self,x,y,l,w,strike=None,proj=None,type=None,name=''):
+    def __init__(self,x,y,l,w,proj=None,type=None,name=''):
         # profile parameters
         self.name = name
         self.x = x
@@ -25,10 +25,6 @@ class profile:
         self.l = l
         self.w = w
         self.proj = proj
-        if strike > 0:
-            self.strike=strike-180
-        else:
-            self.strike=strike
         self.typ=type
 
 class inversion:
@@ -673,7 +669,7 @@ class topo:
         try:
             fmodel = flt.fmodel
             profile = flt.profile
-            fname = file(self.wdir+self.filename)
+            fname = self.wdir+self.filename
             x,y,z = np.loadtxt(fname,comments = '#',unpack = True,dtype = 'f,f,f')
             if self.utm_proj is not None:
                   x, y = self.UTM(x, y)
@@ -690,7 +686,7 @@ class topo:
             print(topo.__doc__)
             sys.exit()
 
-class seismi:
+class seismicity:
     """ 
     seismi class: Load seimicity file for plot 
     Parameters: 
@@ -703,20 +699,21 @@ class seismi:
     ref: [lon, lat] reference point (default: None).
     """
 
-    def __init__(self,name,wdir,filename,width, color='orange',scale=1,utm_proj=None, ref=None):
+    def __init__(self,name,wdir,filename,fmt='csv',width=2., color='black',scale=1,utm_proj=None, ref=None):
         self.name = name
         self.wdir = wdir
         self.filename = filename
         self.color = color
         self.width = width
         self.scale=scale
+        self.fmt = fmt
 
         # projection
         self.utm_proj=utm_proj
         self.ref=ref
         if self.utm_proj is not None:
             import pyproj
-            self.UTM = pyproj.Proj("+init=EPSG:{}".format(self.utm_proj))
+            self.UTM = pyproj.Proj("EPSG:{}".format(self.utm_proj))
             if self.ref is not None:
                 self.ref_x,self.ref_y =  self.UTM(self.ref[0],self.ref[1])
             else:
@@ -725,9 +722,10 @@ class seismi:
     def load(self,flt):
         logger = flt.logger
         try:
-            fmodel = flt.fmodel
-            profile = flt.profile
-            fname = file(self.wdir+self.filename)
+          fmodel = flt.fmodel
+          profile = flt.profile
+          fname = self.wdir+self.filename
+          if self.fmt == 'txt':  
             x,y,z,mw = np.loadtxt(fname,comments = '#',unpack = True,dtype = 'f,f,f,f')
             if self.utm_proj is not None:
                   x, y = self.UTM(x, y)
@@ -737,9 +735,34 @@ class seismi:
             yp = (x-profile.x)*profile.n[0]+(y-profile.y)*profile.n[1]
             index = np.nonzero((xp>profile.xpmax)|(xp<profile.xpmin)|(yp>profile.ypmax)|(yp<profile.ypmin))
             self.x,self.y,self.z,self.mw = np.delete(x,index),np.delete(y,index),np.delete(z,index)*self.scale,np.delete(mw,index)
+          
+          elif self.fmt == 'csv':
+            import pandas
+            df = pandas.read_csv(fname)
+            lat,lon,depth,mag=df['latitude'][:].to_numpy(),df['longitude'][:].to_numpy(),df['depth'][:].to_numpy(),df['mag'][:].to_numpy()
+            if self.utm_proj is None:
+              self.x,self.y,self.z,self.mw = lon,lat,depth,mag
+            else:
+              x, y = self.UTM(lon, lat)
+              self.x,self.y,self.z,self.mw=(x-self.ref_x)/1e3,(y-self.ref_y)/1e3,depth,mag
+       
+            xp = (self.x-profile.x)*profile.s[0]+(self.y-profile.y)*profile.s[1]
+            yp = (self.x-profile.x)*profile.n[0]+(self.y-profile.y)*profile.n[1]
+            index = np.nonzero((xp>profile.xpmax)|(xp<profile.xpmin)|(yp>profile.ypmax)|(yp<profile.ypmin))
+            self.x,self.y,self.z,self.mw = np.delete(self.x,index),np.delete(self.y,index),np.delete(self.z,index)*self.scale,np.delete(self.mw,index)
+ 
+          # scale depth in case in meter
+          if np.nanmean(abs(self.z)) > 100:
+              logger.warninig('Depth {} file seems to be in meter, scale in km'.format(self.filename))
+              self.z = self.z/1000
+          
+          # scale width according to mag
+          smin = np.nanmin(self.mw)
+          self.width =  (self.mw - smin) * np.float(self.width)*5
+
         except Exception as e: 
             logger.critical(e)
-            print(seismi.__doc__)
+            print(seismicity.__doc__)
             sys.exit()
 
 class moho:
@@ -778,7 +801,7 @@ class moho:
         try:
             fmodel = flt.fmodel
             profile = flt.profile
-            fname = file(self.wdir+self.filename)
+            fname = self.wdir+self.filename
             x,y,z = np.loadtxt(fname,comments = '#',unpack = True,dtype = 'f,f,f')
             if self.utm_proj is not None:
                   x, y = self.UTM(x, y)

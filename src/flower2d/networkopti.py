@@ -107,7 +107,7 @@ class network(object):
     def load(self,flt):
         logger = flt.logger
         logger.info('Load network: {}'.format(self.wdir+self.network))
-        f = file(self.wdir+self.network,'r')
+        f = self.wdir+self.network
 
         self.fmodel = flt.fmodel
         self.struc = flt.structures 
@@ -380,8 +380,8 @@ class network(object):
             self.sigmapar,self.sigmaperp = np.zeros(self.Npoint),np.zeros(self.Npoint)
             self.ulos,self.sigmalos = np.zeros(self.Npoint),np.zeros(self.Npoint)
             
-            for i in xrange(self.Npoint):
-                station = self.wdir+self.reduction+'/'+self.name[i]
+            for i in range(self.Npoint):
+                station = self.wdir+self.reduction+'/'+ self.name[i].decode('utf-8')
                 dated,east,north,esigma,nsigma = np.loadtxt(station,comments = '#',usecols = (0,1,2,3,4),unpack = True,dtype = 'f,f,f,f,f')
                 self.ux[i],self.uy[i] = east*self.scale,north*self.scale
                 self.sigmax[i],self.sigmay[i] = esigma*self.scale*self.wd,nsigma*self.scale*self.wd
@@ -416,8 +416,8 @@ class network(object):
             logger.debug('Number of GPS data points: {}'.format(self.N))
             self.d = np.zeros((self.N))
             self.sigmad = np.zeros((self.N))
-            for i in xrange(self.Npoint):
-                for k in xrange(self.dim):
+            for i in range(self.Npoint):
+                for k in range(self.dim):
                     self.d[self.dim*i+k] = self.u[i,k]
                     self.sigmad[self.dim*i+k] = self.sig[i,k]
 
@@ -429,7 +429,7 @@ class network(object):
         else :
 
             logger.debug('Dim = 3, Load East, North, Up GPS')
-            name,x,y = np.loadtxt(f,comments = '#',unpack = True,dtype = 'S4,f,f')
+            name,x,y = np.loadtxt(f,comments = '#',unpack = True, dtype = 'S4,f,f')
             if self.utm_proj is not None:
                   x, y = self.UTM(x, y)
                   x, y = (x - self.ref_x)/1e3, (y - self.ref_y)/1e3
@@ -450,8 +450,9 @@ class network(object):
             self.sigmax,self.sigmay,self.sigmav = np.ones(self.Npoint),np.ones(self.Npoint),np.zeros(self.Npoint)
             self.sigmapar,self.sigmaperp = np.zeros(self.Npoint),np.zeros(self.Npoint)
             self.ulos,self.sigmalos = np.zeros(self.Npoint),np.zeros(self.Npoint)
-            for i in xrange(self.Npoint):
-                station = self.wdir+self.reduction+'/'+self.name[i]
+            
+            for i in range(self.Npoint):
+                station = self.wdir+self.reduction+'/'+ self.name[i].decode('utf-8')
                 dated,east,north,up,esigma,nsigma,upsigma = np.loadtxt(station,comments = '#',usecols = (0,1,2,3,4,5,6),unpack = True,dtype = 'f,f,f,f,f,f,f')
                 self.ux[i],self.uy[i],self.uv[i] = east*self.scale,north*self.scale,up*self.scale
                 self.sigmax[i],self.sigmay[i],self.sigmav[i] = esigma*self.scale*self.wd,nsigma*self.scale*self.wd,upsigma*self.scale*self.wd
@@ -485,8 +486,8 @@ class network(object):
             logger.debug('Number of GPS data points: {}'.format(self.N))
             self.d = np.zeros((self.N))
             self.sigmad = np.zeros((self.N))
-            for i in xrange(self.Npoint):
-                for k in xrange(self.dim):
+            for i in range(self.Npoint):
+                for k in range(self.dim):
                     self.d[self.dim*i+k] = self.u[i,k]
                     self.sigmad[self.dim*i+k] = self.sig[i,k]
 
@@ -507,7 +508,7 @@ class network(object):
             np.set_printoptions(formatter={'float': '{: 0.3f}'.format})
             conv = np.column_stack([sortd,sortd[:,1]-sortd[-1,1],sortd[:,2]-sortd[-1,2],sortd[:,3]])
             print(' #Name   #Distance   #PerpendicularV  #ParallelV   #Shortening   #Shearing  ')    
-            for i in xrange(self.Npoint):
+            for i in range(self.Npoint):
                 print(name[i], conv[i,:])
         else:
             disp = np.column_stack([self.yp,self.uperp,self.upar])
@@ -516,17 +517,17 @@ class network(object):
             np.set_printoptions(formatter={'float': '{: 0.3f}'.format})
             conv = np.column_stack([sortd,sortd[:,1]-sortd[-1,1],sortd[:,2]-sortd[-1,2]])
             print(' #Name   #Distance   #PerpendicularV  #ParallelV   #Shortening   #Shearing   ')     
-            for i in xrange(self.Npoint):
+            for i in range(self.Npoint):
                 print(name[i], conv[i,:])
         
     def computeSVD(self):
         deplac = np.zeros((self.dim,self.Npoint))
-        for i in xrange(self.dim):
+        for i in range(self.dim):
             deplac[i,:] = self.u[:,i]
 
         logger.info('Compute SVD of the Velocity field')
         m = np.mean(deplac,axis=1)
-        for i in xrange(self.dim):
+        for i in range(self.dim):
             deplac[i,:] = deplac[i,:] - m[i] 
         U,eignv,Vt = np.linalg.svd(deplac,full_matrices=False)
         
@@ -777,9 +778,9 @@ class network(object):
         start = self.struc[0].Mker 
         Mtemp = self.struc[0].Mseg
         # Iterate over the segments
-        for j in xrange(1,self.Mstruc):
+        for j in range(1,self.Mstruc):
             # loop on all seg of the struc
-            for k in xrange(self.struc[j].Mseg):
+            for k in range(self.struc[j].Mseg):
                 ramp = self.struc[j].segments[k]
                 Mker = ramp.Mker 
                 # update param
@@ -791,27 +792,27 @@ class network(object):
             # print(self.fmodel[Mtemp].name,self.fmodel[Mtemp].D,self.fmodel[Mtemp].fperp)
            
             # compute dispalcements
-            for k in xrange(self.struc[j].Mseg):
+            for k in range(self.struc[j].Mseg):
                 #print
                 #print ramp.info()
                 ramp = self.struc[j].segments[k]
                 
                 # control on locking depths: depth cannot be negatif
                 if (ramp.w < 0.) : # !!!! put after conservation
-	               return np.ones((self.N,))*1e14
+                  return np.ones((self.N,))*1e14
                 # add a condition that ss ramp can not be sup than ss main seg for non infinite seg.
                 if (abs(ramp.ss) > abs(self.fmodel[0].ss) and (ramp.L != 660)) :
-                       return np.ones((self.N,))*1e14
+                  return np.ones((self.N,))*1e14
                 # length cannot be negative
                 if ramp.L < 0 :
-	               return np.ones((self.N,))*1e14
+                  return np.ones((self.N,))*1e14
 
                 u = u + self.fmodel[Mtemp+k].displacement(self.yp)
 
             Mtemp += self.struc[j].Mseg
             
         # loop on volumic deformation structures
-        for j in xrange(self.Mvol):
+        for j in range(self.Mvol):
             self.volum[j].ds,self.volum[j].D = m[self.Mdis+j],m[self.Mdis+j+1]
             #print m[self.Mdis+j] 
             u = u + self.volum[j].displacement(self.yp)

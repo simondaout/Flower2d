@@ -15,8 +15,8 @@ def flatten(sequence,recursive=True):
         i = iter(sequence)
         while True:
             try: 
-                e=i.next()
-                if hasattr(e,"__iter__") and not isinstance(e,basestring):
+                e=next(i)
+                if hasattr(e,"__iter__") and not isinstance(e,str):
                     stack.append(i)
                     i=iter(e)
                 else:
@@ -29,7 +29,7 @@ def flatten(sequence,recursive=True):
     
     else:
         for e in sequence:
-            if hasattr(e,"__iter__") and not isinstance(e,basestring):
+            if hasattr(e,"__iter__") and not isinstance(e,str):
                 result.extend(e)
             else:
                 result.append(e)
