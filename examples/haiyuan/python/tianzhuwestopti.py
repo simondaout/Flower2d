@@ -23,9 +23,9 @@ inv=inversion(name='Haiyuan Fault System',
               #distss='Unif',distshort='Unif',distH='Unif'
               ),
               # D: horizontal distance to the mainfault, H: vertical distance to the mainfault
-              #ramp(
-              #  name='QT',ss=0.,sigmass=0.,D=30,sigmaD=25.,H=15.,sigmaH=15
-              #  ),
+              ramp(
+                name='QT',ss=0.,sigmass=0.,D=30,sigmaD=25.,H=15.,sigmaH=15
+              ),
 
               #######################
               # Option 2: flower structure
@@ -39,8 +39,7 @@ inv=inversion(name='Haiyuan Fault System',
           # azimuth of the 2d model: azimuth of the main fault
           strike=112,
           # l: lenght, w: width, proj: Envisat proj los to east,north,z coordinates (for a mean incidence of 20.5)
-          #profile=profile(name='West',x=-36.,y=10.2,l=300,w=50,proj=[0.318, -0.0827, 0.9396]),
-          profile=profile(name='West',x=-36.,y=10.2,l=300,w=50),
+          profile=profile(name='West',x=-36.,y=10.2,l=300,w=50,lbins=.5),
 	  fullcov=False, # set True to compute full covariance matrix
           )
 
@@ -68,7 +67,7 @@ gmtfiles=[
 
 #optionnal: add data for plots
 plotdata=[
-        seismi(name='seismicity',wdir=maindir+'seismicity/',filename='usgs_2000-2014_101-105_34-39.xydm',color='orange',width=0.5),
+        seismicity(name='seismicity',wdir=maindir+'seismicity/',filename='usgs_2000-2014_101-105_34-39_km.xydm',color='orange',width=0.5,fmt='txt'),
         ]
 
 #topographic plot
