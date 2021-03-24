@@ -12,7 +12,7 @@ insardata=[
         ]
 
 gpsdata=[
-        network(network='stations_liang_km.dat',reduction='sblock',wdir=maindir+'gps/',dim=2,scale=1),
+        network(network='stations_liang_km.dat',reduction='sblock',wdir=maindir+'gps/',dim=2,scale=1,lmin=-6,lmax=6),
         ]
 
 profiles=[
@@ -26,7 +26,7 @@ gmtfiles=[
         ]
 
 topodata=[
-        topo(name='SRTM3',wdir=maindir+'gmt/',filename='topo_km.xy-z',color='black'),
+        topo(name='SRTM3',wdir=maindir+'gmt/',filename='topo_km.xy-z',color='black',scale=-1),
         ]
 
 fmodel=[
