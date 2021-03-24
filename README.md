@@ -38,7 +38,7 @@ To run the inversion: `optimize.py tianzhuwestopti.py`
 To run the profile: `plotPro.py gabrielproin.py`
 To run the inversion: `optimize.py gabrielflower.py`
 
-:memo: Note: all data need to be projected in local UTM coordinates. Read readme.txt files in each directories for insar data, gps data or gmt files projection examples.
+:memo: Note: all data needed to be projected in local UTM coordinates. Read readme.txt files in each directories for insar data, gps data or gmt files projection examples. Now data can be prepared in WGS84 (lat, lon), given that the EPSL projection is given in the input file (e.g utm_proj='32632').
 
  
  References
