@@ -1,4 +1,4 @@
-#!/usr/bin/env python3 
+#!/usr/bin/env python 
 
 #from __future__ import print_function
 import numpy as np
@@ -7,8 +7,6 @@ import scipy.linalg as lst
 
 from osgeo import gdal
 import pandas
-import geopandas as gpd
-import shapely.speedups
 
 from matplotlib import pyplot as plt
 #from matplotlib import mpl
@@ -237,6 +235,8 @@ for ii in range(len(gmtfiles)):
     ax12.plot(fx[i],fy[i],color = color,lw = width,zorder=1)
 
 for ii in range(len(shapefiles)):
+  import geopandas as gpd
+  import shapely.speedups
   name = shapefiles[ii].name
   fname = shapefiles[ii].filename
   wdir = shapefiles[ii].wdir
