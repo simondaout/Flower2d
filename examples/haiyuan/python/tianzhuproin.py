@@ -2,7 +2,7 @@
 maindir='../'
 outdir=maindir+'output/'
 
-# boundaries map
+# boundaries map (in km) 
 xmin,xmax=-200,200
 ymin,ymax=-200,200
 
@@ -30,7 +30,7 @@ topodata=[
         ]
 
 fmodel=[
-        fault2d(name='Haiyuan',x=-36.,y=10.2),
+        fault2d(name='Haiyuan',x=-36.,y=10.2,strike=-68),
         ] 
 
 
