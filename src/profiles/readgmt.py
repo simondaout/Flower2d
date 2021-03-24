@@ -40,8 +40,8 @@ class gmt:
                 x.append([])
                 y.append([])
             else:
-                temp = map(float, line.split())
-                xt, yt = temp[0],temp[1]
+                temp = list(map(float, line.split()))
+                xt, yt = temp[0]*1e3,temp[1]*1e3
                 if self.utm_proj is not None:
                     lon,lat = np.float(xt),np.float(yt)
                     xt, yt = self.UTM(lon, lat)

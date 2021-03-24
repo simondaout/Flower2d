@@ -70,6 +70,8 @@ if 1==len(sys.argv):
   logger.critical('No input file')
   sys.exit()
 
+fname=sys.argv[1]
+exec(open(fname).read())
 if len(sys.argv)>1:
   try:
     fname=sys.argv[1]
@@ -92,6 +94,8 @@ if len(sys.argv)>1:
     sys.exit()
 
 if 'xmin' in locals():
+  xmin =xmin*1e3; xmax=xmax*1e3
+  ymin = ymin*1e3; ymax = ymax*1e3
   logger.info('Found boundaries map plot {0:.2e} - {1:.2e} and {2:.2e} - {3:.2e} in locals'.format(xmin,xmax,ymin,ymax))
   xlim=[xmin,xmax];ylim=[ymin,ymax]
   extent = (xmin, xmax, ymin, ymax)

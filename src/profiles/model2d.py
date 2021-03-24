@@ -18,9 +18,10 @@ class fault2d:
         self.x=x
         self.y=y
         
-        if strike > 0:
+        if strike is not None:
+          if strike > 0 :
             self.strike=strike-180
-        else:
+          else:
             self.strike=strike
 
 class profile:
@@ -70,7 +71,7 @@ class profile:
                 self.ref_x,self.ref_y = 0,0
         
         if self.utm_proj is None:
-            self.x,self.y = x,y 
+            self.x,self.y = x*1e3,y*1e3 
             if (x is None) or (y is None):
                 print('utm_proj is not defined, you must defined ref points (x,y) in UTM. Exit!')
                 sys.exit()
@@ -122,7 +123,8 @@ class topo:
         fname=self.wdir+self.filename
         if self.utm_proj is None:
             x,y,z=np.loadtxt(fname,comments='#',unpack=True,dtype='f,f,f')
-            self.x,self.y,self.z = x,y,z*self.scale
+            # convert to meter
+            self.x,self.y,self.z = x*1e3,y*1e3,z*self.scale
         else:
             self.lon,self.lat,z=np.loadtxt(fname,comments='#',unpack=True,dtype='f,f,f')
             x, y = self.UTM(self.lon, self.lat) 
@@ -174,6 +176,7 @@ class seismicity:
         self.width=width
         self.utm_proj=utm_proj
         self.ref=ref
+        self.fmt = fmt
 
         # projection
         if self.utm_proj is not None:
@@ -197,7 +200,9 @@ class seismicity:
           x,y,depth,self.mag = np.loadtxt(fname,comments = '#',unpack = True,dtype = 'f,f,f,f')
           if self.utm_proj is not None:
              x, y = self.UTM(x, y)
-             x, y = (x - self.ref_x)/1e3, (y - self.ref_y)/1e3 
+             x, y = (x - self.ref_x), (y - self.ref_y)
+          else:
+             x, y = x*1e3, y*1e3 
         
         if np.nanmean(abs(depth)) < 100:
             self.depth = depth*1000

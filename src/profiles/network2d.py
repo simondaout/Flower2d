@@ -67,6 +67,8 @@ class network:
         gpsf=self.wdir+self.network
         if self.utm_proj is None:
             self.name,self.x,self.y=np.loadtxt(gpsf,comments='#',unpack=True,dtype='S4,f,f')
+            # convert to meters
+            self.x,self.y = self.x*1e3,self.y*1e3 
         else:
             self.name,self.lon,self.lat=np.loadtxt(gpsf,comments='#',unpack=True,dtype='S4,f,f')
             self.x, self.y = self.UTM(self.lon, self.lat) 
@@ -109,7 +111,8 @@ class network:
         if self.utm_proj is None:
             if self.theta is False:
                 self.x,self.y,ulos=np.loadtxt(insarf,comments='#',unpack=True,usecols=(0,1,2),dtype='f,f,f')
-                self.x,self.y,ulos=self.x[::self.samp],self.y[::self.samp],ulos[::self.samp] 
+                # convert to meters
+                self.x,self.y,ulos=self.x[::self.samp]*1e3,self.y[::self.samp]*1e3,ulos[::self.samp] 
             else:
                 self.x,self.y,ulos,self.los=np.loadtxt(insarf,comments='#',usecols=(0,1,2,3),unpack=True,dtype='f,f,f,f')
                 self.x,self.y,ulos,self.los=self.x[::self.samp],self.y[::self.samp],ulos[::self.samp],self.los[::self.samp]
