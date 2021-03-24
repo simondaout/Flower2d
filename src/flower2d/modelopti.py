@@ -14,10 +14,11 @@ class profile:
     proj=[east, notth, up]: average LOS projection into east, north, up used for plots [default: None]
     type:  std - plot mean and standard deviation InSAR;
     distscale - scatter plot with color scale function of the profile-parallel distance;
-    stdscat - plot scatter + standar deviation. 
+    stdscat - plot scatter + standar deviation.
+    lbins: optional bins length for topography profile  
     """
 
-    def __init__(self,x,y,l,w,proj=None,type=None,name=''):
+    def __init__(self,x,y,l,w,proj=None,type=None,name='',lbins=None):
         # profile parameters
         self.name = name
         self.x = x
@@ -26,6 +27,7 @@ class profile:
         self.w = w
         self.proj = proj
         self.typ=type
+        self.lbins=lbins
 
 class inversion:
     """
@@ -725,6 +727,7 @@ class seismicity:
           fmodel = flt.fmodel
           profile = flt.profile
           fname = self.wdir+self.filename
+          
           if self.fmt == 'txt':  
             x,y,z,mw = np.loadtxt(fname,comments = '#',unpack = True,dtype = 'f,f,f,f')
             if self.utm_proj is not None:
@@ -735,7 +738,7 @@ class seismicity:
             yp = (x-profile.x)*profile.n[0]+(y-profile.y)*profile.n[1]
             index = np.nonzero((xp>profile.xpmax)|(xp<profile.xpmin)|(yp>profile.ypmax)|(yp<profile.ypmin))
             self.x,self.y,self.z,self.mw = np.delete(x,index),np.delete(y,index),np.delete(z,index)*self.scale,np.delete(mw,index)
-          
+
           elif self.fmt == 'csv':
             import pandas
             df = pandas.read_csv(fname)
@@ -750,15 +753,18 @@ class seismicity:
             yp = (self.x-profile.x)*profile.n[0]+(self.y-profile.y)*profile.n[1]
             index = np.nonzero((xp>profile.xpmax)|(xp<profile.xpmin)|(yp>profile.ypmax)|(yp<profile.ypmin))
             self.x,self.y,self.z,self.mw = np.delete(self.x,index),np.delete(self.y,index),np.delete(self.z,index)*self.scale,np.delete(self.mw,index)
- 
-          # scale depth in case in meter
-          if np.nanmean(abs(self.z)) > 100:
+
+          if len(x)>0: 
+            # scale depth in case in meter
+            if np.nanmean(abs(self.z)) > 100:
               logger.warninig('Depth {} file seems to be in meter, scale in km'.format(self.filename))
               self.z = self.z/1000
           
-          # scale width according to mag
-          smin = np.nanmin(self.mw)
-          self.width =  (self.mw - smin) * np.float(self.width)*5
+            # scale width according to mag
+            smin = np.nanmin(self.mw)
+            self.width =  (self.mw - smin) * np.float(self.width)*5
+          else:
+            logger.critical('No seismicity data within profile')
 
         except Exception as e: 
             logger.critical(e)

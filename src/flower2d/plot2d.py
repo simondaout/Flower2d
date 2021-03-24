@@ -59,8 +59,12 @@ def plotLOS(flt,nfigure):
     for j in xrange(len(topodata)):
         plot = topodata[j] 
         
-        nb = np.float(l/(len(plot.z)/100.))
-        logger.debug('Load {0}. Create bins every {1:.3f} km'.format(plot.name, nb)) 
+        if profile.lbins==None: 
+          nb = np.float(l/(len(plot.z)/200.))
+          logger.debug('Load {0}. Create bins every {1:.3f} km'.format(plot.name, nb)) 
+        else:
+          nb = profile.lbins
+          logger.info('Set nbins to {}, defined in profile class'.format(nb))
         bins = np.arange(min(plot.yp),max(plot.yp),nb)
         inds = np.digitize(plot.yp,bins)
         distance = []
@@ -515,9 +519,9 @@ def plotMap(flt,nfigure):
             if gps.plotName is True:
                 for kk in xrange(len(gpsname)):
                     ax1.text(gpsx[kk]-4*kk,gpsy[kk]-10,gpsname[kk],color = 'black')
-            ax1.quiverkey(data,0.1,1.015,20.,'GPS displacements',coordinates = 'axes',color = 'black')
-            ax2.quiverkey(model,0.1,1.015,20.,'Model',coordinates = 'axes',color = 'red')
-            ax3.quiverkey(model,1.3,1.015,20,'Residuals',coordinates = 'axes',color = 'red')
+            #ax1.quiverkey(data,0.1,1.015,20.,'GPS displacements',coordinates = 'axes',color = 'black')
+            #ax2.quiverkey(model,0.1,1.015,20.,'Model',coordinates = 'axes',color = 'red')
+            #ax3.quiverkey(model,1.3,1.015,20,'Residuals',coordinates = 'axes',color = 'red')
 
         ylim, xlim = ax1.get_ylim(), ax1.get_xlim()
         
@@ -754,18 +758,24 @@ def plotHist(flt,model,nfigure):
             ax = fig.add_subplot(Mseg,Mker,index)
            
             # plot Posterior model
-            histo = ax.hist(trace,density = True, histtype = 'stepfilled', color = 'black', label = label, alpha=.8)
+            histo = ax.hist(trace, bins=50, density = True, histtype = 'stepfilled', color = 'dodgerblue', label = label, alpha=.6)
             mean = trace.mean()
-            sig = 2*np.std(trace)
-            plt.axvline(x = mean, c = "red")
-            plt.axvline(x = mean+sig, c = "black", linestyle = '--')
-            plt.axvline(x = mean-sig, c = "black", linestyle = '--')
+            sig = np.std(trace)
+            #plt.axvline(x = mean, c = "red")
+            #plt.axvline(x = mean+sig, c = "dodgerblue", linestyle = '--')
+            #plt.axvline(x = mean-sig, c = "dodgerblue", linestyle = '--')
             # xmin,xmax = ax.set_xlim(mmin,mmax)
             #ymin,ymax = ax.get_ylim()
-            #x = np.arange(xmin,xmax,(xmax-xmin)/100)
-            #plt.plot(x, ymax*norm.pdf(x,mu,tau))
             ax.set_title(label)
-            # ax1.set_xlabel("Mean: {0:.2f}+-{1:.2f}".format(mean, sig))
+            ax.set_xlabel("Mean: {0:.2f}+-{1:.2f} (2*std)".format(mean, 2*sig))
+            ax.set_ylabel('Norm. PDF')
+            ax.set_ylim(bottom=0)
+
+            #f = ax.lines[0]
+            #xf = f.get_xydata()[:,0]
+            #yf = f.get_xydata()[:,1]
+            #ax.fill_between(xf, yf, color="dodgerblue", alpha=0.5, where=(xf>(mean-1*sig)) & (xf<(mean+1*std)))
+            #ax1.axvline(xf[np.argmax(yf)], color="dodgerblue",linestyle='dashed')
 
             ll +=  1
    
