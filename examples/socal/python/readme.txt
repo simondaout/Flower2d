@@ -1,5 +1,2 @@
-# plot different kind of profiles across InSAR data
+# plot profile across InSAR data
 plotPro.py gabrielproin
-
-# run inversion
-optimize.py gabrielflower 

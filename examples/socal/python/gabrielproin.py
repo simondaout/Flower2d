@@ -9,14 +9,12 @@ ymin,ymax=0,250
 # std: plot mean and standard deviation insar
 # distscale: scatter plot with color scale fct of the profile-parallel distance 
 profiles=[
-        profile(name='Big Bend',x=-200,y=137,l=200,w=100,strike=-62.5,type='std',lbins=0.5,flat='quad',loc_ramp='positive'),
-        #profile(name='Big Bend2',x=-196,y=144,l=200,w=20,strike=-62.5),
-        #profile(name='Big Bend3',x=-160,y=125,l=200,w=20,strike=-62.5),
+        profile(name='Big Bend',x=-200,y=137,l=200,w=100,strike=-62.5,type='std',lbins=10.),
         ]
 
 # InSAR data (defined in networkopti.py)
 insardata=[
-        network(network='t170_cmyr_km.xylos',reduction='T170',wdir=maindir+'insar/',dim=1,scale=-10.,color='blue',samp=4)
+        network(network='t170_cmyr_km.xylos',reduction='T170',wdir=maindir+'insar/',dim=1,scale=-10.,color='blue',samp=10)
         ]
 
 # topographic file
@@ -31,6 +29,6 @@ gmtfiles=[
         ]
 
 fmodel=[
-        fault2d(name='SAF',x=-177.9,y=134.9),
+        fault2d(name='SAF',x=-177.9,y=134.9,strike=-62.5),
         ] 
 
