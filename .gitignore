@@ -1,5 +1,4 @@
-bin
-build
-*.eps
-*.pyc
+flower2d.*
+examples/*/output
+src/*/*.pyc
 __init__.py
