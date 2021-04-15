@@ -1,4 +1,4 @@
-#!/usr/bin/env python 
+#!/usr/bin/env python3 
 
 #from __future__ import print_function
 import numpy as np
@@ -98,7 +98,7 @@ if 'xmin' in locals():
   xlim=[xmin,xmax];ylim=[ymin,ymax]
   extent = (xmin, xmax, ymin, ymax)
 else:
-  logger.info('Did not found  boundaries map in input file, set xmin,xmax,ymin,ymax')
+  logger.info('Did not find boundaries map in input file, set xmin,xmax,ymin,ymax')
   xlim=None;ylim=None
   extent = None
 
@@ -210,7 +210,8 @@ if 'xmin' in locals():
     ax12.set_xlim(xmin,xmax)
     ax12.set_ylim(ymin,ymax)
 
-if plot_basemap == True: 
+if plot_basemap == True:
+  try: 
     import contextily as ctx
     if extent == None:
        ax.axis(extent)
@@ -219,8 +220,14 @@ if plot_basemap == True:
     ctx.add_basemap(ax,crs="EPSG:{}".format(crs), source=ctx.providers.OpenTopoMap,alpha=0.5,zorder=0)
     if vertical_map:
       ctx.add_basemap(ax12,crs="EPSG:{}".format(crs), source=ctx.providers.OpenTopoMap,alpha=0.5,zorder=0)
+  except:
+    print('plot_basemap variable is not defined or is not True. Skip backgroup topography plot')
+
 else:
     print('plot_basemap variable is not defined or is not True. Skip backgroup topography plot')
+
+ymin,ymax = ax.get_ylim()
+xmin,xmax = ax.get_xlim()
 
 for ii in range(len(gmtfiles)):
   name = gmtfiles[ii].name
@@ -270,7 +277,8 @@ except:
 
 for i in range(Minsar):
   insar=insardata[i]
-  samp = insar.samp*4
+  #samp = insar.samp*4
+  samp = insar.samp
 
   if (insar.lmin or insar.lmax) == None:
        vmin = np.nanpercentile(insar.ulos, 1)    
@@ -480,7 +488,7 @@ for k in range(len(profiles)):
   profiles[k].s[1]-l/2*profiles[k].n[1],y0+w/2*profiles[k].s[1]+l/2*profiles[k].n[1],y0-w/2*profiles[k].s[1]+l/2*profiles[k].n[1],y0-w/2*profiles[k].s[1]-l/2*profiles[k].n[1],y0-l/2*profiles[k].n[1],y0+l/2*profiles[k].n[1]
 
   # plot in map view  
-  ax.plot(xp[:],yp[:],color = 'black',lw = 1.)
+  ax.plot(xp[:],yp[:],color = 'black',lw = 1., zorder=5)
   if vertical_map:
     ax12.plot(xp[:],yp[:],color = 'black',lw = 1.)
 
@@ -532,7 +540,7 @@ for k in range(len(profiles)):
           ax3.plot([fperp[j],fperp[j]],[gpsmax,gpsmin],color='red')
      
       # plot vertical lines
-      ax3.hlines(np.linspace(gpsmin,gpsmax,6),xmin=-l/2,xmax=l/2,ls='--',color='black',lw=.5)
+      ax3.hlines(np.linspace(gpsmin,gpsmax,6),xmin=-l/2,xmax=l/2,linestyles='--',color='black',lw=.5)
 
       # set born profile equal to map
       logger.debug('Set ylim GPS profile to {0}-{1}'.format(gpsmin,gpsmax))

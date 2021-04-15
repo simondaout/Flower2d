@@ -511,9 +511,9 @@ def plotMap(flt,nfigure):
                 fid.write('\n')
                 fid.close
             
-            data = ax1.quiver(gpsx,gpsy,gpsux-bx,gpsuy-by,scale = 10,width = 0.01,color = 'black')
-            model = ax2.quiver(gpsx,gpsy,gpsmx,gpsmy,scale = 10,width = 0.01,color = 'red')
-            residus = plt.quiver(gpsx,gpsy,gpsux-gpsmx-bx,gpsuy-gpsmy-by,scale = 10,width = 0.01,color = 'black')
+            data = ax1.quiver(gpsx,gpsy,gpsux-bx,gpsuy-by,scale = 20,width = 0.01,color = 'black')
+            model = ax2.quiver(gpsx,gpsy,gpsmx,gpsmy,scale = 20,width = 0.01,color = 'red')
+            residus = plt.quiver(gpsx,gpsy,gpsux-gpsmx-bx,gpsuy-gpsmy-by,scale = 20,width = 0.01,color = 'black')
                     
             ## display name of the station
             if gps.plotName is True:
@@ -573,6 +573,8 @@ def plotMap(flt,nfigure):
 
             ax.set_xlabel('Distance (km)')
             ax.set_title(title)
+            xlim = [np.min(xp)-50,np.max(xp+30)]
+            ylim = [np.min(yp)-50,np.max(yp+30)]
             ax.set_xlim(xlim)
             ax.set_ylim(ylim)
 
@@ -682,9 +684,9 @@ def plotMap(flt,nfigure):
                 fid.write('\n')
                 fid.close
             
-        data = ax1.quiver(gpsx,gpsy,gpsux-bx,gpsuy-by,scale = 10,width = 0.01,color = 'black')
-        model = ax2.quiver(gpsx,gpsy,gpsmx,gpsmy,scale = 10,width = 0.01,color = 'red')
-        residus = plt.quiver(gpsx,gpsy,gpsux-gpsmx-bx,gpsuy-gpsmy-by,scale = 10,width = 0.01,color = 'black')
+        data = ax1.quiver(gpsx,gpsy,gpsux-bx,gpsuy-by,scale = 20,width = 0.01,color = 'black')
+        model = ax2.quiver(gpsx,gpsy,gpsmx,gpsmy,scale = 20,width = 0.01,color = 'red')
+        residus = plt.quiver(gpsx,gpsy,gpsux-gpsmx-bx,gpsuy-gpsmy-by,scale = 20,width = 0.01,color = 'black')
                     
         ## display name of the station
         if gps.plotName is True:
@@ -723,8 +725,11 @@ def plotMap(flt,nfigure):
             
             ax.set_xlabel('Distance (km)')
             ax.set_title(title)
-            #ax.set_xlim(xlim)
-            #ax.set_ylim(ylim)
+            
+            xlim = [np.min(xp)-50,np.max(xp+30)]
+            ylim = [np.min(yp)-50,np.max(yp+30)]
+            ax.set_xlim(xlim)
+            ax.set_ylim(ylim)
 
         plt.suptitle('Geodetic map')
         fig.savefig(outdir+'/map/'+profile.name+'_map_%s.eps'%(nn),format = 'EPS')
@@ -745,10 +750,10 @@ def plotHist(flt,model,nfigure):
     traces = []
     labels = []
    
-    if len(Sampled) < 10:
-        fig = plt.figure(nfigure, figsize = (10,6))
+    if len(Sampled) < 12:
+        fig = plt.figure(nfigure, figsize = (10,4))
     else:
-        fig = plt.figure(nfigure, figsize = (10,8))
+        fig = plt.figure(nfigure, figsize = (10,6))
     fig.subplots_adjust(hspace = 0.75,wspace = 0.35)
    
     def histo(traces,labels,Mseg,Mker,l,mu,tau,mmin,mmax):
@@ -758,7 +763,7 @@ def plotHist(flt,model,nfigure):
             ax = fig.add_subplot(Mseg,Mker,index)
            
             # plot Posterior model
-            histo = ax.hist(trace, bins=50, density = True, histtype = 'stepfilled', color = 'dodgerblue', label = label, alpha=.6)
+            histo = ax.hist(trace, bins=20, density = True, histtype = 'stepfilled', color = 'dodgerblue', label = label, alpha=.6)
             mean = trace.mean()
             sig = np.std(trace)
             #plt.axvline(x = mean, c = "red")
@@ -767,7 +772,7 @@ def plotHist(flt,model,nfigure):
             # xmin,xmax = ax.set_xlim(mmin,mmax)
             #ymin,ymax = ax.get_ylim()
             ax.set_title(label)
-            ax.set_xlabel("Mean: {0:.2f}+-{1:.2f} (2*std)".format(mean, 2*sig))
+            ax.set_xlabel("Mean: {0:.1f}+-{1:.1}".format(mean, 2*sig))
             ax.set_ylabel('Norm. PDF')
             ax.set_ylim(bottom=0)
 

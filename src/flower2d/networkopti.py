@@ -59,7 +59,7 @@ class network(object):
         # scaling between network
         self.scale = scale
         # number of stations
-        self.Npoint = 0 
+        self.Npoint = 0
 
         # projection
         self.utm_proj=utm_proj
@@ -164,7 +164,7 @@ class network(object):
                 logger.debug('Defined projection to east, north, up for each points')
                 self.phi = np.deg2rad(-90-self.phim*np.ones(len(look)))
                 self.theta = np.deg2rad(90.-look)
-                self.phim,self.thetam=np.mean(self.phi),np.mean(self.theta)
+                self.phim,self.thetam=np.nanmean(self.phi),np.nanmean(self.theta)
                 logger.info('Average angle vertical between horizontal and LOS:{0:.1f}, Average horizontal angle between East and LOS:{1:.1f}'.format(np.rad2deg(self.thetam),np.rad2deg(self.phim)))
                 
                 self.proj=[np.cos(self.theta)*np.cos(self.phi),
@@ -218,7 +218,7 @@ class network(object):
                 logger.debug('Defined projection to east, north, up for each points')
                 self.phi = np.deg2rad(-90-self.head)
                 self.theta = np.deg2rad(90.-look)
-                self.phim,self.thetam=np.mean(self.phi),np.mean(self.theta)
+                self.phim,self.thetam=np.nanmean(self.phi),np.nanmean(self.theta)
                 logger.info('Average angle vertical between horizontal and LOS:{0:.1f}, Average horizontal angle between East and LOS:{1:.1f}'.format(np.rad2deg(self.thetam),np.rad2deg(self.phim)))
                 
                 self.proj=[np.cos(self.theta)*np.cos(self.phi),
