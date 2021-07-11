@@ -190,99 +190,64 @@ vertical_map = False
 for i in range(Mgps):
   if gpsdata[i].dim == 3:
     vertical_map = True
+
 if vertical_map:
-  fig=plt.figure(0,figsize = (14,6))
-  ax = fig.add_subplot(1,2,1)
-  ax.axis('equal')
-  ax12 = fig.add_subplot(1,2,2)
-  ax.axis('equal')
-  ax12.axis('equal')
+  fig=plt.figure(0,figsize = (16,6))
 else:
   fig=plt.figure(0,figsize = (9,8))
-  ax = fig.add_subplot(1,1,1)
-  ax.axis('equal')
-
-logger.info('Plot Map ....') 
-if 'xmin' in locals(): 
-  ax.set_xlim(xmin,xmax)
-  ax.set_ylim(ymin,ymax)
-  if vertical_map:
-    ax12.set_xlim(xmin,xmax)
-    ax12.set_ylim(ymin,ymax)
-
-if plot_basemap == True:
-  try: 
-    import contextily as ctx
-    if extent == None:
-       ax.axis(extent)
-       if vertical_map:
-         ax12.axis(extent)
-    ctx.add_basemap(ax,crs="EPSG:{}".format(crs), source=ctx.providers.OpenTopoMap,alpha=0.5,zorder=0)
-    if vertical_map:
-      ctx.add_basemap(ax12,crs="EPSG:{}".format(crs), source=ctx.providers.OpenTopoMap,alpha=0.5,zorder=0)
-  except:
-    print('plot_basemap variable is not defined or is not True. Skip backgroup topography plot')
-
-else:
-    print('plot_basemap variable is not defined or is not True. Skip backgroup topography plot')
-
-ymin,ymax = ax.get_ylim()
-xmin,xmax = ax.get_xlim()
-
-for ii in range(len(gmtfiles)):
-  name = gmtfiles[ii].name
-  wdir = gmtfiles[ii].wdir
-  filename = gmtfiles[ii].filename
-  color = gmtfiles[ii].color
-  width = gmtfiles[ii].width
-  fx,fy = gmtfiles[ii].load(xlim=xlim,ylim=ylim)
-  for i in range(len(fx)):
-    ax.plot(fx[i],fy[i],color = color,lw = width,zorder=1)
-  if vertical_map:
-    ax12.plot(fx[i],fy[i],color = color,lw = width,zorder=1)
-
-for ii in range(len(shapefiles)):
-  import geopandas as gpd
-  import shapely.speedups
-  name = shapefiles[ii].name
-  fname = shapefiles[ii].filename
-  wdir = shapefiles[ii].wdir
-  color = shapefiles[ii].color
-  edgecolor = shapefiles[ii].edgecolor
-  linewidth = shapefiles[ii].linewidth
-  crs = shapefiles[ii].crs
-  shape = gpd.read_file(wdir + fname)
-  if crs != None:
-    shape = shape.to_crs("EPSG:{}".format(crs))
-  shape.plot(ax=ax,facecolor='none', color=color,edgecolor=edgecolor,linewidth=linewidth,label=name,zorder=1)
-  if vertical_map:
-    shape.plot(ax=ax12,facecolor='none', color=color,edgecolor=edgecolor,linewidth=linewidth,label=name,zorder=1)
-
-for ii in range(len(seismifiles)):
-  name = seismifiles[ii].name
-  x,y = seismifiles[ii].x, seismifiles[ii].y
-  wdir = seismifiles[ii].wdir
-  color = seismifiles[ii].color
-  smin = np.nanmin(seismifiles[ii].mag)
-  width = (seismifiles[ii].mag - smin)*seismifiles[ii].width*5
-  ax.scatter(x,y,c=color,marker='o',s=width,linewidths=1, edgecolor='black',alpha=0.5,label=seismifiles[ii].name,zorder=2) 
-
-try:
-  from matplotlib.colors import LinearSegmentedColormap
-  cm_locs = os.environ["Flower2d"] + '/contrib/colormaps/'
-  cmap = LinearSegmentedColormap.from_list('roma', np.loadtxt(cm_locs+"roma.txt"))
-  cmap = cmap.reversed()
-except:
-  cmap = cm.rainbow
 
 for i in range(Minsar):
+  if vertical_map:
+    ax = fig.add_subplot(1,Minsar+1,i+1)
+  else:
+    ax = fig.add_subplot(1,Minsar,i+1)
+  ax.axis('equal')
+  
+  logger.info('Plot Map ....') 
+  if 'xmin' in locals(): 
+    ax.set_xlim(xmin,xmax)
+    ax.set_ylim(ymin,ymax)
+
+  if plot_basemap == True:
+    try: 
+      import contextily as ctx
+      ctx.add_basemap(ax,crs="EPSG:{}".format(crs), source=ctx.providers.OpenTopoMap,alpha=0.5,zorder=0)
+      if vertical_map:
+        ctx.add_basemap(ax12,crs="EPSG:{}".format(crs), source=ctx.providers.OpenTopoMap,alpha=0.5,zorder=0)
+    except:
+      print('plot_basemap variable is not defined or is not True. Skip backgroup topography plot')
+
+  else:
+    print('plot_basemap variable is not defined or is not True. Skip backgroup topography plot')
+
+  ymin,ymax = ax.get_ylim()
+  xmin,xmax = ax.get_xlim()
+
+  for ii in range(len(gmtfiles)):
+    name = gmtfiles[ii].name
+    wdir = gmtfiles[ii].wdir
+    filename = gmtfiles[ii].filename
+    color = gmtfiles[ii].color
+    width = gmtfiles[ii].width
+    fx,fy = gmtfiles[ii].load(xlim=xlim,ylim=ylim)
+    for i in range(len(fx)):
+      ax.plot(fx[i],fy[i],color = color,lw = width,zorder=1)
+
+  try:
+    from matplotlib.colors import LinearSegmentedColormap
+    cm_locs = os.environ["Flower2d"] + '/contrib/colormaps/'
+    cmap = LinearSegmentedColormap.from_list('roma', np.loadtxt(cm_locs+"roma.txt"))
+    cmap = cmap.reversed()
+  except:
+    cmap = cm.rainbow
+
   insar=insardata[i]
   #samp = insar.samp*4
   samp = insar.samp
 
   if (insar.lmin or insar.lmax) == None:
-       vmin = np.nanpercentile(insar.ulos, 1)    
-       vmax = np.nanpercentile(insar.ulos, 99)
+       vmin = np.nanpercentile(insar.ulos, 5)    
+       vmax = np.nanpercentile(insar.ulos, 95)
   else:
        vmin, vmax = insar.lmin, insar.lmax
 
@@ -293,51 +258,119 @@ for i in range(Minsar):
   m.set_array(insar.ulos[::samp])
   masked_array = np.ma.array(insar.ulos[::samp], mask=np.isnan(insar.ulos[::samp]))
   facelos = m.to_rgba(masked_array)
-  ax.scatter(insar.x[::samp],insar.y[::samp], s=1, marker = 'o',color = facelos, rasterized=True, label = 'LOS Velocity {}'.format(insar.reduction),zorder=3)
+  ax.scatter(insar.x[::samp],insar.y[::samp], s=1, marker = 'o',color = facelos, rasterized=True, label = 'LOS Velocity {}'.format(insar.reduction),zorder=0)
 
-gpscolor = ['black','coral','red','darkorange']
-for i in range(Mgps):
-  gps=gpsdata[i]
-  logger.info('Plot GPS data {0}'.format(gps.network))
-  ax.quiver(gps.x,gps.y,gps.ux,gps.uy,scale = 150, width = 0.003, color = gpscolor[i%4],zorder=4)
-  if vertical_map:
+  gpscolor = ['black','coral','red','darkorange']
+  for i in range(Mgps):
+    gps=gpsdata[i]
+    logger.info('Plot GPS data {0}'.format(gps.network))
+    ax.quiver(gps.x,gps.y,gps.ux,gps.uy,scale = 150, width = 0.003, color = gpscolor[i%4],zorder=4)
+
+    if gps.plotName == True:
+      for kk in range(len(gps.name)):
+            ax.text(gps.x[kk], gps.y[kk], gps.name[kk], color ='black')
+
+  # add colorbar los
+  if 'facelos' in locals():
+    divider = make_axes_locatable(ax)
+    c = divider.append_axes("right", size="5%", pad=0.05)
+    plt.colorbar(m, cax=c)
+   
+  for ii in range(len(shapefiles)):
+    import geopandas as gpd
+    import shapely.speedups
+    name = shapefiles[ii].name
+    fname = shapefiles[ii].filename
+    wdir = shapefiles[ii].wdir
+    color = shapefiles[ii].color
+    edgecolor = shapefiles[ii].edgecolor
+    linewidth = shapefiles[ii].linewidth
+    crs = shapefiles[ii].crs
+    shape = gpd.read_file(wdir + fname)
+    if crs != None:
+      shape = shape.to_crs("EPSG:{}".format(crs))
+    shape.plot(ax=ax,facecolor='none', color=color,edgecolor=edgecolor,linewidth=linewidth,label=name,zorder=1)
+
+  for ii in range(len(seismifiles)):
+    name = seismifiles[ii].name
+    x,y = seismifiles[ii].x, seismifiles[ii].y
+    wdir = seismifiles[ii].wdir
+    color = seismifiles[ii].color
+    smin = np.nanmin(seismifiles[ii].mag)
+    width = (seismifiles[ii].mag - smin)*seismifiles[ii].width*5
+    ax.scatter(x,y,c=color,marker='o',s=width,linewidths=1, edgecolor='black',alpha=0.5,label=seismifiles[ii].name,zorder=2) 
+
+  # plot legend
+  ax.legend(loc = 'upper right',fontsize='x-small')
+
+if vertical_map:
+  ax12 = fig.add_subplot(1,Minsar+1,Minsar+1)
+  ax12.axis('equal')
+  ax.axis('equal')
+  if 'xmin' in locals(): 
+    ax.set_xlim(xmin,xmax)
+    ax.set_ylim(ymin,ymax)
+    ax12.set_xlim(xmin,xmax)
+    ax12.set_ylim(ymin,ymax)
+  #ax12.axis('equal')
+  if plot_basemap == True:
+      try: 
+        ctx.add_basemap(ax12,crs="EPSG:{}".format(crs), source=ctx.providers.OpenTopoMap,alpha=0.5,zorder=0)
+      except:
+        pass
+
+  for ii in range(len(gmtfiles)):
+    name = gmtfiles[ii].name
+    wdir = gmtfiles[ii].wdir
+    filename = gmtfiles[ii].filename
+    color = gmtfiles[ii].color
+    width = gmtfiles[ii].width
+    fx,fy = gmtfiles[ii].load(xlim=xlim,ylim=ylim)
+    ax12.plot(fx[i],fy[i],color = color,lw = width,zorder=1)
+    
+  for i in range(Mgps):
+    gps=gpsdata[i]
     norm = matplotlib.colors.Normalize(vmin=np.nanpercentile(gps.uv,5), vmax=np.nanpercentile(gps.uv,95))
     mv = cm.ScalarMappable(norm = norm, cmap = cmap)
     mv.set_array(gps.uv)
     facev = mv.to_rgba(gps.uv)
-    ax12.scatter(gps.x,gps.y,c=facev,marker='o',s=40,linewidths=1, edgecolor='black',alpha=0.8,label='Vertical velocities network {}'.format(gps.reduction),zorder=2)    
+    ax12.scatter(gps.x,gps.y,c=facev,marker='o',s=40,linewidths=1, edgecolor='black',alpha=0.8,label='Vertical velocities network {}'.format(gps.reduction),zorder=2) 
+    divider = make_axes_locatable(ax12)
+    c = divider.append_axes("right", size="5%", pad=0.05)
+    plt.colorbar(mv, cax=c)
+      
+  for ii in range(len(shapefiles)):
+    name = shapefiles[ii].name
+    fname = shapefiles[ii].filename
+    wdir = shapefiles[ii].wdir
+    color = shapefiles[ii].color
+    edgecolor = shapefiles[ii].edgecolor
+    linewidth = shapefiles[ii].linewidth
+    crs = shapefiles[ii].crs
+    shape = gpd.read_file(wdir + fname)
+    if crs != None:
+          shape = shape.to_crs("EPSG:{}".format(crs))
+    shape.plot(ax=ax12,facecolor='none', color=color,edgecolor=edgecolor,linewidth=linewidth,label=name,zorder=1)
 
-  if gps.plotName == True:
-      for kk in range(len(gps.name)):
-            ax.text(gps.x[kk], gps.y[kk], gps.name[kk], color ='black')
+  for ii in range(len(seismifiles)):
+    name = seismifiles[ii].name
+    x,y = seismifiles[ii].x, seismifiles[ii].y
+    wdir = seismifiles[ii].wdir
+    color = seismifiles[ii].color
+    smin = np.nanmin(seismifiles[ii].mag)
+    width = (seismifiles[ii].mag - smin)*seismifiles[ii].width*5
+    ax12.scatter(x,y,c=color,marker='o',s=width,linewidths=1, edgecolor='black',alpha=0.5,label=seismifiles[ii].name,zorder=2)
 
-# add colorbar los
-if 'facelos' in locals():
-  divider = make_axes_locatable(ax)
-  c = divider.append_axes("right", size="5%", pad=0.05)
-  plt.colorbar(m, cax=c) 
+    ax12.legend(loc = 'upper right',fontsize='x-small')
 
-# add colorbar vertical
-if 'facev' in locals():
-  divider = make_axes_locatable(ax)
-  c = divider.append_axes("right", size="5%", pad=0.05)
-  plt.colorbar(mv, cax=c) 
-  divider = make_axes_locatable(ax12)
-  c = divider.append_axes("right", size="5%", pad=0.05)
-  plt.colorbar(mv, cax=c) 
-
-# plot legend
-ax.legend(loc = 'upper right',fontsize='x-small')
-if vertical_map:
-  ax12.legend(loc = 'upper right',fontsize='x-small')
 plt.tight_layout()  
 
 # fig pro topo
 if len(profiles) > 1:
-  fig1=plt.figure(1,figsize=(10,8))
+    fig1=plt.figure(1,figsize=(10,8))
 else:
-  fig1=plt.figure(1,figsize=(10,3))
-fig1.subplots_adjust(hspace=0.0001)
+    fig1=plt.figure(1,figsize=(10,3))
+    fig1.subplots_adjust(hspace=0.0001)
 
 # fig pro insar
 if Minsar>0:
@@ -475,7 +508,10 @@ for k in range(len(profiles)):
     # select data within profile
     index=np.nonzero((seismi.xpp>xpmax)|(seismi.xpp<xpmin)|(seismi.ypp>ypmax)|(seismi.ypp<ypmin))
     seismi.xp,seismi.yp,depth,size=np.delete(seismi.xpp,index),np.delete(seismi.ypp,index),np.delete(seismifiles[ii].depth,index),np.delete(seismifiles[ii].mag,index)
-    smin = np.nanmin(size)
+    try:
+      smin = np.nanmin(size)
+    except:
+      smin = 0
     size = (size - smin)* np.float(seismifiles[ii].width)*5
     # plot
     ax4.scatter(seismi.yp,-depth,s=size,c=color,marker='o',linewidths=1, edgecolor='black',alpha=0.5,label=seismifiles[ii].name,zorder=2) 

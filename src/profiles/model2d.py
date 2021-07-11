@@ -13,11 +13,30 @@ class fault2d:
     x,y: position east, north
     """
 
-    def __init__(self,name,x,y,strike=None):
+    def __init__(self,name,x,y,strike=None,utm_proj=None, ref=None):
         self.name=name
-        self.x=x
-        self.y=y
+        lon,lat = x,y
         
+        # projection
+        self.utm_proj=utm_proj
+        self.ref=ref
+        if self.utm_proj is not None:
+            self.UTM = pyproj.Proj("EPSG:{}".format(self.utm_proj))
+            if self.ref is not None:
+                self.ref_x,self.ref_y =  self.UTM(self.ref[0],self.ref[1])
+            else:
+                self.ref_x,self.ref_y = 0,0
+        
+        if self.utm_proj is None:
+            self.x,self.y = lon*1e3,lat*1e3 
+            if (lon is None) or (lat is None):
+                print('utm_proj is not defined, you must defined ref points (x,y) in UTM. Exit!')
+                sys.exit()
+        else:
+            print('Read reference point profile in lat/lon')
+            x, y = self.UTM(lon, lat) 
+            self.x,self.y=(x-self.ref_x),(y-self.ref_y)
+ 
         if strike is not None:
           if strike > 0 :
             self.strike=strike-180
@@ -197,13 +216,12 @@ class seismicity:
             x, y = self.UTM(lon, lat)
             self.x,self.y,self.z,self.mag=(x-self.ref_x),(y-self.ref_y),depth,mag
         elif  self.fmt == 'txt':
-          x,y,depth,self.mag = np.loadtxt(fname,comments = '#',unpack = True,dtype = 'f,f,f,f')
+          date,self.mag,y,x,depth = np.loadtxt(fname,comments = '#',unpack = True,dtype = 'S,f,f,f,f')
           if self.utm_proj is not None:
              x, y = self.UTM(x, y)
-             x, y = (x - self.ref_x), (y - self.ref_y)
+             self.x, self.y = (x - self.ref_x), (y - self.ref_y)
           else:
-             x, y = x*1e3, y*1e3 
-        
+             self.x, self.y = x*1e3, y*1e3 
         if np.nanmean(abs(depth)) < 100:
             self.depth = depth*1000
            
