@@ -68,7 +68,7 @@ gmtfiles=[
 
 #optionnal: add data for plots
 plotdata=[
-        seismi(name='seismicity',wdir=maindir+'seismicity/',filename='usgs_2000-2014_101-105_34-39.xydm',color='orange',width=0.5),
+        seismicity(name='seismicity',wdir=maindir+'seismicity/',filename='usgs_2000-2014_101-105_34-39.xydm',color='orange',width=0.5),
         ]
 
 #topographic plot
