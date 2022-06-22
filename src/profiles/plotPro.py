@@ -80,7 +80,6 @@ if len(sys.argv)>1:
       exec ("from "+path.basename(fname)+" import *")
     except:
       exec(open(fname).read())
-      #execfile(path.abspath(fname))
   
   except Exception as e: 
     logger.critical('Problem in input file')
