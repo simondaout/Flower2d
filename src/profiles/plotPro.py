@@ -186,7 +186,7 @@ for i in range(Minsar):
 
 # MAP
 # check if vertical for GPS
-vertical_map = False
+vertical_map = True
 for i in range(Mgps):
   if gpsdata[i].dim == 3:
     vertical_map = True
@@ -210,9 +210,10 @@ if 'xmin' in locals():
 if plot_basemap == True:
   try: 
     import contextily as ctx
-    ctx.add_basemap(ax,crs="EPSG:{}".format(crs), source=ctx.providers.Esri.WorldTopoMap,alpha=0.6,zorder=0)
+    ctx.add_basemap(ax,crs="EPSG:{}".format(crs), source=ctx.providers.Esri.WorldTopoMap,alpha=1,zorder=0)
     if vertical_map:
-      ctx.add_basemap(ax12,crs="EPSG:{}".format(crs), source=ctx.providers.Esri.WorldTopoMap,alpha=0.6,zorder=0)
+      #ctx.add_basemap(ax12,crs="EPSG:{}".format(crs), source=ctx.providers.OpenTopoMap,alpha=1,zorder=0)
+      ctx.add_basemap(ax12,crs="EPSG:{}".format(crs), source=ctx.providers.Esri.WorldTopoMap,alpha=1,zorder=0)
   except:
     print('plot_basemap variable is not defined or is not True. Skip backgroup topography plot')
 
@@ -265,7 +266,7 @@ gpscolor = ['black','coral','red','darkorange']
 for i in range(Mgps):
   gps=gpsdata[i]
   logger.info('Plot GPS data {0}'.format(gps.network))
-  ax.quiver(gps.x,gps.y,gps.ux,gps.uy,scale = 150, width = 0.003, color = gpscolor[i%4],zorder=4)
+  ax.quiver(gps.x,gps.y,gps.ux,gps.uy,scale = 125, width = 0.003, color = gpscolor[i%4],zorder=4)
 
   if gps.plotName == True:
     for kk in range(len(gps.name)):
@@ -313,7 +314,8 @@ if vertical_map:
   #ax12.axis('equal')
   if plot_basemap == True:
       try: 
-        ctx.add_basemap(ax12,crs="EPSG:{}".format(crs), source=ctx.providers.OpenTopoMap,alpha=0.5,zorder=0)
+        #ctx.add_basemap(ax12,crs="EPSG:{}".format(crs), source=ctx.providers.OpenTopoMap,alpha=0.5,zorder=0)
+        ctx.add_basemap(ax12,crs="EPSG:{}".format(crs), source=ctx.providers.WorldTopoMap,alpha=1,zorder=0)
       except:
         pass
 
@@ -332,7 +334,7 @@ if vertical_map:
     mv = cm.ScalarMappable(norm = norm, cmap = cmap)
     mv.set_array(gps.uv)
     facev = mv.to_rgba(gps.uv)
-    ax12.scatter(gps.x,gps.y,c=facev,marker='o',s=40,linewidths=1, edgecolor='black',alpha=0.8,label='Vertical velocities network {}'.format(gps.reduction),zorder=2) 
+    ax12.scatter(gps.x,gps.y,c=facev,marker='o',s=10,linewidths=1, edgecolor='black',alpha=0.8,label='Vertical velocities network {}'.format(gps.reduction),zorder=2) 
     divider = make_axes_locatable(ax12)
     c = divider.append_axes("right", size="5%", pad=0.05)
     plt.colorbar(mv, cax=c)
@@ -593,6 +595,8 @@ for k in range(len(profiles)):
       insar=insardata[i]
       losmin=insar.lmin
       losmax=insar.lmax
+
+      print('InSAR mean: {}, 95 perc:{}, 5 perc {}:'.format(np.nanmean(insar.ulos),np.nanpercentile(insar.ulos,95),np.nanpercentile(insar.ulos,5)))
 
       logger.info('Load InSAR {0}'.format(insar.network)) 
 
