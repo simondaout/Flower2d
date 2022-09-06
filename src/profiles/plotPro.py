@@ -5,7 +5,7 @@ import numpy as np
 import scipy.optimize as opt
 import scipy.linalg as lst
 
-import gdal
+from osgeo import gdal
 import pandas
 import geopandas as gpd
 import shapely.speedups
@@ -639,12 +639,12 @@ for k in range(len(profiles)):
     kk = np.flatnonzero(~np.isnan(temp_los))
     temp_los,temp_yp,temp_std = temp_los[kk],temp_yp[kk],temp_std[kk]
    
-    if flat is 'quad': 
+    if flat == 'quad': 
         G = np.zeros((len(temp_los),3))
         G[:,0] = temp_yp**2
         G[:,1] = temp_yp
         G[:,2] = 1
-    elif flat is 'cub':
+    elif flat == 'cub':
         G = np.zeros((len(temp_los),4))
         G[:,0] = temp_yp**3
         G[:,1] = temp_yp**2
@@ -676,7 +676,7 @@ for k in range(len(profiles)):
     #   a = pars[0]; b = pars[1]
     #   blos = a*insar2.distance[kk2] + b
     
-    if flat is 'quad':
+    if flat == 'quad':
         a = pars[0]; b = pars[1]; c = pars[2]
         logger.info('Remove ramp: {0} yperp**2  + {1} yperp  + {2}'.format(a,b,c))
 
@@ -697,7 +697,7 @@ for k in range(len(profiles)):
         x = np.arange(kmin,kmax,1)
         ysp = a*x**2 + b*x + c
 
-    elif flat is 'cub':
+    elif flat == 'cub':
         a = pars[0]; b = pars[1]; c = pars[2]; d =pars[3]
         logger.info('Remove ramp: {0} yperp**3 + {1} yperp**2  + {2} yperp  + {3}'.format(a,b,c,d))
     
@@ -784,7 +784,7 @@ for k in range(len(profiles)):
         else:
           if len(insar.distance) >0:
             # PLOT
-            if typ is 'distscale':
+            if typ == 'distscale':
               logger.info('Plot InSAR with distscale option')
               # colorscale fct of the parrallel distance to the profile
               norm = matplotlib.colors.Normalize(vmin=xpmin, vmax=xpmax)
@@ -794,14 +794,14 @@ for k in range(len(profiles)):
               ax2.scatter(insar.yperp,insar.uulos,s = .1, marker='o',alpha=0.4,\
                  label=insardata[i].reduction,color=facelos, rasterized=True)
             
-            elif typ is 'std':
+            elif typ == 'std':
               logger.info('Plot InSAR with std option')
               # plot mean and standard deviation
               ax2.plot(insar.distance,insar.moy_los,color=insar.color,lw=2.,label=insardata[i].reduction)
               ax2.plot(insar.distance,insar.moy_los-insar.std_los,color=insar.color,lw=.5)
               ax2.plot(insar.distance,insar.moy_los+insar.std_los,color=insar.color,lw=.5)
 
-            elif typ is 'stdscat':
+            elif typ == 'stdscat':
               logger.info('Plot InSAR with stdscat option')
               # plot mean and standard deviation
               ax2.plot(insar.distance,insar.moy_los,color=insar.color,lw=2.,label=insardata[i].reduction)
@@ -827,7 +827,7 @@ for k in range(len(profiles)):
     if k is not len(profiles)-1:
       plt.setp(ax2.get_xticklabels(), visible=False)
       plt.setp(ax1.get_xticklabels(), visible=False)
-    if typ is 'distscale':
+    if typ == 'distscale':
       fig2.colorbar(m1,shrink=0.5, aspect=5)
     else:
       ax2.legend(loc='best')
