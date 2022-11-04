@@ -208,14 +208,12 @@ if 'xmin' in locals():
   ax.set_ylim(ymin,ymax)
 
 if plot_basemap == True:
-  try: 
     import contextily as ctx
-    ctx.add_basemap(ax,crs="EPSG:{}".format(crs), source=ctx.providers.Esri.WorldTopoMap,alpha=1,zorder=0)
-    if vertical_map:
-      #ctx.add_basemap(ax12,crs="EPSG:{}".format(crs), source=ctx.providers.OpenTopoMap,alpha=1,zorder=0)
-      ctx.add_basemap(ax12,crs="EPSG:{}".format(crs), source=ctx.providers.Esri.WorldTopoMap,alpha=1,zorder=0)
-  except:
-    print('plot_basemap variable is not defined or is not True. Skip backgroup topography plot')
+    # horizontal
+    #ctx.add_basemap(ax,crs="EPSG:{}".format(crs), source=ctx.providers.Esri.WorldTopoMap,alpha=1,zorder=0)
+    ctx.add_basemap(ax,crs="EPSG:{}".format(crs), source=ctx.providers.Esri.WorldShadedRelief,alpha=1,zorder=0)
+  #except:
+  #  print('plot_basemap variable is not defined or is not True. Skip backgroup topography plot')
 
 else:
   print('plot_basemap variable is not defined or is not True. Skip backgroup topography plot')
@@ -313,11 +311,7 @@ if vertical_map:
     ax12.set_ylim(ymin,ymax)
   #ax12.axis('equal')
   if plot_basemap == True:
-      try: 
-        #ctx.add_basemap(ax12,crs="EPSG:{}".format(crs), source=ctx.providers.OpenTopoMap,alpha=0.5,zorder=0)
-        ctx.add_basemap(ax12,crs="EPSG:{}".format(crs), source=ctx.providers.WorldTopoMap,alpha=1,zorder=0)
-      except:
-        pass
+     ctx.add_basemap(ax12,crs="EPSG:{}".format(crs), source=ctx.providers.Esri.WorldTopoMap,alpha=1,zorder=0)
 
   for ii in range(len(gmtfiles)):
     name = gmtfiles[ii].name
