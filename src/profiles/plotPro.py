@@ -118,6 +118,9 @@ fperp=np.zeros(Mfault)
 # Info basemap
 if 'plot_basemap' not in locals():
     plot_basemap = False
+# Info export profile
+if 'export_profile' not in locals():
+    export_profile = False
 
 # Load data
 if 'topodata' not in globals():
@@ -566,8 +569,8 @@ for k in range(len(profiles)):
           
           if gps.proj != None:
             # plot gps los
-            ax2.plot(gpsyp,gpsulos,'+',color='red',mew=5.,label='%s GPS LOS'%gpsdata[i].reduction)
-            ax2.errorbar(gpsyp,gpsulos,yerr = gpssigmalos,ecolor = 'red',fmt = "none")          
+            ax2.plot(gpsyp,gpsulos,'+',color='red',mew=2.,label='%s GPS LOS'%gpsdata[i].reduction)
+            ax2.errorbar(gpsyp,gpsulos,yerr = gpssigmalos,ecolor ='red',fmt = "none")          
 
       for j in range(Mfault):
           ax3.plot([fperp[j],fperp[j]],[gpsmax,gpsmin],color='red')
@@ -633,7 +636,7 @@ for k in range(len(profiles)):
             _yperp = np.copy(insar.yypp[uu][kk])
 
             
-            if len(kk)>10:
+            if len(kk)>50:
                 insar.distance.append(bins[j] + (bins[j+1] - bins[j])/2.)
 
                 indice = np.flatnonzero(np.logical_and(_los>np.percentile(\
@@ -898,6 +901,9 @@ for k in range(len(profiles)):
         if (losmin != None) and (losmax != None):
           logger.debug('Set ylim InSAR profile to {0}-{1}'.format(losmin,losmax))
           ax2.set_ylim([losmin,losmax])
+
+        if export_profile:
+          np.savetxt(outdir+'{}_{}.txt'.format(insardata[i].reduction,profiles[k].name), np.vstack([insar.distance,insar.moy_los,insar.std_los]).T, header = '# yperp (km)      los         std_los', fmt='%.6f')
 
   if Minsar>0:
     for j in range(Mfault):
