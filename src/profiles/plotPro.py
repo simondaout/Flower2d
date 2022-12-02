@@ -636,7 +636,7 @@ for k in range(len(profiles)):
             _yperp = np.copy(insar.yypp[uu][kk])
 
             
-            if len(kk)>50:
+            if len(kk)>150:
                 insar.distance.append(bins[j] + (bins[j+1] - bins[j])/2.)
 
                 indice = np.flatnonzero(np.logical_and(_los>np.percentile(\
