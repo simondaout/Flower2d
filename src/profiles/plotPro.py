@@ -902,6 +902,7 @@ for k in range(len(profiles)):
           logger.debug('Set ylim InSAR profile to {0}-{1}'.format(losmin,losmax))
           ax2.set_ylim([losmin,losmax])
 
+        print('Profile: {}, Mean: {}, 2th perc:{}, 98th perc: {}:'.format(profiles[k].name, np.nanmean(insar.moy_los), np.nanpercentile(insar.moy_los,98),np.nanpercentile(insar.moy_los,2)))
         if export_profile:
           np.savetxt(outdir+'{}_{}.txt'.format(insardata[i].reduction,profiles[k].name), np.vstack([insar.distance,insar.moy_los,insar.std_los]).T, header = '# yperp (km)      los         std_los', fmt='%.6f')
 
