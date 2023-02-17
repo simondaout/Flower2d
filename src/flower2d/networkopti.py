@@ -134,33 +134,6 @@ class network(object):
                 if self.utm_proj is not None:
                   x, y = self.UTM(x, y)
                   x, y = (x - self.ref_x)/1e3, (y - self.ref_y)/1e3
-
-                if self.errorfile is not None:
-                  logger.info('Load error file: {}'.format(self.errorfile))
-                  errorfile=self.errorfile
-                  bid,bid2,sigmad=np.loadtxt(errorfile,comments = '#',usecols = (0,1,2), unpack = True, dtype = 'f,f,f')
-                  if len(sigmad) != len(los):
-                    logger.warning('Error file not the same length than data. Exit!')
-                    sys.exit()
-                  else:
-                    sigmad=abs(sigmad)*self.wd 
-                else: 
-                    sigmad = np.ones(len(los))*self.wd
-                x,y,los,look,sigmad = x[::self.samp],y[::self.samp],los[::self.samp],look[::self.samp],sigmad[::self.samp]
-
-                logger.debug('Compute horizontal distances to the center of the profile')
-                xp=(x-self.profile.x)*self.profile.s[0]+(y-self.profile.y)*self.profile.s[1]
-                yp=(x-self.profile.x)*self.profile.n[0]+(y-self.profile.y)*self.profile.n[1]
-
-                logger.debug('Only keep points within profile')
-                index=np.nonzero((xp>self.profile.xpmax)|(xp<self.profile.xpmin)|(yp>self.profile.ypmax)|(yp<self.profile.ypmin))
-                ulos,self.x,self.y,self.xp,self.yp,look,sigmad=np.delete(los,index),np.delete(x,index),np.delete(y,index),np.delete(xp,index),np.delete(yp,index),np.delete(look,index),np.delete(sigmad,index)
-
-                ulos[np.logical_or(ulos==0.0,ulos>9990.)] = np.float('NaN')
-                sigmad[np.logical_or(ulos==0.0,ulos>9990.)] = np.float('NaN')
-                self.ulos=ulos*self.scale
-                self.sigmad=sigmad*self.scale
-
                 logger.debug('Defined projection to east, north, up for each points')
                 self.phi = np.deg2rad(-90-self.phim*np.ones(len(look)))
                 self.theta = np.deg2rad(90.-look)
@@ -189,34 +162,9 @@ class network(object):
                 if self.utm_proj is not None:
                   x, y = self.UTM(x, y)
                   x, y = (x - self.ref_x)/1e3, (y - self.ref_y)/1e3
-                if self.errorfile is not None:
-                  logger.info('Load error file: {}'.format(self.errorfile))
-                  errorfile=self.errorfile
-                  bid,bid2,sigmad=np.loadtxt(errorfile,comments = '#',usecols = (0,1,2), unpack = True, dtype = 'f,f,f')
-                  if len(sigmad) != len(los):
-                    logger.warning('Error file not the same length than data. Exit!')
-                    sys.exit()
-                  else:
-                    sigmad=abs(sigmad)*self.wd 
-                else: 
-                    sigmad = np.ones(len(los))*self.wd
-
-                x,y,los,look,head,sigmad = x[::self.samp],y[::self.samp],los[::self.samp],look[::self.samp],head[::self.samp],sigmad[::self.samp]
-
-                logger.debug('Compute horizontal distances to the center of the profile')
-                xp=(x-self.profile.x)*self.profile.s[0]+(y-self.profile.y)*self.profile.s[1]
-                yp=(x-self.profile.x)*self.profile.n[0]+(y-self.profile.y)*self.profile.n[1]
-
-                logger.debug('Only keep points within profile')
-                index=np.nonzero((xp>self.profile.xpmax)|(xp<self.profile.xpmin)|(yp>self.profile.ypmax)|(yp<self.profile.ypmin))
-                ulos,self.x,self.y,self.xp,self.yp,look,self.head,sigmad=np.delete(los,index),np.delete(x,index),np.delete(y,index),np.delete(xp,index),np.delete(yp,index),np.delete(look,index),np.delete(head,index),np.delete(sigmad,index)
-                ulos[np.logical_or(ulos==0.0,ulos>9990.)] = np.float('NaN')
-                sigmad[np.logical_or(ulos==0.0,ulos>9990.)] =  np.float('NaN')
-                self.ulos=ulos*self.scale
-                self.sigmad=sigmad*self.scale
 
                 logger.debug('Defined projection to east, north, up for each points')
-                self.phi = np.deg2rad(-90-self.head)
+                self.phi = np.deg2rad(-90-head)
                 self.theta = np.deg2rad(90.-look)
                 self.phim,self.thetam=np.mean(self.phi),np.mean(self.theta)
                 logger.info('Average angle vertical between horizontal and LOS:{0:.1f}, Average horizontal angle between East and LOS:{1:.1f}'.format(np.rad2deg(self.thetam),np.rad2deg(self.phim)))
@@ -251,29 +199,6 @@ class network(object):
                   xt, yt = self.UTM(x, y)
                   x, y = (xt - self.ref_x)/1e3, (yt - self.ref_y)/1e3
                 
-                if self.errorfile is not None:
-                  logger.info('Load error file: {}'.format(self.errorfile))
-                  errorfile=self.errorfile
-                  bid,bid2,sigmad=np.loadtxt(errorfile,comments = '#',usecols = (0,1,2), unpack = True, dtype = 'f,f,f')
-                  if len(sigmad) != len(los):
-                    logger.warning('Error file not the same length than data. Exit!')
-                    sys.exit()
-                  else:
-                    sigmad=abs(sigmad)*self.wd 
-                else: 
-                    sigmad = np.ones(len(los))*self.wd
-
-                x,y,los,sigmad = x[::self.samp],y[::self.samp],los[::self.samp],sigmad[::self.samp]
-                xp=(x-self.profile.x)*self.profile.s[0]+(y-self.profile.y)*self.profile.s[1]
-                yp=(x-self.profile.x)*self.profile.n[0]+(y-self.profile.y)*self.profile.n[1]
-
-                index=np.nonzero((xp>self.profile.xpmax)|(xp<self.profile.xpmin)|(yp>self.profile.ypmax)|(yp<self.profile.ypmin))
-                ulos,self.x,self.y,self.xp,self.yp,sigmad=np.delete(los,index),np.delete(x,index),np.delete(y,index),np.delete(xp,index),np.delete(yp,index),np.delete(sigmad,index)
-                ulos[np.logical_or(ulos==0.0,ulos>9990.)] = np.float('NaN')
-                sigmad[np.logical_or(ulos==0.0,ulos>9990.)] = np.float('NaN')
-                self.ulos=ulos*self.scale
-                self.sigmad = sigmad*self.scale
-
                 if self.profile.proj is not None:
                     self.proj= self.profile.proj
                     self.projm= self.profile.proj
@@ -290,6 +215,32 @@ class network(object):
                     logger.debug('Set profile proj attribute')
                     self.profile.proj = self.projm
 
+            if self.errorfile is not None:
+               logger.info('Load error file: {}'.format(self.errorfile))
+               errorfile=self.errorfile
+               xe,ye,sigmad=np.loadtxt(errorfile,comments = '#',usecols = (0,1,2), unpack = True, dtype = 'f,f,f')
+
+               if len(sigmad) != len(los):
+                    logger.warning('Error file not the same length than data. Exit!')
+                    sys.exit()
+               else:
+                    sigmad=abs(sigmad)*self.wd 
+            else: 
+               sigmad = np.ones(len(los))*self.wd
+               x,y,los,look,sigmad = x[::self.samp],y[::self.samp],los[::self.samp],look[::self.samp],sigmad[::self.samp]
+
+               logger.debug('Compute horizontal distances to the center of the profile')
+               xp=(x-self.profile.x)*self.profile.s[0]+(y-self.profile.y)*self.profile.s[1]
+               yp=(x-self.profile.x)*self.profile.n[0]+(y-self.profile.y)*self.profile.n[1]
+
+               logger.debug('Only keep points within profile')
+               index=np.nonzero((xp>self.profile.xpmax)|(xp<self.profile.xpmin)|(yp>self.profile.ypmax)|(yp<self.profile.ypmin))
+               ulos,self.x,self.y,self.xp,self.yp,look,sigmad=np.delete(los,index),np.delete(x,index),np.delete(y,index),np.delete(xp,index),np.delete(yp,index),np.delete(look,index),np.delete(sigmad,index)
+
+               ulos[np.logical_or(ulos==0.0,ulos>9990.)] = np.float('NaN')
+               sigmad[np.logical_or(ulos==0.0,ulos>9990.)] = np.float('NaN')
+               self.ulos=ulos*self.scale
+               self.sigmad=sigmad*self.scale
 
             if self.mask is not None:
                 uu = np.flatnonzero(np.logical_or(self.yp<=self.mask[0], self.yp>=self.mask[1]))
