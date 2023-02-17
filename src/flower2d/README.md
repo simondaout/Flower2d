@@ -9,13 +9,13 @@ Everything is defined relatively to the center of the profile and in the 2-dimen
 ```
 Parameters profile: 
     name: name profile
-    x,y: reference point: everything is refered to this point 
+    x,y: reference point: everything is refered to this point
     l,w: length, width profile
     strike: strike profile (default: defined by inversion class)
     proj=[east, notth, up]: average LOS projection into east, north, up used for plots [default: None]
     type:  std - plot mean and standard deviation InSAR;
     distscale - scatter plot with color scale function of the profile-parallel distance;
-    stdscat - plot scatter + standar deviation. 
+    stdscat - plot scatter + standar deviation.
 ```
 
 Data:
@@ -40,11 +40,13 @@ Parameters notwork:
     base: uncertainties for reference frame
     if InSAR data, give uncertainties for cst and linear term of the ramp, default: [10, 0.1]
     if GPS data, give uncertainties for each components, default: [50,50,50]
-    color: plot option, default: 'black' 
-    samp: subsample option, default:1 
+    color: plot option, default: 'black'
+    samp: subsample option, default:1
     perc: cleaning outliers option (default: 100)
     lmin,lmax: min max options for plots
     width: size scatter point for plots (default: 3.)
+    utm_proj: EPSG UTM projection. If not None, project data from WGS84 to EPSG.
+    ref: [lon, lat] reference point (default: None).
 ```
 
 Inversion:
@@ -52,16 +54,16 @@ Inversion:
 
 ```
 Defined your inversion parameters: 
-    structure: define all structures (see bellow)
+    structure: define all structures
     strike: azimuth inversion profile (ie perpandicular to the main fault)
-    profile: profile class 
+    profile: profile class
     fullcov      :   if True, estimates a full covariance matrix for InSAR data
                      if False, returns a diagonal matrix with sigmad on the diagonal
-    maskcov: give a mask for covariance estimation on sub-sampled data in perpendicular 
+    maskcov: give a mask for covariance estimation on sub-sampled data in perpendicular
     distance to the center of profile km eg. [0,20,40,50] (default: None)
     rampcov: remove ramp before covariance estimation. eg. lin, quad, cub (default: lin)
     name: give a name (Optional)
-    depthmax: maximum depth for plots (Optional)
+    depthmax: maximum depth for plot (Optinal)
 ```
 
 Tectonic structures are defined as follow: 
