@@ -39,7 +39,7 @@ class inversion:
     distance to the center of profile km eg. [0,20,40,50] (default: None)
     rampcov: remove ramp before covariance estimation. eg. lin, quad, cub (default: lin)
     name: give a name (Optional)
-    depthmax: maximum depth for plot (Optinala)
+    depthmax: maximum depth for plot (Optinal)
     """
     
     def __init__(self,structures,strike,profile, 
