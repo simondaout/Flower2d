@@ -6,10 +6,8 @@ import scipy.optimize as opt
 import scipy.linalg as lst
 
 from osgeo import gdal
-#import pandas
 
 from matplotlib import pyplot as plt
-#from matplotlib import mpl
 import matplotlib
 import matplotlib.cm as cm
 from mpl_toolkits.axes_grid1 import make_axes_locatable
@@ -653,20 +651,20 @@ for k in range(len(profiles)):
 
         del _los; del _xperp; del _yperp
 
-        #try:
-        insar.xperp = np.concatenate(insar.xperp)
-        insar.yperp = np.concatenate(insar.yperp)
-        insar.uulos = np.concatenate(insar.uulos)
-        insar.distance = np.asarray(insar.distance)
-        insar.std_los = np.asarray(insar.std_los)
-        insar.moy_los = np.asarray(insar.moy_los)
-        #except:
-        #insar.xperp = np.asarray(insar.xperp)
-        #insar.yperp = np.asarray(insar.yperp)
-        #insar.uulos = np.asarray(insar.uulos)
-        #insar.distance = np.asarray(insar.distance)
-        #insar.std_los = np.asarray(insar.std_los)
-        #insar.moy_los = np.asarray(insar.moy_los)
+        try:
+            insar.xperp = np.concatenate(np.array(insar.xperp))
+            insar.yperp = np.concatenate(np.array(insar.yperp))
+            insar.uulos = np.concatenate(np.array(insar.uulos))
+            insar.distance = np.asarray(np.array(insar.distance))
+            insar.std_los = np.asarray(np.array(insar.std_los))
+            insar.moy_los = np.asarray(np.array(insar.moy_los))
+        except:
+            insar.xperp = np.array(insar.xperp)
+            insar.yperp = np.array(insar.yperp)
+            insar.uulos = np.array(insar.uulos)
+            insar.distance = np.array(insar.distance)
+            insar.std_los = np.array(insar.std_los)
+            insar.moy_los = np.array(insar.moy_los)
 
       else:
           logger.critical('Number of InSAR points inferior to 50 for track {}. Exit plot profile!'.format(insar.reduction)) 
