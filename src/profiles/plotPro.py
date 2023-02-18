@@ -304,7 +304,7 @@ for ii in range(len(seismifiles)):
   ax.scatter(x,y,c=color,marker='o',s=width,linewidths=1, edgecolor='black',alpha=0.5,label=seismifiles[ii].name,zorder=2) 
 
 # plot legend
-ax.legend(loc = 'upper right',fontsize='x-small')
+#ax.legend(loc = 'upper right',fontsize='x-small')
 
 if vertical_map:
   ax12 = fig.add_subplot(1,2,2)

@@ -48,7 +48,7 @@ for file in files:
   
   ###Optimisation
   try:
-    pars, cova = opt.curve_fit(func, dist, v, sigma = std, p0=[prior[0],prior[1],prior[2]],  ftol=1e-5, bounds=bounds)   
+    pars, cova = opt.curve_fit(func, dist, v, sigma = std, p0=[prior[0],prior[1],prior[2]],  ftol=1e-2, bounds=bounds)   
   except:
     print('No solution found for the estimation')
     sys.exit()
