@@ -50,7 +50,6 @@ def plotLOS(flt,nfigure):
     fig = plt.figure(nfigure,figsize = (10,6))
     fig.subplots_adjust(hspace = 0.1)
     fig.subplots_adjust(hspace = 0.7)
-    #ax1 = fig.add_subplot(3+len(insardata),1,1)
     ax1 = fig.add_subplot(2,1,1)
     
     ax1.set_xlim([-l/2,l/2])
@@ -177,7 +176,7 @@ def plotLOS(flt,nfigure):
         alpha=.8, fc='red')
 
         ax2.add_artist(x1_arrow)
-        ax2.text(fmodel[0].fperp-(profile.l/4),-fmodel[0].w-5,'Short: %4.1f mm'%(fmodel[0].vh),style='italic',size='xx-small')
+        ax2.text(fmodel[0].fperp-(profile.l/4),-fmodel[0].w-5,'Short/Ext: %4.1f mm'%(fmodel[0].vh),style='italic',size='xx-small')
         ax2.add_artist(x2_arrow)
 
       # extensional arrow
@@ -201,13 +200,12 @@ def plotLOS(flt,nfigure):
         alpha=.8, fc='red')
 
         ax2.add_artist(x1_arrow)
-        ax2.text(fmodel[0].fperp-(profile.l/4),-fmodel[0].w-5,'Short: %4.1f mm'%(fmodel[0].vh),style='italic',size='xx-small')
+        ax2.text(fmodel[0].fperp-(profile.l/4),-fmodel[0].w-5,'Short/Ext: %4.1f mm'%(fmodel[0].vh),style='italic',size='xx-small')
         ax2.add_artist(x2_arrow)
 
 
     plt.setp( ax2.get_xticklabels(), visible = False)
      
-    print(flt.depthmax)
     if flt.depthmax == None:
         wmax = fmodel[0].w+20
     else:
@@ -241,7 +239,8 @@ def plotLOS(flt,nfigure):
     markers = ['+','d','x','v']
 
     plt.tight_layout()
-    fig.savefig(outdir+'/profile/'+name+'_topo.eps', format = 'EPS')
+    logger.info('Save profile topographic figure in {}'.format(outdir+'/profile/'+name+'_topo.pdf'))
+    fig.savefig(outdir+'/profile/'+name+'_topo.pdf', format = 'PDF')
 
     fig = plt.figure(nfigure+1,figsize = (10,6))
     fig.subplots_adjust(hspace = 0.1) 
@@ -264,7 +263,7 @@ def plotLOS(flt,nfigure):
         ax3 = fig.add_subplot(1+len(insardata),1,1+i)
         ax3.set_xlim([-l/2,l/2])
         plt.setp( ax3.get_xticklabels(), visible = False)
-        ax3.set_ylabel('LOS')
+        ax3.set_ylabel('Velocities/Displacements')
         ax3.yaxis.set_major_locator(tic.MaxNLocator(3)) 
         
         insar = insardata[i]
@@ -276,17 +275,12 @@ def plotLOS(flt,nfigure):
         ax3.scatter(insar.yp,insar.ulos-binsarlos,s = insar.width ,marker = 'o',label = insardata[i].reduction,color = insardata[i].color, alpha=.3)
         # problem if several insar with differents weight...
         
-        #ymean = np.mean(ilos)
-        #tempmax = ymean + 2.5*np.std(ilos)
-        #tempmin = ymean - 2.5*np.std(ilos)
-        #ymax = np.max([ymax,tempmax])
-        #ymin = np.min([ymin,tempmin])
 
         if (insar.lmin != None) and (insar.lmax != None):
             ax3.set_ylim([insar.lmin,insar.lmax])
 
         uslos = usx*insar.projm[0]+usy*insar.projm[1]+usz*insar.projm[2]
-        ax3.plot(ysp,uslos,'-',color=colors[i], label = 'modeled {} LOS displacements'.format(insar.reduction),lw = 2.)
+        ax3.plot(ysp,uslos,'-',color='red', label = 'modeled {} displacements'.format(insar.reduction),lw = 2.)
         # sigmalos =  insar.sigmad[0]*np.ones(len(uslos))
         
         # plot legend
@@ -298,9 +292,7 @@ def plotLOS(flt,nfigure):
         markers = ['^','v','+','x']
 
         bpar = gps.a
-        #print bpar
         bperp = gps.b
-        #print bperp
         bv = gps.c
         
         # remove wieght in gps uncertainties
@@ -327,7 +319,6 @@ def plotLOS(flt,nfigure):
             ax4.plot(gps.yp,gps.uv-bv,markers[i],color = 'red',mew = 1.,label = '%s vertical displacements'%gpsdata[i].reduction)
             ax4.errorbar(gps.yp,gps.uv-bv,yerr = gps.sigmav,ecolor = 'red',fmt = 'none')
             
-            #ymax,ymin = np.max(np.hstack([gps.upar-bpar+gps.sigmapar,gps.uperp-bperp+gps.sigmaperp,gps.uv-bv+gps.sigmav]))+5,np.min(np.hstack([gps.upar-bpar-gps.sigmapar,gps.uperp-bperp-gps.sigmaperp,gps.uv-bv-gps.sigmav]))-5
             ymax,ymin = np.max(np.hstack([gps.upar-bpar,gps.uperp-bperp,gps.uv-bv]))+2,np.min(np.hstack([gps.upar-bpar,gps.uperp-bperp,gps.uv-bv]))-2
             ax4.set_ylim([ymin,ymax])
 
@@ -347,7 +338,8 @@ def plotLOS(flt,nfigure):
         ax4.plot([fmodel[j].fperp,fmodel[j].fperp],[ymin,ymax],'--',lw=1,color = 'black')
    
     plt.tight_layout()
-    fig.savefig(outdir+'/profile/'+name+'_LOS.eps', format = 'EPS')
+    logger.info('Save profile LOS figure in {}'.format(outdir+'/profile/'+name+'_LOS.pdf'))
+    fig.savefig(outdir+'/profile/'+name+'_LOS.pdf', format = 'PDF')
     
 def plotMap(flt,nfigure):
     
@@ -358,6 +350,7 @@ def plotMap(flt,nfigure):
     gpsdata = flt.gpsdata
     outdir = flt.outdir
     gmtfiles = flt.gmtfiles
+    shapefiles = flt.shapefiles
 
     logger = flt.logger
 
@@ -440,9 +433,9 @@ def plotMap(flt,nfigure):
         facemodel = m.to_rgba(model)
         faceres = m.to_rgba(los-model) 
 
-        ax1.scatter(insarx,insary,s = insar.width*3, marker = 'o',color = facelos,label = 'LOS Velocity %s'%(insar.reduction))
-        ax2.scatter(insarx,insary,s = insar.width*3, marker = 'o',color = facemodel,label = 'LOS Velocity %s'%(insar.reduction))
-        ax3.scatter(insarx,insary,s = insar.width*3, marker = 'o',color = faceres,label = 'LOS Velocity %s'%(insar.reduction))
+        ax1.scatter(insarx,insary,s = insar.width*3, marker = 'o',color = facelos,label = insar.reduction)
+        ax2.scatter(insarx,insary,s = insar.width*3, marker = 'o',color = facemodel)
+        ax3.scatter(insarx,insary,s = insar.width*3, marker = 'o',color = faceres)
 
         for j in xrange(len(gpsdata)):
             gps = gpsdata[j]
@@ -532,6 +525,7 @@ def plotMap(flt,nfigure):
         titles = ['Data', 'Model', 'Residual']
         for ax, title in zip(axes,titles):
             ax.axis('equal')
+            ax.legend(loc='best',fontsize='x-small')
             for ii in xrange(len(gmtfiles)):
                         name = gmtfiles[ii].name
                         wdir = gmtfiles[ii].wdir
@@ -542,10 +536,27 @@ def plotMap(flt,nfigure):
                         for i in xrange(len(fx)):
                             ax.plot(fx[i],fy[i],color = color,lw = width)
 
+            for ii in xrange(len(shapefiles)):
+                try:
+                    import geopandas as gpd
+                    import shapely.speedups
+                    name = shapefiles[ii].name
+                    fname = shapefiles[ii].filename
+                    wdir = shapefiles[ii].wdir
+                    color = shapefiles[ii].color
+                    edgecolor = shapefiles[ii].edgecolor
+                    linewidth = shapefiles[ii].linewidth
+                    crs = shapefiles[ii].crs
+                    shape = gpd.read_file(wdir + fname)
+                    if crs != None:
+                        shape = shape.to_crs("EPSG:{}".format(crs))
+                        shape.plot(ax=ax,facecolor='none', color=color,edgecolor=edgecolor,lw=linewidth)
+                except:
+                        logger.warning('Cannot import geopandas and shapely. Pass shapefiles plot')    
+            
             ax.plot(xp[:],yp[:],color = 'black',lw = 1.)
             for f in xrange(Mseg):
                 ax.plot(xf[f,:],yf[f,:],'--',color = 'black',lw = 1.)
-            ax.legend(loc='best',fontsize='x-small')
             
             # plot LOS
             h = xlim[1] - xlim[0]
@@ -577,6 +588,10 @@ def plotMap(flt,nfigure):
                 c = divider.append_axes("right", size="5%", pad=0.05)
                 plt.colorbar(m, cax=c)
                 # fig.colorbar(m,shrink = 0.5, aspect = 5)
+
+        plt.suptitle('Geodetic map')
+        logger.info('Save map figure in {}'.format(outdir+'/map/'+profile.name+'_map_%s.pdf'%(nn)))
+        fig.savefig(outdir+'/map/'+profile.name+'_map_%s.pdf'%(nn),format = 'PDF')
 
     if (len(insardata) == 0) and (len(gpsdata)>0):
       for j in xrange(len(gpsdata)):
@@ -702,6 +717,7 @@ def plotMap(flt,nfigure):
         titles = ['Data', 'Model', 'Residual']
         for ax, title in zip(axes,titles):
             ax.axis('equal')
+            ax.legend(loc='best',fontsize='x-small')
             for ii in xrange(len(gmtfiles)):
                         name = gmtfiles[ii].name
                         wdir = gmtfiles[ii].wdir
@@ -712,18 +728,32 @@ def plotMap(flt,nfigure):
                         for i in xrange(len(fx)):
                             ax.plot(fx[i],fy[i],color = color,lw = width)
 
+            for ii in xrange(len(shapefiles)):
+                try:
+                    import geopandas as gpd
+                    import shapely.speedups
+                    name = shapefiles[ii].name
+                    fname = shapefiles[ii].filename
+                    wdir = shapefiles[ii].wdir
+                    color = shapefiles[ii].color
+                    edgecolor = shapefiles[ii].edgecolor
+                    linewidth = shapefiles[ii].linewidth
+                    crs = shapefiles[ii].crs
+                    shape = gpd.read_file(wdir + fname)
+                    if crs != None:
+                        shape = shape.to_crs("EPSG:{}".format(crs))
+                        shape.plot(ax=ax,facecolor='none', color=color,edgecolor=edgecolor,linewidth=linewidth)
+                except:
+                        logger.warning('Cannot import geopandas and shapely. Pass shapefiles plot')    
+            
+
             ax.plot(xp[:],yp[:],color = 'black',lw = 1.)
             for f in xrange(Mseg):
                 ax.plot(xf[f,:],yf[f,:],'--',color = 'black',lw = 1.)
-            ax.legend(loc='best',fontsize='x-small')
             
             ax.set_xlabel('Distance (km)')
             ax.set_title(title)
-            #ax.set_xlim(xlim)
-            #ax.set_ylim(ylim)
 
-        plt.suptitle('Geodetic map')
-        fig.savefig(outdir+'/map/'+profile.name+'_map_%s.eps'%(nn),format = 'EPS')
 
 def plotHist(flt,model,nfigure):
    
@@ -736,6 +766,7 @@ def plotHist(flt,model,nfigure):
     mmin, mmax = flt.mmin, flt.mmax
     profile = flt.profile
     outdir = flt.outdir
+    logger = flt.logger
 
     # for histo
     traces = []
@@ -835,7 +866,8 @@ def plotHist(flt,model,nfigure):
     
     # save
     plt.tight_layout()
-    fig.savefig(outdir+'/stat/'+profile.name+'_histo.eps', format = 'EPS')
+    logger.info('Save statistic in {}'.format(outdir+'/stat/'+profile.name+'_histo.pdf'))
+    fig.savefig(outdir+'/stat/'+profile.name+'_histo.pdf', format = 'PDF')
     
 
 def plotDist(flt,model,nfigure):

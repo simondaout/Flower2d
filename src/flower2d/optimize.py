@@ -146,6 +146,12 @@ except:
     logger.warning('No gmtfiles list defined')
 
 try:
+    inv.shapefiles = shapefiles
+except:
+    inv.shapefiles = []
+    logger.warning('No shapefiles list defined')
+
+try:
     inv.plotdata = plotdata
 except:
     inv.plotdata = []

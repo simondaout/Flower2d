@@ -764,6 +764,26 @@ class seismicity:
             print(seismicity.__doc__)
             sys.exit()
 
+
+class shapefile:
+    """
+    shapefiel class
+    Parameters:
+    name,filename: name input file, given name
+    wdir: path input file
+    edgecolor, color, linewidth: plot option
+    utm_proj: EPSG UTM projection. If not None, project data from to EPSG.
+    """
+
+    def __init__(self,name,wdir,filename,color='black',edgecolor='black',linewidth=2.,utm_proj=None):
+        self.name=name
+        self.filename=filename
+        self.wdir=wdir
+        self.color=color
+        self.edgecolor=edgecolor
+        self.linewidth=linewidth
+        self.crs=utm_proj
+
 class moho:
     """ 
     moho class: Load moho file for plot 

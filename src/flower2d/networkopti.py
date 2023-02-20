@@ -199,21 +199,16 @@ class network(object):
                   xt, yt = self.UTM(x, y)
                   x, y = (xt - self.ref_x)/1e3, (yt - self.ref_y)/1e3
                 
-                if self.profile.proj is not None:
-                    self.proj= self.profile.proj
-                    self.projm= self.profile.proj
-                    logger.info('Read average LOS projection to east, north, up defined in Profile: {0:.5f} {1:.5f} {2:.5f}'.format(self.projm[0],self.projm[1],self.projm[2]))
-                else:
-                    self.phim = np.deg2rad(-90-self.phim)
-                    self.thetam = np.deg2rad(90.-self.lookm)
-                    logger.info('Average angle vertical between horizontal and LOS:{0:.1f}, Average horizontal angle between East and LOS:{1:.1f}'.format(np.rad2deg(self.thetam),np.rad2deg(self.phim)))
-                    self.projm=[np.cos(self.thetam)*np.cos(self.phim),
-                    np.cos(self.thetam)*np.sin(self.phim),
-                    np.sin(self.thetam)]
-                    self.proj= self.projm
-                    logger.info('Average LOS projection to east, north, up: {0:.5f} {1:.5f} {2:.5f}'.format(self.projm[0],self.projm[1],self.projm[2]))
-                    logger.debug('Set profile proj attribute')
-                    self.profile.proj = self.projm
+                self.phim = np.deg2rad(-90-self.phim)
+                self.thetam = np.deg2rad(90.-self.lookm)
+                logger.info('Average vertical angle between horizontal and LOS:{0:.1f}, Average horizontal angle between East and LOS:{1:.1f}'.format(np.rad2deg(self.thetam),np.rad2deg(self.phim)))
+                self.projm=[np.cos(self.thetam)*np.cos(self.phim),
+                np.cos(self.thetam)*np.sin(self.phim),
+                np.sin(self.thetam)]
+                self.proj= self.projm
+                logger.info('Average LOS projection to east, north, up: {0:.5f} {1:.5f} {2:.5f}'.format(self.projm[0],self.projm[1],self.projm[2]))
+                logger.debug('Set profile proj attribute')
+                self.profile.proj = self.projm
 
             if self.errorfile is not None:
                logger.info('Load error file: {}'.format(self.errorfile))
