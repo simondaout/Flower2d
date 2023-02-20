@@ -11,21 +11,20 @@ class profile:
     x,y: reference point: everything is refered to this point 
     l,w: length, width profile
     strike: strike profile (default: defined by inversion class)
-    proj=[east, notth, up]: average LOS projection into east, north, up used for plots [default: None]
     type:  std - plot mean and standard deviation InSAR;
     distscale - scatter plot with color scale function of the profile-parallel distance;
     stdscat - plot scatter + standar deviation. 
     """
 
-    def __init__(self,x,y,l,w,proj=None,type=None,name=''):
+    def __init__(self,x,y,l,w,type=None,name=''):
         # profile parameters
         self.name = name
         self.x = x
         self.y = y
         self.l = l
         self.w = w
-        self.proj = proj
         self.typ=type
+        self.proj = None
 
 class inversion:
     """
