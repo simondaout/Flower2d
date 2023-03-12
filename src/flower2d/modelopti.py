@@ -795,6 +795,7 @@ class moho:
     color, width: plot options
     utm_proj: EPSG UTM projection. If not None, project data from WGS84 to EPSG.
     ref: [lon, lat] reference point (default: None).
+    format: x, y, z
     """
 
     def __init__(self,name,wdir,filename,width,color='red',scale=1,utm_proj=None, ref=None):
