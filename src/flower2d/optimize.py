@@ -152,6 +152,12 @@ except:
     logger.warning('No shapefiles list defined')
 
 try:
+    inv.seismifiles = seismifiles
+except:
+    inv.seismifiles = []
+    logger.warning('No seismicity files defined')
+
+try:
     inv.plotdata = plotdata
 except:
     inv.plotdata = []
@@ -162,6 +168,14 @@ try:
 except:
     inv.topodata = []
     logger.warning('No topodata list defined')
+
+for i in range(len(inv.seismifiles)):
+    plot = inv.seismifiles[i]
+    plot.load(inv)
+            
+    logger.debug('Set perp. and par. componant refered to the first fault for plotdata') 
+    plot.yp = (plot.x-inv.x)*inv.n[0]+(plot.y-inv.y)*inv.n[1]
+    plot.xp = (plot.x-inv.x)*inv.s[0]+(plot.y-inv.y)*inv.s[1]
 
 for i in range(len(inv.plotdata)):
     plot = inv.plotdata[i]

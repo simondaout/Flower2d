@@ -32,6 +32,7 @@ def plotLOS(flt,nfigure):
     volum = flt.volum
     topodata = flt.topodata
     plotdata = flt.plotdata
+    seismifiles = flt.seismifiles
     outdir = flt.outdir
 
     l = profile.l
@@ -114,11 +115,11 @@ def plotLOS(flt,nfigure):
     
     if (fmodel[0].dip == 0 or fmodel[0].dip == 180):
         for i in xrange(0,len(fmodel[0].tracew),nb):
-            ax2.plot([ fmodel[0].traceF[i], fmodel[0].traceF[i]],[ -fmodel[0].tracew[i], -100], '-' ,lw=.01, color='blue')
+            ax2.plot([ fmodel[0].traceF[i], fmodel[0].traceF[i]],[ -fmodel[0].tracew[i], -100], '-' ,lw=.01, color='blue',zorder=20)
     else:
         for i in xrange(0,len(fmodel[0].tracew),nb):
             ax2.plot([ fmodel[0].traceF[i], fmodel[0].traceF[i] + fmodel[0].traceL[i]*np.cos(np.deg2rad(fmodel[0].tracedip[i]))], 
-               [ -fmodel[0].tracew[i], -fmodel[0].tracew[i] - fmodel[0].traceL[i]*np.sin(np.deg2rad(fmodel[0].tracedip[i])) ], '-' ,lw=.01, color='blue')
+               [ -fmodel[0].tracew[i], -fmodel[0].tracew[i] - fmodel[0].traceL[i]*np.sin(np.deg2rad(fmodel[0].tracedip[i])) ], '-' ,lw=.01, color='blue',zorder=20)
 
     # plot ramp and kink 
     for k in xrange(1,flt.structures[0].Mseg):
@@ -127,7 +128,7 @@ def plotLOS(flt,nfigure):
         ax2.text(fmodel[k].fperp+3,-(fmodel[k].w+3),'SS: %4.1f mm'%((fmodel[k].ss)),style='italic',size='xx-small') 
         ax2.text(fmodel[k].fperp+3,-(fmodel[k].w+6),'DS: %4.1f mm'%((fmodel[k].ds)),style='italic',size='xx-small') 
         for i in xrange(0,len(fmodel[0].tracew),nb):
-            ax2.plot([ fmodel[0].traceF[i], fmodel[k].traceF[i] ],[ -fmodel[0].tracew[i], -fmodel[k].tracew[i] ], '-' ,lw= .02, color='royalblue')
+            ax2.plot([ fmodel[0].traceF[i], fmodel[k].traceF[i] ],[ -fmodel[0].tracew[i], -fmodel[k].tracew[i] ], '-' ,lw= .02, color='royalblue',zorder=20)
    
     Mtemp = flt.structures[0].Mseg
     for j in xrange(1,Mstruc):
@@ -141,17 +142,24 @@ def plotLOS(flt,nfigure):
             ax2.text(fmodel[Mtemp+k].fperp+3,-(fmodel[Mtemp+k].w+6),'DS: %4.1f mm'%(fmodel[Mtemp+k].ds),style='italic',size='xx-small') 
             for i in xrange(0,len(fmodel[0].tracew),nb):
                 if fmodel[Mtemp+k].type ==  "creep":
-                  ax2.plot([ fmodel[Mtemp+k].traceF[i] - fmodel[Mtemp+k].traceD[i] , fmodel[Mtemp+k].traceF[i] ],[ -(fmodel[0].tracew[i] - fmodel[Mtemp+k].traceH[i]), -fmodel[Mtemp+k].tracew[i] ], '-' ,lw= .02, color='cyan')  
+                  ax2.plot([ fmodel[Mtemp+k].traceF[i] - fmodel[Mtemp+k].traceD[i] , fmodel[Mtemp+k].traceF[i] ],[ -(fmodel[0].tracew[i] - fmodel[Mtemp+k].traceH[i]), -fmodel[Mtemp+k].tracew[i] ], '-' ,lw= .02, color='cyan',zorder=20)  
                 elif fmodel[Mtemp+k].type ==  "vertical":
-                    ax2.plot([ fmodel[0].traceF[i] , fmodel[Mtemp+k].traceF[i] ],[ -fmodel[0].tracew[i], -fmodel[Mtemp+k].tracew[i] ], '-' ,lw= .02, color='cyan')
+                    ax2.plot([ fmodel[0].traceF[i] , fmodel[Mtemp+k].traceF[i] ],[ -fmodel[0].tracew[i], -fmodel[Mtemp+k].tracew[i] ], '-' ,lw= .02, color='cyan',zorder=20)
                 else:
-                  ax2.plot([ fmodel[Mtemp+k].traceF[i] - fmodel[Mtemp+k].traceD[i] , fmodel[Mtemp+k].traceF[i] ],[ -(fmodel[Mtemp+k].tracew[i] + fmodel[Mtemp+k].traceH[i]), -fmodel[Mtemp+k].tracew[i] ], '-' ,lw= .02, color='royalblue')
+                  ax2.plot([ fmodel[Mtemp+k].traceF[i] - fmodel[Mtemp+k].traceD[i] , fmodel[Mtemp+k].traceF[i] ],[ -(fmodel[Mtemp+k].tracew[i] + fmodel[Mtemp+k].traceH[i]), -fmodel[Mtemp+k].tracew[i] ], '-' ,lw= .02, color='royalblue',zorder=20)
         Mtemp += flt.structures[j].Mseg
 
     for i in xrange(len(plotdata)):
         plot = plotdata[i]
-        ax2.scatter(plot.yp, -plot.z, s = plot.width, marker = 'o', linewidths=1, edgecolor='black', color = plot.color, label = plot.name, alpha=0.6)
-    
+        ax2.scatter(plot.yp, -plot.z, s = plot.width, marker = 'o', linewidths=1, edgecolor='black', color = plot.color, label = plot.name, alpha=0.6,zorder=10)
+   
+    for ii in range(len(seismifiles)):
+        color = seismifiles[ii].color
+        smin = np.nanmin(seismifiles[ii].mag)
+        width = (seismifiles[ii].mag - smin)*seismifiles[ii].width*5
+        size = (seismifiles[ii].mag - smin)* float(seismifiles[ii].width)*5
+        ax2.scatter(seismifiles[ii].yp,-seismifiles[ii].z,s=size,c=color,marker='o',linewidths=1, edgecolor='black',alpha=0.5,label=seismifiles[ii].name,zorder=10)
+ 
     l_arrow = float(profile.l)/20.
     w_arrow= l_arrow/5.
     if abs(fmodel[0].ds) > 0:
@@ -207,7 +215,7 @@ def plotLOS(flt,nfigure):
     plt.setp( ax2.get_xticklabels(), visible = False)
      
     if flt.depthmax == None:
-        wmax = fmodel[0].w+20
+        wmax = fmodel[0].w + 15
     else:
         wmax = flt.depthmax
     ax2.set_ylim([-wmax,5])

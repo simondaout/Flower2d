@@ -725,7 +725,7 @@ class seismicity:
           profile = flt.profile
           fname = self.wdir+self.filename
           if self.fmt == 'txt':  
-            x,y,z,mw = np.loadtxt(fname,comments = '#',unpack = True,dtype = 'f,f,f,f')
+            date,mag,y,x,z = np.loadtxt(fname,comments = '#',unpack = True,dtype = 'S,f,f,f,f')
             if self.utm_proj is not None:
                   x, y = self.UTM(x, y)
                   x, y = (x - self.ref_x)/1e3, (y - self.ref_y)/1e3
@@ -733,32 +733,28 @@ class seismicity:
             xp = (x-profile.x)*profile.s[0]+(y-profile.y)*profile.s[1]
             yp = (x-profile.x)*profile.n[0]+(y-profile.y)*profile.n[1]
             index = np.nonzero((xp>profile.xpmax)|(xp<profile.xpmin)|(yp>profile.ypmax)|(yp<profile.ypmin))
-            self.x,self.y,self.z,self.mw = np.delete(x,index),np.delete(y,index),np.delete(z,index)*self.scale,np.delete(mw,index)
+            self.x,self.y,self.z,self.mag = np.delete(x,index),np.delete(y,index),np.delete(z,index)*self.scale,np.delete(mag,index)
           
           elif self.fmt == 'csv':
             import pandas
             df = pandas.read_csv(fname)
             lat,lon,depth,mag=df['latitude'][:].to_numpy(),df['longitude'][:].to_numpy(),df['depth'][:].to_numpy(),df['mag'][:].to_numpy()
             if self.utm_proj is None:
-              self.x,self.y,self.z,self.mw = lon,lat,depth,mag
+              self.x,self.y,self.z,self.mag = lon,lat,depth,mag
             else:
               x, y = self.UTM(lon, lat)
-              self.x,self.y,self.z,self.mw=(x-self.ref_x)/1e3,(y-self.ref_y)/1e3,depth,mag
+              self.x,self.y,self.z,self.mag=(x-self.ref_x)/1e3,(y-self.ref_y)/1e3,depth,mag
        
             xp = (self.x-profile.x)*profile.s[0]+(self.y-profile.y)*profile.s[1]
             yp = (self.x-profile.x)*profile.n[0]+(self.y-profile.y)*profile.n[1]
             index = np.nonzero((xp>profile.xpmax)|(xp<profile.xpmin)|(yp>profile.ypmax)|(yp<profile.ypmin))
-            self.x,self.y,self.z,self.mw = np.delete(self.x,index),np.delete(self.y,index),np.delete(self.z,index)*self.scale,np.delete(self.mw,index)
+            self.x,self.y,self.z,self.mag = np.delete(self.x,index),np.delete(self.y,index),np.delete(self.z,index)*self.scale,np.delete(self.mag,index)
  
           # scale depth in case in meter
           if np.nanmean(abs(self.z)) > 100:
               logger.warninig('Depth {} file seems to be in meter, scale in km'.format(self.filename))
               self.z = self.z/1000
           
-          # scale width according to mag
-          smin = np.nanmin(self.mw)
-          self.width =  (self.mw - smin) * np.float(self.width)*5
-
         except Exception as e: 
             logger.critical(e)
             print(seismicity.__doc__)
