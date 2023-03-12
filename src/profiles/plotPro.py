@@ -230,7 +230,7 @@ for ii in range(len(gmtfiles)):
   width = gmtfiles[ii].width
   fx,fy = gmtfiles[ii].load(xlim=xlim,ylim=ylim)
   for i in range(len(fx)):
-    ax.plot(fx[i],fy[i],color = color,lw = width,zorder=1)
+    ax.plot(fx[i],fy[i],color = color,lw = width,zorder=20)
 
 try:
   from matplotlib.colors import LinearSegmentedColormap
@@ -259,13 +259,13 @@ for i in range(Minsar):
   m.set_array(insar.ulos[::samp])
   masked_array = np.ma.array(insar.ulos[::samp], mask=np.isnan(insar.ulos[::samp]))
   facelos = m.to_rgba(masked_array)
-  ax.scatter(insar.x[::samp],insar.y[::samp], s=1, marker = 'o',color = facelos, rasterized=True, label = 'LOS Velocity {}'.format(insar.reduction),zorder=0)
+  ax.scatter(insar.x[::samp],insar.y[::samp], s=1, marker = 'o',color = facelos, rasterized=True, label = 'LOS Velocity {}'.format(insar.reduction),zorder=10)
 
 gpscolor = ['black','coral','red','darkorange']
 for i in range(Mgps):
   gps=gpsdata[i]
   logger.info('Plot GPS data {0}'.format(gps.network))
-  ax.quiver(gps.x,gps.y,gps.ux,gps.uy,scale = 125, width = 0.003, color = gpscolor[i%4],zorder=4)
+  ax.quiver(gps.x,gps.y,gps.ux,gps.uy,scale = 125, width = 0.003, color = gpscolor[i%4],zorder=15)
 
   if gps.plotName == True:
     for kk in range(len(gps.name)):
@@ -290,7 +290,7 @@ for ii in range(len(shapefiles)):
   shape = gpd.read_file(wdir + fname)
   if crs != None:
     shape = shape.to_crs("EPSG:{}".format(crs))
-  shape.plot(ax=ax,facecolor='none', color=color,edgecolor=edgecolor,linewidth=linewidth,label=name,zorder=1)
+  shape.plot(ax=ax,facecolor='none', color=color,edgecolor=edgecolor,linewidth=linewidth,label=name,zorder=25)
 
 for ii in range(len(seismifiles)):
   name = seismifiles[ii].name
@@ -299,7 +299,7 @@ for ii in range(len(seismifiles)):
   color = seismifiles[ii].color
   smin = np.nanmin(seismifiles[ii].mag)
   width = (seismifiles[ii].mag - smin)*seismifiles[ii].width*5
-  ax.scatter(x,y,c=color,marker='o',s=width,linewidths=1, edgecolor='black',alpha=0.5,label=seismifiles[ii].name,zorder=2) 
+  ax.scatter(x,y,c=color,marker='o',s=width,linewidths=1, edgecolor='black',alpha=0.5,label=seismifiles[ii].name,zorder=12) 
 
 # plot legend
 #ax.legend(loc = 'upper right',fontsize='x-small')
@@ -321,7 +321,7 @@ if vertical_map:
     color = gmtfiles[ii].color
     width = gmtfiles[ii].width
     fx,fy = gmtfiles[ii].load(xlim=xlim,ylim=ylim)
-    ax12.plot(fx[i],fy[i],color = color,lw = width,zorder=1)
+    ax12.plot(fx[i],fy[i],color = color,lw = width,zorder=20)
     
   for i in range(Mgps):
     gps=gpsdata[i]
@@ -329,7 +329,7 @@ if vertical_map:
     mv = cm.ScalarMappable(norm = norm, cmap = cmap)
     mv.set_array(gps.uv)
     facev = mv.to_rgba(gps.uv)
-    ax12.scatter(gps.x,gps.y,c=facev,marker='o',s=10,linewidths=1, edgecolor='black',alpha=0.8,label='Vertical velocities network {}'.format(gps.reduction),zorder=2) 
+    ax12.scatter(gps.x,gps.y,c=facev,marker='o',s=10,linewidths=1, edgecolor='black',alpha=0.8,label='Vertical velocities network {}'.format(gps.reduction),zorder=10) 
     divider = make_axes_locatable(ax12)
     c = divider.append_axes("right", size="5%", pad=0.05)
     plt.colorbar(mv, cax=c)
@@ -345,7 +345,7 @@ if vertical_map:
     shape = gpd.read_file(wdir + fname)
     if crs != None:
           shape = shape.to_crs("EPSG:{}".format(crs))
-    shape.plot(ax=ax12,facecolor='none', color=color,edgecolor=edgecolor,linewidth=linewidth,label=name,zorder=1)
+    shape.plot(ax=ax12,facecolor='none', color=color,edgecolor=edgecolor,linewidth=linewidth,label=name,zorder=20)
 
   for ii in range(len(seismifiles)):
     name = seismifiles[ii].name
@@ -354,7 +354,7 @@ if vertical_map:
     color = seismifiles[ii].color
     smin = np.nanmin(seismifiles[ii].mag)
     width = (seismifiles[ii].mag - smin)*seismifiles[ii].width*5
-    ax12.scatter(x,y,c=color,marker='o',s=width,linewidths=1, edgecolor='black',alpha=0.5,label=seismifiles[ii].name,zorder=2)
+    ax12.scatter(x,y,c=color,marker='o',s=width,linewidths=1, edgecolor='black',alpha=0.5,label=seismifiles[ii].name,zorder=10)
 
     ax12.legend(loc = 'upper right',fontsize='x-small')
 
@@ -395,6 +395,7 @@ if len(seismifiles)>0:
 
 logger.info('Plot Profiles ....')
 
+flat = None # initiate if no profiles
 # Plot profile
 for k in range(len(profiles)): 
 
@@ -512,7 +513,7 @@ for k in range(len(profiles)):
       smin = 0
     size = (size - smin)* np.float(seismifiles[ii].width)*5
     # plot
-    ax4.scatter(seismi.yp,-depth,s=size,c=color,marker='o',linewidths=1, edgecolor='black',alpha=0.5,label=seismifiles[ii].name,zorder=2) 
+    ax4.scatter(seismi.yp,-depth,s=size,c=color,marker='o',linewidths=1, edgecolor='black',alpha=0.5,label=seismifiles[ii].name,zorder=10) 
 
   # plot profiles
   xp,yp = np.zeros((7)),np.zeros((7))
@@ -522,7 +523,7 @@ for k in range(len(profiles)):
   profiles[k].s[1]-l/2*profiles[k].n[1],y0+w/2*profiles[k].s[1]+l/2*profiles[k].n[1],y0-w/2*profiles[k].s[1]+l/2*profiles[k].n[1],y0-w/2*profiles[k].s[1]-l/2*profiles[k].n[1],y0-l/2*profiles[k].n[1],y0+l/2*profiles[k].n[1]
 
   # plot in map view  
-  ax.plot(xp[:],yp[:],color = 'black',lw = 1., zorder=5)
+  ax.plot(xp[:],yp[:],color = 'black',lw = 1., zorder=30)
   if vertical_map:
     ax12.plot(xp[:],yp[:],color = 'black',lw = 1.)
 
@@ -634,7 +635,8 @@ for k in range(len(profiles)):
             _yperp = np.copy(insar.yypp[uu][kk])
 
             
-            if len(kk)>150:
+            if len(kk)>10:
+            #if len(kk)>150:
                 insar.distance.append(bins[j] + (bins[j+1] - bins[j])/2.)
 
                 indice = np.flatnonzero(np.logical_and(_los>np.percentile(\
@@ -651,14 +653,16 @@ for k in range(len(profiles)):
 
         del _los; del _xperp; del _yperp
 
+        #print(insar.xperp)
         try:
-            insar.xperp = np.concatenate(np.array(insar.xperp))
-            insar.yperp = np.concatenate(np.array(insar.yperp))
-            insar.uulos = np.concatenate(np.array(insar.uulos))
-            insar.distance = np.asarray(np.array(insar.distance))
-            insar.std_los = np.asarray(np.array(insar.std_los))
-            insar.moy_los = np.asarray(np.array(insar.moy_los))
+            insar.xperp = np.concatenate(np.array(insar.xperp, dtype=object))
+            insar.yperp = np.concatenate(np.array(insar.yperp, dtype=object))
+            insar.uulos = np.concatenate(np.array(insar.uulos, dtype=object))
+            insar.distance = np.asarray(np.array(insar.distance, dtype=object))
+            insar.std_los = np.asarray(np.array(insar.std_los, dtype=object))
+            insar.moy_los = np.asarray(np.array(insar.moy_los, dtype=object))
         except:
+            #pass
             insar.xperp = np.array(insar.xperp)
             insar.yperp = np.array(insar.yperp)
             insar.uulos = np.array(insar.uulos)
@@ -976,34 +980,34 @@ if (flat != None) and len(insardata)==2:
   if len(insardata) > 0:
     fig.colorbar(m,shrink = 0.5, aspect = 5)
 
-ax1.set_xlabel('Distance (km)')
-ax1.set_ylabel('Elevation (km)')
+if len(profiles) > 0:
+  ax1.set_xlabel('Distance (km)')
+  ax1.set_ylabel('Elevation (km)')
 
-if len(seismifiles)>0:
-  ax4.set_xlabel('Distance (km)')
-  ax4.set_ylabel('Elevation (m)')
+  if len(seismifiles)>0:
+    ax4.set_xlabel('Distance (km)')
+    ax4.set_ylabel('Elevation (m)')
+  
+  if Minsar>0:
+    ax2.set_xlabel('Distance (km)')
+    ax2.set_ylabel('LOS velocity (mm)')
+    logger.debug('Save {0} output file'.format(outdir+profiles[k].name+'pro-los.pdf'))
+    fig2.savefig(outdir+'/'+profiles[k].name+'-pro-los.pdf', format='PDF',dpi=150)
+  
+  logger.debug('Save {0} output file'.format(outdir+profiles[k].name+'protopo.eps'))
+  fig1.savefig(outdir+'/'+profiles[k].name+'-pro-topo.pdf', format='PDF', dpi=150)
+  
+  if Mgps>0:
+    logger.debug('Save {0} output file'.format(outdir+profiles[k].name+'progps.eps'))
+    fig3.savefig(outdir+'/'+profiles[k].name+'-pro-gps.pdf', format='PDF',dpi=75)
+  
+  if len(seismifiles)>0 : 
+    logger.debug('Save {0} output file'.format(outdir+profiles[k].name+'pro-depth.eps'))
+    fig4.savefig(outdir+'/'+profiles[k].name+'pro-depth.pdf', format='PDF', dpi=150)
+  
+  logger.debug('Save {0} output file'.format(outdir+profiles[k].name+'promap.eps'))
+  fig.savefig(outdir+'/'+profiles[k].name+'pro-map.pdf', format='PDF', dpi=150)
 
 plt.show()
-
-if Minsar>0:
-  ax2.set_xlabel('Distance (km)')
-  ax2.set_ylabel('LOS velocity (mm)')
-  logger.debug('Save {0} output file'.format(outdir+profiles[k].name+'pro-los.pdf'))
-  fig2.savefig(outdir+'/'+profiles[k].name+'-pro-los.pdf', format='PDF',dpi=150)
-
-logger.debug('Save {0} output file'.format(outdir+profiles[k].name+'protopo.eps'))
-fig1.savefig(outdir+'/'+profiles[k].name+'-pro-topo.pdf', format='PDF', dpi=150)
-
-if Mgps>0:
-  logger.debug('Save {0} output file'.format(outdir+profiles[k].name+'progps.eps'))
-  fig3.savefig(outdir+'/'+profiles[k].name+'-pro-gps.pdf', format='PDF',dpi=75)
-
-if len(seismifiles)>0 : 
-  logger.debug('Save {0} output file'.format(outdir+profiles[k].name+'pro-depth.eps'))
-  fig4.savefig(outdir+'/'+profiles[k].name+'pro-depth.pdf', format='PDF', dpi=150)
-
-logger.debug('Save {0} output file'.format(outdir+profiles[k].name+'promap.eps'))
-fig.savefig(outdir+'/'+profiles[k].name+'pro-map.pdf', format='PDF', dpi=150)
-
 
 
