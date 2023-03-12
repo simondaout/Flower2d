@@ -232,13 +232,14 @@ for ii in range(len(gmtfiles)):
   for i in range(len(fx)):
     ax.plot(fx[i],fy[i],color = color,lw = width,zorder=20)
 
-try:
-  from matplotlib.colors import LinearSegmentedColormap
-  cm_locs = os.environ["Flower2d"] + '/contrib/colormaps/'
-  cmap = LinearSegmentedColormap.from_list('roma', np.loadtxt(cm_locs+"roma.txt"))
-  cmap = cmap.reversed()
-except:
-  cmap = cm.rainbow
+if 'cmap' not in globals():
+    try:
+        from matplotlib.colors import LinearSegmentedColormap
+        cm_locs = os.environ["Flower2d"] + '/contrib/colormaps/'
+        cmap = LinearSegmentedColormap.from_list('roma', np.loadtxt(cm_locs+"roma.txt"))
+        cmap = cmap.reversed()
+    except:
+        cmap = cm.rainbow
 
 if Minsar>0:
   insar=insardata[0]
@@ -511,7 +512,7 @@ for k in range(len(profiles)):
       smin = np.nanmin(size)
     except:
       smin = 0
-    size = (size - smin)* np.float(seismifiles[ii].width)*5
+    size = (size - smin)* float(seismifiles[ii].width)*5
     # plot
     ax4.scatter(seismi.yp,-depth,s=size,c=color,marker='o',linewidths=1, edgecolor='black',alpha=0.5,label=seismifiles[ii].name,zorder=10) 
 

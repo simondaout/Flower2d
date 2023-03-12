@@ -184,7 +184,7 @@ class seismicity:
     if fmt = 'csv':
     Column attributes: time,latitude,longitude,depth,mag,magType,nst,gap,dmin,rms,net,id,updated,place,type,horizontalError,depthError,magError,magNst,status,locationSource,magSource
     if fmt = 'txt':
-    Column attributes: latitude,longitude,depth,mag
+    Column attributes: date,mag,latitude,longitude,depth
     """    
     
     def __init__(self,name,wdir,filename,color='black',width=2.,utm_proj=None,ref=None,fmt='csv'):
