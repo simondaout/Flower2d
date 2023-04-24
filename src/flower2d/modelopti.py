@@ -108,7 +108,7 @@ class segment:
         denom1 = 1+zeta1**2
         denom2 = 1+zeta2**2
         u = np.zeros((yp.size,3))
-
+        
         # vertical displacement
         uv =  (1./math.pi) * (math.sin(self.dipr)*np.arctan(zeta1) + (math.cos(self.dipr)+math.sin(self.dipr)*zeta1)/denom1 - math.sin(self.dipr)*np.arctan(zeta2) - (math.cos(self.dipr)+math.sin(self.dipr)*zeta2)/denom2 )
     
@@ -353,14 +353,14 @@ class creeping:
         self.segments[0].ds = decol.ds/10e14
         self.segments[0].vh = decol.ds/10e14
 
-# vertical segment
+# vertical half-infinite independant segment
 class vertical:
-    def __init__(self,name,ss,sigmass,H,sigmaH,\
+    def __init__(self,name,ss,sigmass,H,sigmaH,D,sigmaD,\
         distss='Unif',distL='Unif'):
         
         self.segments = [
-                second(name = name,ss = ss,sigmass = sigmass,D = 0,
-                    sigmaD = 0, H = H, sigmaH = sigmaH, 
+                second(name = name,ss = ss,sigmass = sigmass,D = D,
+                    sigmaD = sigmaD, H = H, sigmaH = sigmaH, 
                     distss=distss, distH=distL, distD='Unif'),    
                 ]
 
@@ -375,13 +375,13 @@ class vertical:
 
         self.quadrant = decol.quadrant 
         # postision relative to main segment
-        self.segments[0].fperp = self.segments[0].D  + decol.fperp
+        self.segments[0].fperp = self.segments[0].D  
 
         # length is equal to the vertical distance
         #self.segments[0].L = self.segments[0].H 
         self.segments[0].L = 660 # fix L to half-infinite 
         # depth is the depth main segment minus vertical distance
-        self.segments[0].w = decol.w - self.segments[0].H
+        self.segments[0].w = self.segments[0].H
 
         #  dip fault is pi/2
         self.segments[0].dipr = math.pi/2
