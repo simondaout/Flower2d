@@ -43,7 +43,7 @@ class gmt:
                 temp = list(map(float, line.split()))
                 xt, yt = temp[0],temp[1]
                 if self.utm_proj is not None:
-                    lon,lat = np.float(xt),np.float(yt)
+                    lon,lat = float(xt),float(yt)
                     xt, yt = self.UTM(lon, lat)
                     xt, yt = xt-self.ref_x,yt-self.ref_y
                 else:

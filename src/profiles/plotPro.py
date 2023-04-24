@@ -194,19 +194,20 @@ for i in range(Mgps):
 
 if vertical_map:
   fig=plt.figure(0,figsize = (16,8))
-else:
-  fig=plt.figure(0,figsize = (12,5))
-
-if vertical_map:
   ax = fig.add_subplot(1,2,1)
 else:
+  fig=plt.figure(0,figsize = (12,5))
   ax = fig.add_subplot(1,1,1)
-#ax.axis('equal')
 
 logger.info('Plot Map ....') 
+
+ax.axis('equal')
 if 'xmin' in locals(): 
   ax.set_xlim(xmin,xmax)
   ax.set_ylim(ymin,ymax)
+
+if insardata[0].ref is not None or profiles[0].ref is not None:
+    plot_basemap = False
 
 if plot_basemap == True:
     import contextily as ctx
@@ -218,9 +219,6 @@ if plot_basemap == True:
 
 else:
   print('plot_basemap variable is not defined or is not True. Skip backgroup topography plot')
-
-ymin,ymax = ax.get_ylim()
-xmin,xmax = ax.get_xlim()
 
 for ii in range(len(gmtfiles)):
   name = gmtfiles[ii].name
@@ -302,16 +300,12 @@ for ii in range(len(seismifiles)):
   width = (seismifiles[ii].mag - smin)*seismifiles[ii].width*5
   ax.scatter(x,y,c=color,marker='o',s=width,linewidths=1, edgecolor='black',alpha=0.5,label=seismifiles[ii].name,zorder=12) 
 
-# plot legend
-#ax.legend(loc = 'upper right',fontsize='x-small')
-
 if vertical_map:
   ax12 = fig.add_subplot(1,2,2)
-  #ax12.axis('equal')
+  ax12.axis('equal')
   if 'xmin' in locals(): 
     ax12.set_xlim(xmin,xmax)
     ax12.set_ylim(ymin,ymax)
-  #ax12.axis('equal')
   if plot_basemap == True:
      ctx.add_basemap(ax12,crs="EPSG:{}".format(crs), source=ctx.providers.Esri.WorldTopoMap,alpha=1,zorder=0)
 
@@ -359,10 +353,6 @@ if vertical_map:
 
     ax12.legend(loc = 'upper right',fontsize='x-small')
 
-#ax.set_xlim(xmin,xmax)
-#ax.set_ylim(ymin,ymax)
-#ax.axis('equal')
-#plt.tight_layout()  
 
 # fig pro topo
 if len(profiles) > 1:
@@ -438,7 +428,7 @@ for k in range(len(profiles)):
         index=np.nonzero((plot.xpp>xpmax)|(plot.xpp<xpmin)|(plot.ypp>ypmax)|(plot.ypp<ypmin))
         plotxpp,plotypp,plotz=np.delete(plot.xpp,index),np.delete(plot.ypp,index),np.delete(plot.z,index)
         if nb == None:
-          nb = np.float(l/(len(plotz)/100.))
+          nb = float(l/(len(plotz)/100.))
           logger.info('Create bins every {0:.3f} km'.format(nb)) 
         else:
           logger.info('Set nbins to {}, defined in profile class'.format(nb))
@@ -619,7 +609,7 @@ for k in range(len(profiles)):
       if len(insar.uu) > 50:
 
         if nb == None:
-          nb = np.float(l/(len(insar.uu)/100.))
+          nb = float(l/(len(insar.uu)/100.))
           logger.info('Create bins every {0:.3f} km'.format(nb)) 
         else:
           logger.info('Set nbins to {} defined in profile class'.format(nb)) 
@@ -926,6 +916,9 @@ if (flat != None) and len(insardata)==2:
   fig=plt.figure(6,figsize = (9,7))
   ax = fig.add_subplot(1,1,1)
   ax.axis('equal')
+  if 'xmin' in locals():
+    ax.set_xlim(xmin,xmax)
+    ax.set_ylim(ymin,ymax)
   for i in range(len(insardata)):
     insar=insardata[i]
     #samp = insar.samp*4
@@ -958,11 +951,7 @@ if (flat != None) and len(insardata)==2:
       yf[1] = fmodel[kk].y+2*150*s[1]
       # plot fault
       ax.plot(xf[:],yf[:],'--',color = 'black',lw = 1.)
-
-    if 'xmin' in locals(): 
-      ax.set_xlim(xmin,xmax)
-      ax.set_ylim(ymin,ymax)
-
+    
     for ii in range(len(gmtfiles)):
       name = gmtfiles[ii].name
       wdir = gmtfiles[ii].wdir
