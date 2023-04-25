@@ -1,21 +1,18 @@
 from os import path, environ
 import numpy as np
 from numpy.lib.stride_tricks import as_strided
-
 import matplotlib
 if environ["TERM"].startswith("screen"):
     matplotlib.use('Agg')
 from matplotlib import pyplot as plt
 import matplotlib.cm as cm
 import matplotlib.ticker as tic
-from matplotlib.backends.backend_pdf import PdfPages
+#from matplotlib.backends.backend_pdf import PdfPages
 from matplotlib import patches
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-
 from readgmt import *
 from flatten import *
 #import plot2Ddist
-
 import math,sys,getopt
 from os import path
 
@@ -99,6 +96,7 @@ def plotLOS(flt,nfigure):
         ax1.legend(loc = 'best',fontsize='x-small')
         ax1.set_title('Profile %s, azimuth: %s'%(profile.name, strike))
 
+    # number of plot data
     nb = int(flt.nsample/500) + 1
     
     #ax2 = fig.add_subplot(3+len(insardata),1,2)
@@ -107,9 +105,9 @@ def plotLOS(flt,nfigure):
     ax2.set_xlim([-l/2,l/2])
     
     # plot decollement
-    ax2.text(fmodel[0].fperp+3,-(fmodel[0].w+4),fmodel[0].name,color = 'black',style='italic',size='xx-small')
-    ax2.text(fmodel[0].fperp+3,-(fmodel[0].w+8),'SS: %4.1f mm'%(fmodel[0].ss),style='italic',size='xx-small') 
-    ax2.text(fmodel[0].fperp+3,-(fmodel[0].w+12),'DS: %4.1f mm'%(fmodel[0].ds),style='italic',size='xx-small') 
+    ax2.text(fmodel[0].fperp+1,-(fmodel[0].w+1),fmodel[0].name,color = 'black',style='italic',size='xx-small')
+    ax2.text(fmodel[0].fperp+1,-(fmodel[0].w+2),'SS: %4.1f mm'%(fmodel[0].ss),style='italic',size='xx-small') 
+    ax2.text(fmodel[0].fperp+1,-(fmodel[0].w+3),'DS: %4.1f mm'%(fmodel[0].ds),style='italic',size='xx-small') 
     
     ax2.scatter(fmodel[0].fperp,-fmodel[0].w, s = 30,marker = 'x',color = 'blue')
     
@@ -124,9 +122,9 @@ def plotLOS(flt,nfigure):
     # plot ramp and kink 
     for k in xrange(1,flt.structures[0].Mseg):
         ax2.scatter(fmodel[k].fperp,-fmodel[k].w, s = 30,marker = 'x',color = 'royalblue')
-        ax2.text(fmodel[k].fperp+3,-fmodel[k].w,fmodel[k].name,color = 'black',style='italic',size='xx-small')
-        ax2.text(fmodel[k].fperp+3,-(fmodel[k].w+3),'SS: %4.1f mm'%((fmodel[k].ss)),style='italic',size='xx-small') 
-        ax2.text(fmodel[k].fperp+3,-(fmodel[k].w+6),'DS: %4.1f mm'%((fmodel[k].ds)),style='italic',size='xx-small') 
+        ax2.text(fmodel[k].fperp+1,-fmodel[k].w+1,fmodel[k].name,color = 'black',style='italic',size='xx-small')
+        ax2.text(fmodel[k].fperp+1,-(fmodel[k].w+2),'SS: %4.1f mm'%((fmodel[k].ss)),style='italic',size='xx-small') 
+        ax2.text(fmodel[k].fperp+1,-(fmodel[k].w+3),'DS: %4.1f mm'%((fmodel[k].ds)),style='italic',size='xx-small') 
         for i in xrange(0,len(fmodel[0].tracew),nb):
             ax2.plot([ fmodel[0].traceF[i], fmodel[k].traceF[i] ],[ -fmodel[0].tracew[i], -fmodel[k].tracew[i] ], '-' ,lw= .02, color='royalblue',zorder=20)
    
@@ -137,14 +135,14 @@ def plotLOS(flt,nfigure):
                 ax2.scatter(fmodel[Mtemp+k].fperp,-fmodel[Mtemp+k].w, s = 30,marker = 'x',color = 'royalblue')
             else:
                 ax2.scatter(fmodel[Mtemp+k].fperp,-fmodel[Mtemp+k].w, s = 30,marker = 'x',color = 'cyan')
-            ax2.text(fmodel[Mtemp+k].fperp+3,-fmodel[Mtemp+k].w,fmodel[Mtemp+k].name,color = 'black',style='italic',size='xx-small')
-            ax2.text(fmodel[Mtemp+k].fperp+3,-(fmodel[Mtemp+k].w+3),'SS: %4.1f mm'%(fmodel[Mtemp+k].ss),style='italic',size='xx-small') 
-            ax2.text(fmodel[Mtemp+k].fperp+3,-(fmodel[Mtemp+k].w+6),'DS: %4.1f mm'%(fmodel[Mtemp+k].ds),style='italic',size='xx-small') 
+            ax2.text(fmodel[Mtemp+k].fperp+1,-fmodel[Mtemp+k].w+1,fmodel[Mtemp+k].name,color = 'black',style='italic',size='xx-small')
+            ax2.text(fmodel[Mtemp+k].fperp+1,-(fmodel[Mtemp+k].w+2),'SS: %4.1f mm'%(fmodel[Mtemp+k].ss),style='italic',size='xx-small') 
+            ax2.text(fmodel[Mtemp+k].fperp+1,-(fmodel[Mtemp+k].w+3),'DS: %4.1f mm'%(fmodel[Mtemp+k].ds),style='italic',size='xx-small') 
             for i in xrange(0,len(fmodel[0].tracew),nb):
                 if fmodel[Mtemp+k].type ==  "creep":
-                  ax2.plot([ fmodel[Mtemp+k].traceF[i] - fmodel[Mtemp+k].traceD[i] , fmodel[Mtemp+k].traceF[i] ],[ -(fmodel[0].tracew[i] - fmodel[Mtemp+k].traceH[i]), -fmodel[Mtemp+k].tracew[i] ], '-' ,lw= .02, color='cyan',zorder=20)  
+                  ax2.plot([ fmodel[0].traceF[i], fmodel[Mtemp+k].traceF[i] ],[ -fmodel[0].tracew[i], -fmodel[Mtemp+k].traceH[i] ], '-' ,lw= .02, color='cyan',zorder=20)  
                 elif fmodel[Mtemp+k].type ==  "vertical":
-                    ax2.plot([ fmodel[0].traceF[i] , fmodel[Mtemp+k].traceF[i] ],[ -fmodel[0].tracew[i], -fmodel[Mtemp+k].tracew[i] ], '-' ,lw= .02, color='cyan',zorder=20)
+                    ax2.plot([ fmodel[Mtemp+k].traceF[i] , fmodel[Mtemp+k].traceF[i] ],[ -fmodel[Mtemp+k].tracew[i], -100 ], '-' ,lw= .02, color='cyan',zorder=20)
                 else:
                   ax2.plot([ fmodel[Mtemp+k].traceF[i] - fmodel[Mtemp+k].traceD[i] , fmodel[Mtemp+k].traceF[i] ],[ -(fmodel[Mtemp+k].tracew[i] + fmodel[Mtemp+k].traceH[i]), -fmodel[Mtemp+k].tracew[i] ], '-' ,lw= .02, color='royalblue',zorder=20)
         Mtemp += flt.structures[j].Mseg
@@ -166,7 +164,7 @@ def plotLOS(flt,nfigure):
       # compressional arrow
       if (fmodel[0].ds > 0) and (fmodel[0].dip <= 90) or (fmodel[0].ds < 0) and (fmodel[0].dip > 90):
         x2_arrow = patches.FancyArrow(
-        x=fmodel[0].fperp-(profile.l/4), y=-fmodel[0].w-10,
+        x=fmodel[0].fperp-(profile.l/4), y=-fmodel[0].w,
         dx=l_arrow, dy=0,
         width=w_arrow,
         head_length=w_arrow,
@@ -175,7 +173,7 @@ def plotLOS(flt,nfigure):
         alpha=.8, fc='red')
 
         x1_arrow = patches.FancyArrow(
-        x=fmodel[0].fperp+(profile.l/4), y=-fmodel[0].w-10,
+        x=fmodel[0].fperp+(profile.l/4), y=-fmodel[0].w,
         dx=-l_arrow, dy=0,
         width=w_arrow,
         head_length=w_arrow,
@@ -184,13 +182,13 @@ def plotLOS(flt,nfigure):
         alpha=.8, fc='red')
 
         ax2.add_artist(x1_arrow)
-        ax2.text(fmodel[0].fperp-(profile.l/4),-fmodel[0].w-5,'Short/Ext: %4.1f mm'%(fmodel[0].vh),style='italic',size='xx-small')
+        ax2.text(fmodel[0].fperp-(profile.l/4),-fmodel[0].w-2,'Short/Ext: %4.1f mm'%(fmodel[0].vh),style='italic',size='xx-small')
         ax2.add_artist(x2_arrow)
 
       # extensional arrow
       if (fmodel[0].ds > 0) and (fmodel[0].dip > 90) or (fmodel[0].ds < 0) and (fmodel[0].dip <= 90):
         x2_arrow = patches.FancyArrow(
-        x=fmodel[0].fperp-(profile.l/4), y=-fmodel[0].w-10,
+        x=fmodel[0].fperp-(profile.l/4), y=-fmodel[0].w,
         dx=-l_arrow, dy=0,
         width=w_arrow,
         head_length=w_arrow,
@@ -199,7 +197,7 @@ def plotLOS(flt,nfigure):
         alpha=.8, fc='red')
 
         x1_arrow = patches.FancyArrow(
-        x=fmodel[0].fperp+(profile.l/4), y=-fmodel[0].w-10,
+        x=fmodel[0].fperp+(profile.l/4), y=-fmodel[0].w,
         dx=l_arrow, dy=0,
         width=w_arrow,
         head_length=w_arrow,
@@ -208,7 +206,7 @@ def plotLOS(flt,nfigure):
         alpha=.8, fc='red')
 
         ax2.add_artist(x1_arrow)
-        ax2.text(fmodel[0].fperp-(profile.l/4),-fmodel[0].w-5,'Short/Ext: %4.1f mm'%(fmodel[0].vh),style='italic',size='xx-small')
+        ax2.text(fmodel[0].fperp-(profile.l/4),-fmodel[0].w-2,'Short/Ext: %4.1f mm'%(fmodel[0].vh),style='italic',size='xx-small')
         ax2.add_artist(x2_arrow)
 
 
@@ -250,7 +248,10 @@ def plotLOS(flt,nfigure):
     logger.info('Save profile topographic figure in {}'.format(outdir+'/profile/'+name+'_topo.pdf'))
     fig.savefig(outdir+'/profile/'+name+'_topo.pdf', format = 'PDF')
 
-    fig = plt.figure(nfigure+1,figsize = (10,6))
+    if len(insardata) < 3:
+      fig = plt.figure(nfigure+1,figsize = (10,6))
+    else:
+      fig = plt.figure(nfigure+1,figsize = (10,9))
     fig.subplots_adjust(hspace = 0.1) 
     
     # fault parrallele
@@ -384,7 +385,7 @@ def plotMap(flt,nfigure):
         ypmin,ypmax = profile.ypmin,profile.ypmax
         
         strike = flt.strike
-        proj = profile.proj
+        proj = insardata[i].projm
         outdir = outdir
 
         s = flt.s

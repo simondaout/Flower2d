@@ -579,7 +579,7 @@ if '{} H'.format(inv.fmodel[0].name) in inv.Sampled:
     mf.append(np.mean(m))
     inv.fmodel[0].H,inv.fmodel[0].w = np.mean(m), inv.structures[0].winit - np.mean(m)
     inv.fmodel[0].sigmaw,inv.fmodel[0].sigmaH = 2*np.std(m), 2*np.std(m) 
-    inv.fmodel[0].tracew = inv.structures[0].winit*np.ones((inv.nsample)) - np.asarray(m)
+    inv.fmodel[0].tracew = - np.asarray(m) + inv.structures[0].winit
     inv.traces.append(m)
     inv.labels.append('{} H'.format(inv.fmodel[0].name))
 
@@ -592,7 +592,8 @@ if '{} D'.format(inv.fmodel[0].name) in inv.Sampled:
     m = model.trace('{} D'.format(inv.fmodel[0].name))[:]
     mf.append(np.mean(m))
     inv.fmodel[0].D = np.mean(m)
-    inv.fmodel[0].traceD = np.mean(m)
+    inv.fmodel[0].traceD = np.asarray(m)
+    inv.fmodel[0].traceF = np.asarray(m)
     inv.fmodel[0].sigmaD = 2*np.std(m)
     inv.traces.append(m)
     inv.labels.append('{} D'.format(inv.fmodel[0].name))
@@ -676,23 +677,23 @@ for j in range(0,inv.Mseg):
         inv.fmodel[0].sst = inv.fmodel[0].sst + inv.fmodel[j].ss
 
 logger.debug('Saving all plaussible models for plot')
-inv.fmodel[0].traceF = inv.fmodel[0].D*np.ones((inv.nsample))
 if inv.structures[0].Mseg >1:
     inv.fmodel[1].tracew,inv.fmodel[2].tracew = inv.fmodel[0].tracew - inv.fmodel[1].traceH, inv.fmodel[0].tracew - inv.fmodel[2].traceH
-    inv.fmodel[1].traceF,inv.fmodel[2].traceF = inv.fmodel[1].traceD,inv.fmodel[2].traceD
+    inv.fmodel[1].traceF,inv.fmodel[2].traceF = inv.fmodel[0].traceF - inv.fmodel[1].traceD,inv.fmodel[0].traceF - inv.fmodel[2].traceD
 Mtemp = inv.structures[0].Mseg
 for j in range(1,inv.Mstruc):
     for k in range(inv.structures[j].Mseg):
         # if creeping fault, position relative to main segment
         if inv.fmodel[Mtemp+k].type == "creep":
-          inv.fmodel[Mtemp+k].tracew = np.zeros((inv.nsample))
-          inv.fmodel[Mtemp+k].traceF = inv.fmodel[0].traceF +  inv.fmodel[Mtemp+k].D*np.ones((inv.nsample))
+          inv.fmodel[Mtemp+k].tracew = inv.fmodel[0].tracew - inv.fmodel[Mtemp+k].traceH 
+          inv.fmodel[Mtemp+k].traceF = inv.fmodel[0].traceF +  inv.fmodel[Mtemp+k].traceD
+        # if vertical, independant vertical half-infinit fault
         elif inv.fmodel[Mtemp+k].type == "vertical":
-          inv.fmodel[Mtemp+k].tracew = inv.fmodel[0].tracew - inv.fmodel[Mtemp+k].H
-          inv.fmodel[Mtemp+k].traceF = inv.fmodel[0].traceF +  inv.fmodel[Mtemp+k].D*np.ones((inv.nsample))
+          inv.fmodel[Mtemp+k].tracew = inv.fmodel[Mtemp+k].traceH
+          inv.fmodel[Mtemp+k].traceF = inv.fmodel[Mtemp+k].traceD
         else:
-          inv.fmodel[Mtemp+k].tracew = inv.fmodel[Mtemp-1].tracew - inv.fmodel[Mtemp+k].H
-          inv.fmodel[Mtemp+k].traceF = inv.fmodel[Mtemp-1].traceF + inv.fmodel[Mtemp+k].D
+          inv.fmodel[Mtemp+k].tracew = inv.fmodel[Mtemp-1].tracew - inv.fmodel[Mtemp+k].traceH
+          inv.fmodel[Mtemp+k].traceF = inv.fmodel[Mtemp-1].traceF + inv.fmodel[Mtemp+k].traceD
     Mtemp += inv.structures[j].Mseg
 
 for j in range(0,inv.Mvol):
