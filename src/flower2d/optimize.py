@@ -479,12 +479,14 @@ if inv.nsample < 0:
     logger.warning("niter must be higher than nburn. Exit !")
 
 inv.fmodel[0].traceD = inv.fmodel[0].D*np.ones((inv.nsample))
+inv.fmodel[0].traceF = inv.fmodel[0].D*np.ones((inv.nsample))
 inv.fmodel[0].traceH = inv.fmodel[0].H*np.ones((inv.nsample))
 inv.fmodel[0].tracew = inv.fmodel[0].w*np.ones((inv.nsample))
 inv.fmodel[0].tracedip = inv.fmodel[0].dip*np.ones((inv.nsample))
 inv.fmodel[0].traceL = inv.fmodel[0].L*np.ones((inv.nsample))
 for i in range(1,inv.Mseg):
     inv.fmodel[i].traceD = inv.fmodel[i].D*np.ones((inv.nsample))
+    inv.fmodel[i].traceF = inv.fmodel[i].D*np.ones((inv.nsample))
     inv.fmodel[i].traceH = inv.fmodel[i].H*np.ones((inv.nsample))
     inv.fmodel[i].tracew = inv.fmodel[i].w*np.ones((inv.nsample))
 
