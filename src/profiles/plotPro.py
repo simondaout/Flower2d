@@ -23,6 +23,9 @@ import os, math
 from os import path
 import logging
 
+import warnings
+warnings.filterwarnings("ignore", category=RuntimeWarning)
+
 def hdi(trace, cred_mass=0.95):
     hdi_min, hdi_max = np.nanpercentile(trace,2.), np.nanpercentile(trace,98.)  
     return hdi_min, hdi_max
@@ -353,6 +356,12 @@ if vertical_map:
 
     ax12.legend(loc = 'upper right',fontsize='x-small')
 
+# clean some memory
+try:
+    del m, masked_array
+    del mv
+except:
+    pass 
 
 # fig pro topo
 if len(profiles) > 1:
@@ -532,35 +541,35 @@ for k in range(len(profiles)):
 
       # select data within profile
       index=np.nonzero((gps.xpp>xpmax)|(gps.xpp<xpmin)|(gps.ypp>ypmax)|(gps.ypp<ypmin))
-      gpsux,gpsuy,gpssigmax,gpssigmay,gpsx,gpsy,gpsxp,gpsyp=np.delete(gps.ux,index),np.delete(gps.uy,index)\
+      gps.uux,gps.uuy,gps.sigmaxx,gps.sigmayy,gps.xx,gps.yy,gps.xxp,gps.yyp=np.delete(gps.ux,index),np.delete(gps.uy,index)\
       ,np.delete(gps.sigmax,index),np.delete(gps.sigmay,index),np.delete(gps.x,index),np.delete(gps.y,index),\
       np.delete(gps.xpp,index),np.delete(gps.ypp,index)
 
       # compute fault parallel and perpendicular for each profiles
-      gpsupar = gpsux*profiles[k].s[0]+gpsuy*profiles[k].s[1]
-      gpsuperp = gpsux*profiles[k].n[0]+gpsuy*profiles[k].n[1]
-      gpssigmaperp=((gpssigmax*np.cos(profiles[k].str))**2 + (gpssigmay*np.sin(profiles[k].str))**2)**0.5
-      gpssigmapar=((gpssigmax*np.sin(profiles[k].str))**2 + (gpssigmay*np.cos(profiles[k].str))**2)**0.5
+      gps.upar = gps.uux*profiles[k].s[0]+gps.uuy*profiles[k].s[1]
+      gps.uperp = gps.uux*profiles[k].n[0]+gps.uuy*profiles[k].n[1]
+      gps.sigmaperp=((gps.sigmaxx*np.cos(profiles[k].str))**2 + (gps.sigmayy*np.sin(profiles[k].str))**2)**0.5
+      gps.sigmapar=((gps.sigmaxx*np.sin(profiles[k].str))**2 + (gps.sigmayy*np.cos(profiles[k].str))**2)**0.5
 
-      ax3.plot(gpsyp,gpsupar,markers[i],color = 'blue',mew = 1.5,label =\
+      ax3.plot(gps.yyp,gps.upar,markers[i],color = 'blue',mew = 1.5,label =\
        '%s fault-parallel velocities'%gpsdata[i].reduction )
-      ax3.errorbar(gpsyp,gpsupar,yerr = gpssigmapar,ecolor = 'blue',barsabove = 'True',fmt = "none",alpha=.5)
-      ax3.plot(gpsyp,gpsuperp,markers[i],color = 'green',mew = 1.5,\
+      ax3.errorbar(gps.yyp,gps.upar,yerr = gps.sigmapar,ecolor = 'blue',barsabove = 'True',fmt = "none",alpha=.5)
+      ax3.plot(gps.yyp,gps.uperp,markers[i],color = 'green',mew = 1.5,\
         label = '%s fault-perpendicular velocities'%gpsdata[i].reduction)
-      ax3.errorbar(gpsyp,gpsuperp,yerr = gpssigmaperp,ecolor = 'green',fmt = "none",alpha=.5)
+      ax3.errorbar(gps.yyp,gps.uperp,yerr = gps.sigmaperp,ecolor = 'green',fmt = "none",alpha=.5)
 
-      logger.debug('Number of GPS left within profile {0}'.format(len(gpsyp))) 
+      logger.debug('Number of GPS left within profile {0}'.format(len(gps.yyp))) 
 
       if 3 == gps.dim:
-          gpsuv,gpssigmav,gpsulos,gpssigmalos = np.delete(gps.uv,index), np.delete(gps.sigmav,index),np.delete(gps.ulos,index),np.delete(gps.sigmalos,index)
+          gps.uuv,gps.sigmavv,gps.uu,gps.slos = np.delete(gps.uv,index), np.delete(gps.sigmav,index),np.delete(gps.ulos,index),np.delete(gps.sigmalos,index)
 
-          ax3.plot(gpsyp,gpsuv,markers[i],color = 'red',mew = 1.5,label = '%s vertical velocities'%gpsdata[i].reduction)
-          ax3.errorbar(gpsyp,gpsuv,yerr = gpssigmav,ecolor = 'red',fmt = "none",alpha=.5)          
+          ax3.plot(gps.yyp,gps.uuv,markers[i],color = 'red',mew = 1.5,label = '%s vertical velocities'%gpsdata[i].reduction)
+          ax3.errorbar(gps.yyp,gps.uuv,yerr = gps.sigmavv,ecolor = 'red',fmt = "none",alpha=.5)          
           
           if gps.proj != None:
             # plot gps los
-            ax2.plot(gpsyp,gpsulos,'+',color='red',mew=2.,label='%s GPS LOS'%gpsdata[i].reduction)
-            ax2.errorbar(gpsyp,gpsulos,yerr = gpssigmalos,ecolor ='red',fmt = "none")          
+            ax2.plot(gps.yyp,gps.uu,'+',color='red',mew=2.,label='%s GPS LOS'%gpsdata[i].reduction)
+            ax2.errorbar(gps.yyp,gps.uu,yerr = gps.slos,ecolor ='red',fmt = "none")          
 
       for j in range(Mfault):
           ax3.plot([fperp[j],fperp[j]],[gpsmax,gpsmin],color='red')
@@ -571,7 +580,7 @@ for k in range(len(profiles)):
       # set born profile equal to map
       logger.debug('Set ylim GPS profile to {0}-{1}'.format(gpsmin,gpsmax))
       ax3.set_ylim([gpsmin,gpsmax])
-
+  
   if Mgps>0:
     ax3.legend(loc = 'best',fontsize='x-small')
   if len(seismifiles)>0:
@@ -597,7 +606,40 @@ for k in range(len(profiles)):
       np.delete(insar.y,index),np.delete(insar.xpp,index),np.delete(insar.ypp,index)
 
       logger.debug('Number of InSAR point left within profile {0}'.format(len(insar.uu))) 
-       
+      
+      for j in range(Mgps):
+        gps=gpsdata[i]
+        if 3 == gps.dim:
+          fig20=plt.figure(20,figsize=(12,4))
+          ax20=fig20.add_subplot(1,len(profiles),1+k)
+          los = []; gpslos = []; sigmalos = []; gpssigmalos = []
+          for jj in range(len(gps.uu)):
+            # select data within gps
+            # loop over window size
+            moy_los = np.isnan; ws = 0
+            while ws < 5000 : 
+                ws = ws + 1000
+                index = np.nonzero((insar.xxpp>gps.xxp[jj]+ws)|(insar.xxpp<gps.xxp[jj]-ws)|(insar.yypp<gps.yyp[jj]-ws)|(insar.yypp>gps.yyp[jj]+ws))
+                moy_los = np.nanmean(np.delete(insar.uu,index))
+                if (moy_los != np.isnan):
+                    ws = 6000
+                los.append(moy_los)
+                sigmalos.append(np.nanstd(np.delete(insar.uu,index)))
+                gpslos.append(gps.uu[jj])
+                gpssigmalos.append(gps.slos[jj])
+         
+          los,gpslos,sigmalos,gpssigmalos = np.asarray(los),np.asarray(gpslos),np.asarray(sigmalos),np.asarray(gpssigmalos)
+          index = np.nonzero((~np.isnan(los)))
+          
+          ax20.plot(los[index],gpslos[index],'+',color = 'black',mew = .75)
+          ax20.errorbar(los[index],gpslos[index], xerr= sigmalos[index] , yerr = gpssigmalos[index], ecolor = 'black',fmt = "none")          
+          xlim=ax20.get_xlim(); ylim=ax20.get_ylim()
+          lim = np.array([np.min([xlim[0],ylim[0]]), np.max([xlim[1],ylim[1]])])
+          lim = np.array([-5,3])
+          ax20.set_ylim(lim); ax20.set_xlim(lim)
+          ax20.plot(lim,lim,'-r')
+          #ax20.axis('equal') 
+ 
       # Initialise for plot in case no data for this profile
       insar.distance = []
       insar.moy_los = []
@@ -909,6 +951,12 @@ for k in range(len(profiles)):
       fig2.colorbar(m1,shrink=0.5, aspect=5)
     else:
       ax2.legend(loc='best')
+
+if Minsar>0 and Mgps>0:
+    ax20.set_xlabel('InSAR: {}'.format(insar.reduction))
+    ax20.set_ylabel('GPS: {}'.format(gps.reduction))
+    logger.debug('Save {0} output file'.format(outdir+profiles[k].name+'_gpsVSinsar.pdf'))
+    fig20.savefig(outdir+profiles[k].name+'_gpsVSinsar.pdf', format='PDF',dpi=150)    
 
 if (flat != None) and len(insardata)==2:
   logger.info('Plot fatten Maps...')
