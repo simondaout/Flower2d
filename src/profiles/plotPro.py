@@ -261,7 +261,7 @@ for i in range(Minsar):
   m.set_array(insar.ulos[::samp])
   masked_array = np.ma.array(insar.ulos[::samp], mask=np.isnan(insar.ulos[::samp]))
   facelos = m.to_rgba(masked_array)
-  ax.scatter(insar.x[::samp],insar.y[::samp], s=1, marker = 'o',color = facelos, rasterized=True, label = 'LOS Velocity {}'.format(insar.reduction),zorder=10)
+  ax.scatter(insar.x[::samp],insar.y[::samp], s=.05, marker = 'o',color = facelos, rasterized=True, label = 'LOS Velocity {}'.format(insar.reduction),zorder=10)
 
 gpscolor = ['black','coral','red','darkorange']
 for i in range(Mgps):
@@ -608,7 +608,7 @@ for k in range(len(profiles)):
       logger.debug('Number of InSAR point left within profile {0}'.format(len(insar.uu))) 
       
       for j in range(Mgps):
-        gps=gpsdata[i]
+        gps=gpsdata[j]
         if 3 == gps.dim:
           fig20=plt.figure(20,figsize=(12,4))
           ax20=fig20.add_subplot(1,len(profiles),1+k)
@@ -618,15 +618,15 @@ for k in range(len(profiles)):
             # loop over window size
             moy_los = np.isnan; ws = 0
             while ws < 5000 : 
-                ws = ws + 1000
+                ws = ws + 2000
                 index = np.nonzero((insar.xxpp>gps.xxp[jj]+ws)|(insar.xxpp<gps.xxp[jj]-ws)|(insar.yypp<gps.yyp[jj]-ws)|(insar.yypp>gps.yyp[jj]+ws))
-                moy_los = np.nanmean(np.delete(insar.uu,index))
+                moy_los = np.nanmedian(np.delete(insar.uu,index))
                 if (moy_los != np.isnan):
                     ws = 6000
-                los.append(moy_los)
-                sigmalos.append(np.nanstd(np.delete(insar.uu,index)))
-                gpslos.append(gps.uu[jj])
-                gpssigmalos.append(gps.slos[jj])
+            los.append(moy_los)
+            sigmalos.append(np.nanstd(np.delete(insar.uu,index)))
+            gpslos.append(gps.uu[jj])
+            gpssigmalos.append(gps.slos[jj])
          
           los,gpslos,sigmalos,gpssigmalos = np.asarray(los),np.asarray(gpslos),np.asarray(sigmalos),np.asarray(gpssigmalos)
           index = np.nonzero((~np.isnan(los)))
@@ -635,10 +635,11 @@ for k in range(len(profiles)):
           ax20.errorbar(los[index],gpslos[index], xerr= sigmalos[index] , yerr = gpssigmalos[index], ecolor = 'black',fmt = "none")          
           xlim=ax20.get_xlim(); ylim=ax20.get_ylim()
           lim = np.array([np.min([xlim[0],ylim[0]]), np.max([xlim[1],ylim[1]])])
-          lim = np.array([-5,3])
+          #lim = np.array([-5,3])
+          #lim = np.array([-2,6])
           ax20.set_ylim(lim); ax20.set_xlim(lim)
           ax20.plot(lim,lim,'-r')
-          #ax20.axis('equal') 
+          ax20.fill_between(lim,lim-2,lim+2,alpha=0.3,color='dodgerblue')
  
       # Initialise for plot in case no data for this profile
       insar.distance = []
