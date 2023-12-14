@@ -422,8 +422,8 @@ if (inv.fullcov == 'yes') or (inv.fullcov == True):
                 Cd = np.diag(manifolds[i].sigmad**2,k = 0)
             manifolds[i].Cd = Cd
             manifolds[i].invCd = np.linalg.inv(Cd)
-            #Cov[start:start+manifolds[i].N,start:start+manifolds[i].N] = Cd
-            Cov[start:start+manifolds[i].N,start:start+manifolds[i].N] = manifolds[i].invCd
+            Cov[start:start+manifolds[i].N,start:start+manifolds[i].N] = Cd
+            #Cov[start:start+manifolds[i].N,start:start+manifolds[i].N] = manifolds[i].invCd
             start+= manifolds[i].N
 
         logger.info('Plot covariance matrix')
@@ -434,6 +434,7 @@ if (inv.fullcov == 'yes') or (inv.fullcov == True):
         fig.savefig(outdir+'/insar/'+'COV_mat.eps', format='EPS')
         plt.show()
         return Cov
+    # C is the covariance matrix
     d = pm.MvNormalCov('Data', mu = forward, C = Cov(), value = data(), observed = True)
 
 # autocovariance only
@@ -450,6 +451,7 @@ else:
             manifolds[i].invCd = Cov[start:start+manifolds[i].N]
             start+= manifolds[i].N
         return Cov
+    # tau is the  precision parameter of the normal distribution. In PyMC3, the precision is the inverse of the variance.
     d = pm.Normal('Data', mu = forward, tau = Cov(), value = data(), observed = True) # observed = True for constant stochastic values
 
 logger.debug('Compute prior model:')
