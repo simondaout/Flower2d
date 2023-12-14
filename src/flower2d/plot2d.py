@@ -246,6 +246,7 @@ def plotLOS(flt,nfigure):
 
     plt.tight_layout()
     logger.info('Save profile topographic figure in {}'.format(outdir+'/profile/'+name+'_topo.pdf'))
+    np.savetxt(outdir+'/profile/'+name+'_topo.txt', np.vstack([distance,moy_topo]).T, header = '# distance (km)      z(km)', fmt='%.6f')
     fig.savefig(outdir+'/profile/'+name+'_topo.pdf', format = 'PDF')
 
     if len(insardata) < 3:

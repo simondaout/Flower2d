@@ -44,7 +44,7 @@ inv=inversion(name='SAF',
             # azimuth of the 2d model: azimuth of the main fault
             strike=-62.5,
             # l: lenght, w: width, proj: Envisat proj los to east,north,z coordinates (for a mean incidence angle)
-            profile=profile(name='San Gabriel',x=-177.9,y=134.9,l=200,w=60,proj=[0.382, -0.0811, 0.92]),
+            profile=profile(name='San Gabriel',x=-177.9,y=134.9,l=200,w=60),
 	    fullcov=False,
             )
 
@@ -55,7 +55,7 @@ gpsdata=[
 
 # InSAR data (defined in networkopti.py)
 insardata=[
-        network(network='t170_cmyr_s100_km.xy-los',reduction='T170',wdir=maindir+'insar/',dim=1,weight=0.4,scale=10.,color='blue',cov=[1.3702141838,1.40570896897,4.29813868204])
+        network(network='t170_cmyr_s100_km.xy-los',reduction='T170',wdir=maindir+'insar/',dim=1,weight=0.4,scale=10.,color='blue',av_los=23,av_heading=-76,cov=[1.3702141838,1.40570896897,4.29813868204])
         ]
 
 # optionnal: add data for plots in gmt format (>)
@@ -65,8 +65,11 @@ gmtfiles=[
         ]
 
 # optionnal: add data for plots in gmt format (>)
+seismifiles=[
+    #seismicity(name='2002-2011 seismicity (Hauksson, 2012)',wdir=maindir+'seismicity/',filename='sc_02_11_km.xydm',color='orange',width=.5),
+]
+
 plotdata=[
-        seismi(name='2002-2011 seismicity (Hauksson, 2012)',wdir=maindir+'seismicity/',filename='sc_02_11_km.xydm',color='orange',width=.5),
         moho(name='Moho (Tape 2012)',wdir=maindir+'gmt/',filename='cal_moho01_q02_q08_ir02_id01_km.xyz',color='red',width=2.),
      ]
 

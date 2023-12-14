@@ -23,9 +23,9 @@ inv=inversion(name='Haiyuan Fault System',
               #distss='Unif',distshort='Unif',distH='Unif'
               ),
               # D: horizontal distance to the mainfault, H: vertical distance to the mainfault
-              #ramp(
-              #  name='QT',ss=0.,sigmass=0.,D=30,sigmaD=25.,H=15.,sigmaH=15
-              #  ),
+              ramp(
+                name='QT',ss=0.,sigmass=0.,D=30,sigmaD=25.,H=15.,sigmaH=15
+                ),
 
               #######################
               # Option 2: flower structure
@@ -67,8 +67,8 @@ gmtfiles=[
         ]
 
 #optionnal: add data for plots
-plotdata=[
-        seismicity(name='seismicity',wdir=maindir+'seismicity/',filename='usgs_2000-2014_101-105_34-39.xydm',color='orange',width=0.5),
+seismifiles=[
+       #seismicity(name='seismicity',wdir=maindir+'seismicity/',filename='usgs_2000-2014_101-105_34-39.csv',color='orange',width=0.5),
         ]
 
 #topographic plot

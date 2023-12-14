@@ -719,8 +719,8 @@ class seismicity:
                 self.ref_x,self.ref_y = 0,0
 
     def load(self,flt):
-        logger = flt.logger
-        try:
+          logger = flt.logger
+        #try:
           fmodel = flt.fmodel
           profile = flt.profile
           fname = self.wdir+self.filename
@@ -738,7 +738,8 @@ class seismicity:
           elif self.fmt == 'csv':
             import pandas
             df = pandas.read_csv(fname)
-            lat,lon,depth,mag=df['latitude'][:].to_numpy(),df['longitude'][:].to_numpy(),df['depth'][:].to_numpy(),df['mag'][:].to_numpy()
+            print(df.columns)
+            time,lat,lon,depth,mag=df['time'][:].to_numpy(), df['latitude'][:].to_numpy(),df['longitude'][:].to_numpy(),df['depth'][:].to_numpy(),df['mag'][:].to_numpy()
             if self.utm_proj is None:
               self.x,self.y,self.z,self.mag = lon,lat,depth,mag
             else:
@@ -755,10 +756,10 @@ class seismicity:
               logger.warninig('Depth {} file seems to be in meter, scale in km'.format(self.filename))
               self.z = self.z/1000
           
-        except Exception as e: 
-            logger.critical(e)
-            print(seismicity.__doc__)
-            sys.exit()
+        #except Exception as e: 
+        #    logger.critical(e)
+        #    print(seismicity.__doc__)
+        #    sys.exit()
 
 
 class shapefile:

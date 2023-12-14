@@ -681,7 +681,7 @@ for j in range(0,inv.Mseg):
 logger.debug('Saving all plaussible models for plot')
 if inv.structures[0].Mseg >1:
     inv.fmodel[1].tracew,inv.fmodel[2].tracew = inv.fmodel[0].tracew - inv.fmodel[1].traceH, inv.fmodel[0].tracew - inv.fmodel[2].traceH
-    inv.fmodel[1].traceF,inv.fmodel[2].traceF = inv.fmodel[0].traceF - inv.fmodel[1].traceD,inv.fmodel[0].traceF - inv.fmodel[2].traceD
+    inv.fmodel[1].traceF,inv.fmodel[2].traceF = inv.fmodel[0].traceF + inv.fmodel[1].traceD,inv.fmodel[0].traceF + inv.fmodel[2].traceD
 Mtemp = inv.structures[0].Mseg
 for j in range(1,inv.Mstruc):
     for k in range(inv.structures[j].Mseg):
