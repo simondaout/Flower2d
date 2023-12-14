@@ -422,7 +422,8 @@ if (inv.fullcov == 'yes') or (inv.fullcov == True):
                 Cd = np.diag(manifolds[i].sigmad**2,k = 0)
             manifolds[i].Cd = Cd
             manifolds[i].invCd = np.linalg.inv(Cd)
-            Cov[start:start+manifolds[i].N,start:start+manifolds[i].N] = Cd
+            #Cov[start:start+manifolds[i].N,start:start+manifolds[i].N] = Cd
+            Cov[start:start+manifolds[i].N,start:start+manifolds[i].N] = manifolds[i].invCd
             start+= manifolds[i].N
 
         logger.info('Plot covariance matrix')
@@ -446,7 +447,7 @@ else:
             Cov[start:start+manifolds[i].N] = np.diag(np.linalg.inv(Cd))
             # Save Covariance matrix for each data set
             manifolds[i].Cd = np.diag(Cd)
-            manifolds[i].invCd = np.diag(np.linalg.inv(Cd))
+            manifolds[i].invCd = Cov[start:start+manifolds[i].N]
             start+= manifolds[i].N
         return Cov
     d = pm.Normal('Data', mu = forward, tau = Cov(), value = data(), observed = True) # observed = True for constant stochastic values
