@@ -107,7 +107,7 @@ class network:
              self.lmax = np.max(np.array([self.ux,self.uy])) + 1
 
     def loadinsar(self):
-        insarf=self.wdir+self.network
+        insarf=self.wdir+ '/' +self.network
         if self.utm_proj is None:
             if self.theta is False:
                 self.x,self.y,ulos=np.loadtxt(insarf,comments='#',unpack=True,usecols=(0,1,2),dtype='f,f,f')
