@@ -222,20 +222,21 @@ class network(object):
                     sigmad=abs(sigmad)*self.wd 
             else: 
                sigmad = np.ones(len(los))*self.wd
-               x,y,los,sigmad = x[::self.samp],y[::self.samp],los[::self.samp],sigmad[::self.samp]
+            
+            x,y,los,sigmad = x[::self.samp],y[::self.samp],los[::self.samp],sigmad[::self.samp]
 
-               logger.debug('Compute horizontal distances to the center of the profile')
-               xp=(x-self.profile.x)*self.profile.s[0]+(y-self.profile.y)*self.profile.s[1]
-               yp=(x-self.profile.x)*self.profile.n[0]+(y-self.profile.y)*self.profile.n[1]
+            logger.debug('Compute horizontal distances to the center of the profile')
+            xp=(x-self.profile.x)*self.profile.s[0]+(y-self.profile.y)*self.profile.s[1]
+            yp=(x-self.profile.x)*self.profile.n[0]+(y-self.profile.y)*self.profile.n[1]
 
-               logger.debug('Only keep points within profile')
-               index=np.nonzero((xp>self.profile.xpmax)|(xp<self.profile.xpmin)|(yp>self.profile.ypmax)|(yp<self.profile.ypmin))
-               ulos,self.x,self.y,self.xp,self.yp,sigmad=np.delete(los,index),np.delete(x,index),np.delete(y,index),np.delete(xp,index),np.delete(yp,index),np.delete(sigmad,index)
+            logger.debug('Only keep points within profile')
+            index=np.nonzero((xp>self.profile.xpmax)|(xp<self.profile.xpmin)|(yp>self.profile.ypmax)|(yp<self.profile.ypmin))
+            ulos,self.x,self.y,self.xp,self.yp,sigmad=np.delete(los,index),np.delete(x,index),np.delete(y,index),np.delete(xp,index),np.delete(yp,index),np.delete(sigmad,index)
 
-               ulos[np.logical_or(ulos==0.0,ulos>9990.)] = np.float('NaN')
-               sigmad[np.logical_or(ulos==0.0,ulos>9990.)] = np.float('NaN')
-               self.ulos=ulos*self.scale
-               self.sigmad=sigmad*self.scale
+            ulos[np.logical_or(ulos==0.0,ulos>9990.)] = np.float('NaN')
+            sigmad[np.logical_or(ulos==0.0,ulos>9990.)] = np.float('NaN')
+            self.ulos=ulos*self.scale
+            self.sigmad=sigmad*self.scale
 
             if self.mask is not None:
                 uu = np.flatnonzero(np.logical_or(self.yp<=self.mask[0], self.yp>=self.mask[1]))
