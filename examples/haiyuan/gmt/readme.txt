@@ -1,0 +1,1 @@
+grep -v "#" Failles_m.xy | awk '{printf("%f %f\n",$1,$2)}' |proj +proj=utm +zone=48 | awk '{if ($1 == "*") print ">"; else printf("%f %f\n",($1-313629.46)/ 1e3,($2-4119124.88)/1e3, 0)}' > Failles_m_km.xy
