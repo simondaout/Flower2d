@@ -323,14 +323,15 @@ if vertical_map:
     
   for i in range(Mgps):
     gps=gpsdata[i]
-    norm = matplotlib.colors.Normalize(vmin=np.nanpercentile(gps.uv,5), vmax=np.nanpercentile(gps.uv,95))
-    mv = cm.ScalarMappable(norm = norm, cmap = cmap)
-    mv.set_array(gps.uv)
-    facev = mv.to_rgba(gps.uv)
-    ax12.scatter(gps.x,gps.y,c=facev,marker='o',s=10,linewidths=1, edgecolor='black',alpha=0.8,label='Vertical velocities network {}'.format(gps.reduction),zorder=10) 
-    divider = make_axes_locatable(ax12)
-    c = divider.append_axes("right", size="5%", pad=0.05)
-    plt.colorbar(mv, cax=c)
+    if gps.dim == 3:
+      norm = matplotlib.colors.Normalize(vmin=np.nanpercentile(gps.uv,5), vmax=np.nanpercentile(gps.uv,95))
+      mv = cm.ScalarMappable(norm = norm, cmap = cmap)
+      mv.set_array(gps.uv)
+      facev = mv.to_rgba(gps.uv)
+      ax12.scatter(gps.x,gps.y,c=facev,marker='o',s=10,linewidths=1, edgecolor='black',alpha=0.8,label='Vertical velocities network {}'.format(gps.reduction),zorder=10)
+      divider = make_axes_locatable(ax12)
+      c = divider.append_axes("right", size="5%", pad=0.05)
+      plt.colorbar(mv, cax=c)
       
   for ii in range(len(shapefiles)):
     name = shapefiles[ii].name
@@ -949,15 +950,15 @@ for k in range(len(profiles)):
       plt.setp(ax2.get_xticklabels(), visible=False)
       plt.setp(ax1.get_xticklabels(), visible=False)
     if typ == 'distscale':
-      fig2.colorbar(m1,shrink=0.5, aspect=5)
+      fig2.colorbar(m1, ax=ax2, shrink=0.5, aspect=5)
     else:
       ax2.legend(loc='best')
 
-if Minsar>0 and Mgps>0:
+if Minsar>0 and Mgps>0 and any(g.dim == 3 for g in gpsdata):
     ax20.set_xlabel('InSAR: {}'.format(insar.reduction))
     ax20.set_ylabel('GPS: {}'.format(gps.reduction))
     logger.debug('Save {0} output file'.format(outdir+profiles[k].name+'_gpsVSinsar.pdf'))
-    fig20.savefig(outdir+profiles[k].name+'_gpsVSinsar.pdf', format='PDF',dpi=150)    
+    fig20.savefig(outdir+profiles[k].name+'_gpsVSinsar.pdf', format='PDF',dpi=150)
 
 if (flat != None) and len(insardata)==2:
   logger.info('Plot fatten Maps...')

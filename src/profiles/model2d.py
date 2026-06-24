@@ -68,7 +68,7 @@ class profile:
         self.l=l*1e3
         self.w=w*1e3
         self.flat=flat
-        self.lbins=lbins*1e3
+        self.lbins = lbins * 1e3 if lbins is not None else None
         self.loc_ramp=loc_ramp
 
         if strike > 0:
