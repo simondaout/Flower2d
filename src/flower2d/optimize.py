@@ -65,6 +65,7 @@ else:
 if len(sys.argv) > 1:
     try:
         fname = sys.argv[1]
+        fbase = path.splitext(path.basename(fname))[0]
         logger.info('Read input file {0}'.format(fname))
         exec(open(path.abspath(fname)).read())
     except Exception as e:
@@ -383,10 +384,10 @@ with pm.Model() as pymc_model:
             tau_vec = np.zeros(N)
             start = 0
             for i in range(len(manifolds)):
-                Cd = np.diag(manifolds[i].sigmad ** 2, k=0)
-                invCd_diag = np.diag(np.linalg.inv(Cd))
+                # Diagonal precision = 1/sigma^2 (inverse of diagonal matrix)
+                invCd_diag = 1.0 / (manifolds[i].sigmad ** 2)
                 tau_vec[start:start + manifolds[i].N] = invCd_diag
-                manifolds[i].Cd = np.diag(Cd)
+                manifolds[i].Cd = manifolds[i].sigmad ** 2
                 manifolds[i].invCd = invCd_diag
                 start += manifolds[i].N
             return tau_vec
@@ -405,7 +406,7 @@ for i in range(len(manifolds)):
     start += manifolds[i].N
 
 logger.info('Write prior model in: {}'.format(inv.outdir + 'stat/'))
-fidf = open(inv.outdir + 'stat/{}.txt'.format(fname), 'w')
+fidf = open(inv.outdir + 'stat/{}.txt'.format(fbase), 'w')
 fidf.write('Prior Model:\n')
 logger.info('Prior model:')
 for j in range(inv.Mseg):

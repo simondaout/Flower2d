@@ -202,9 +202,13 @@ class network(object):
                               np.cos(self.thetam)*np.sin(self.phim),
                               np.sin(self.thetam)]
                 self.profile.proj = self.projm
+                logger.info('Average angle — vertical: {:.1f}°, horizontal: {:.1f}°'.format(
+                    np.rad2deg(self.thetam), np.rad2deg(self.phim)))
+                logger.info('Average LOS projection to east, north, up: {:.5f} {:.5f} {:.5f}'.format(*self.projm))
             elif self.profile.proj is not None:
                 self.proj  = self.profile.proj
                 self.projm = self.profile.proj
+                logger.info('LOS projection inherited from profile: {:.5f} {:.5f} {:.5f}'.format(*self.projm))
             else:
                 self.phim   = np.deg2rad(-90. - self.phim)
                 self.thetam = np.deg2rad(90.  - self.lookm)
@@ -213,9 +217,9 @@ class network(object):
                                np.sin(self.thetam)]
                 self.proj  = self.projm
                 self.profile.proj = self.projm
-            logger.info('Average angle — vertical: {:.1f}°, horizontal: {:.1f}°'.format(
-                np.rad2deg(self.thetam), np.rad2deg(self.phim)))
-            logger.info('Average LOS projection to east, north, up: {:.5f} {:.5f} {:.5f}'.format(*self.projm))
+                logger.info('Average angle — vertical: {:.1f}°, horizontal: {:.1f}°'.format(
+                    np.rad2deg(self.thetam), np.rad2deg(self.phim)))
+                logger.info('Average LOS projection to east, north, up: {:.5f} {:.5f} {:.5f}'.format(*self.projm))
 
             # ── 8. Optional mask on profile-perpendicular distance ────────────
             if self.mask is not None:
@@ -229,7 +233,7 @@ class network(object):
 
             # ── 9. Outlier cleaning ───────────────────────────────────────────
             if (self.perc < 100) or (np.isnan(np.sum(self.ulos))):
-              ypt, xpt, xt, yt, ulost = [], [], [], [], []
+              ypt, xpt, xt, yt, ulost, sigmadt = [], [], [], [], [], []
               bins = np.arange(self.profile.ypmin, self.profile.ypmax, 2)
               inds = np.digitize(self.yp, bins)
               for j in range(len(bins)-1):
@@ -248,12 +252,14 @@ class network(object):
                     yt.append(self.y[uu][indice])
                     xt.append(self.x[uu][indice])
                     ulost.append(self.ulos[uu][indice])
+                    sigmadt.append(self.sigmad[uu][indice])
 
-              self.ulos   = np.concatenate(np.array(ulost))
-              self.yp     = np.concatenate(np.array(ypt))
-              self.xp     = np.concatenate(np.array(xpt))
-              self.x      = np.concatenate(np.array(xt))
-              self.y      = np.concatenate(np.array(yt))
+              self.ulos   = np.concatenate(ulost)
+              self.sigmad = np.concatenate(sigmadt)
+              self.yp     = np.concatenate(ypt)
+              self.xp     = np.concatenate(xpt)
+              self.x      = np.concatenate(xt)
+              self.y      = np.concatenate(yt)
               self.yp, uu = np.unique(self.yp, return_index=True)
               self.xp     = self.xp[uu]
               self.x      = self.x[uu]
