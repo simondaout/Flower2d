@@ -66,7 +66,7 @@ def plotLOS(flt,nfigure):
         plot = topodata[j] 
         
         if profile.lbins==None: 
-          nb = float(l/(len(plot.z)/200.))
+          nb = float(l/(len(plot.z)/100.))
           logger.debug('Load {0}. Create bins every {1:.3f} km'.format(plot.name, nb)) 
         else:
           nb = profile.lbins

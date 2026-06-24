@@ -205,7 +205,7 @@ class network(object):
                 logger.info('Average angle — vertical: {:.1f}°, horizontal: {:.1f}°'.format(
                     np.rad2deg(self.thetam), np.rad2deg(self.phim)))
                 logger.info('Average LOS projection to east, north, up: {:.5f} {:.5f} {:.5f}'.format(*self.projm))
-            elif self.profile.proj is not None:
+            elif self.profile.proj is not None and self.phim is None and self.lookm is None:
                 self.proj  = self.profile.proj
                 self.projm = self.profile.proj
                 logger.info('LOS projection inherited from profile: {:.5f} {:.5f} {:.5f}'.format(*self.projm))
