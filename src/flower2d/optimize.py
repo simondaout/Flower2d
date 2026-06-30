@@ -795,5 +795,5 @@ nfigures += len(inv.insardata) + len(inv.gpsdata)
 logger.info('Plot and save Histograms plot')
 plotHist(inv, trace, nfigures)
 
-plt.close('all')
+plt.show()
 sys.exit()
