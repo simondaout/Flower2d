@@ -6,11 +6,15 @@ print('#         Bayesian inversion for fault geometry and slip           #')
 print('#                                                                   #')
 print('# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #')
 
+import os
+os.environ.setdefault('PYTENSOR_FLAGS', 'cxx=')
+
 import numpy as np
 import math
 from os import path, environ, makedirs
 from sys import argv, exit, stdin, stdout
 import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import getopt, logging
 import pymc as pm
@@ -786,5 +790,5 @@ nfigures += len(inv.insardata) + len(inv.gpsdata)
 logger.info('Plot and save Histograms plot')
 plotHist(inv, trace, nfigures)
 
-plt.show()
+plt.close('all')
 sys.exit()
