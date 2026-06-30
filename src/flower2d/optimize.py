@@ -14,7 +14,12 @@ import math
 from os import path, environ, makedirs
 from sys import argv, exit, stdin, stdout
 import matplotlib
-matplotlib.use('Agg')
+# Use non-interactive backend only on headless servers (no DISPLAY / no macOS WindowServer)
+if not os.environ.get('DISPLAY') and os.environ.get('TERM_PROGRAM') != 'Apple_Terminal' \
+        and os.environ.get('TERM_PROGRAM') != 'iTerm.app' \
+        and 'VSCODE_PID' not in os.environ \
+        and os.uname().sysname != 'Darwin':
+    matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import getopt, logging
 import pymc as pm

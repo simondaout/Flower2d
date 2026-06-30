@@ -676,24 +676,24 @@ class network(object):
 
         if self.struc[0].Mseg == 1:
             self.struc[0].conservation()
+            # w=0 causes division by zero in displacement() → NaN logp → sampler stuck
+            if self.fmodel[0].w <= 0:
+                return np.ones((self.N,))*1e14
             u = self.fmodel[0].displacement(self.yp)
         else:
             start = self.fmodel[0].Mker
             # Get model parameters for the back-thrust
             self.fmodel[1].ss, self.fmodel[1].D, self.fmodel[1].H = m[start], m[start+1], m[start+2]
-            # Get model parameters for the ramp 
+            # Get model parameters for the ramp
             self.fmodel[2].ss,self.fmodel[2].D, self.fmodel[2].H = m[start+3], m[start+4], m[start+5]
             # conservation of motion
             self.struc[0].conservation()
-            #self.fmodel[1].info()
-            #self.fmodel[2].info()
-            u = self.fmodel[0].displacement(self.yp)
-
-            # control on locking depth: depth cannot be negatif
-            if (self.fmodel[1].w < 0) or (self.fmodel[2].w < 0) or (abs(self.fmodel[2].vh) > abs(m[1])):
+            # Check ALL locking depths BEFORE displacement: w=0 causes div-by-zero
+            # → NaN logp → Metropolis accept ratio = NaN → sampler permanently stuck.
+            # Use <= 0 (not < 0) to catch the w=0 case (e.g. kink.H == winit at init).
+            if (self.fmodel[0].w <= 0) or (self.fmodel[1].w <= 0) or (self.fmodel[2].w <= 0) or (abs(self.fmodel[2].vh) > abs(m[1])):
                 return np.ones((self.N,))*1e14
-    
-            #print m[1], self.fmodel[2].ds, self.fmodel[2].ds*math.cos(self.fmodel[2].dipr)
+            u = self.fmodel[0].displacement(self.yp)
             u = u + self.fmodel[1].displacement(self.yp)
             u = u + self.fmodel[2].displacement(self.yp)
         
